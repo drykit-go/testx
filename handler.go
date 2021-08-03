@@ -38,7 +38,7 @@ type Runner interface {
 type HandlerTester interface {
 	Runner
 	// ContentLength(check.IntChecker) HandlerTester
-	ResponseHeader(check.UntypedChecker) HandlerTester
+	ResponseHeader(check.HTTPHeaderChecker) HandlerTester
 	ResponseStatus(check.StringChecker) HandlerTester
 	ResponseCode(check.IntChecker) HandlerTester
 	ResponseBody(check.BytesChecker) HandlerTester
@@ -112,10 +112,10 @@ func (test *HandlerFuncTest) Duration(c check.DurationChecker) HandlerTester {
 // 	return test
 // }
 
-func (test *HandlerFuncTest) ResponseHeader(c check.UntypedChecker) HandlerTester {
+func (test *HandlerFuncTest) ResponseHeader(c check.HTTPHeaderChecker) HandlerTester {
 	test.addCheck(testCheck{
 		label: "response header",
-		check: c,
+		check: checkconv.FromHTTPHeader(c),
 		get:   func() gotType { return test.response.header },
 	})
 	return test

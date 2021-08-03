@@ -11,7 +11,6 @@ import (
 
 	testix "github.com/drykit-go/testix"
 	"github.com/drykit-go/testix/check"
-	"github.com/drykit-go/testix/check/expect"
 )
 
 type responseBody map[string]interface{}
@@ -28,17 +27,20 @@ func TestHandlerFunc(t *testing.T) {
 	r, _ := http.NewRequest(http.MethodGet, "/", nil)
 
 	testix.HandlerFunc(h, r).
-		ResponseStatus(expect.String.Contains("Timeout")).
+		ResponseStatus(check.String.Contains("Timeout")).
+		ResponseStatus(check.String.NotContains("OK")).
 		ResponseCode(check.Int.Equal(408)).
-		ResponseCode(check.Int.NotEqual(199)).
-		ResponseCode(check.Int.NotInRange(201, 202)).
+		ResponseCode(check.Int.NotEqual(200)).
+		ResponseCode(check.Int.NotInRange(200, 299)).
 		ResponseCode(check.Int.InRange(400, 499)).
-		Duration(check.Duration.Under(50 * time.Millisecond)).
 		ResponseCode(isEven).
+		Duration(check.Duration.Under(50 * time.Millisecond)).
 		ResponseBody(check.Bytes.Equal([]byte(expBody))).
-		ResponseBody(
-			check.Bytes.Len(check.Int.GreaterOrEqual(20)),
-		).
+		ResponseBody(check.Bytes.Len(check.Int.GreaterOrEqual(20))).
+		ResponseHeader(check.HTTPHeader.ValueOf("marcel", check.String.Contains("patulacci"))).
+		ResponseHeader(check.HTTPHeader.ValueNotSet("secret")).
+		ResponseHeader(check.HTTPHeader.KeySet("API_KEY")).
+		ResponseHeader(check.HTTPHeader.KeyNotSet("password")).
 		Run(t)
 }
 
@@ -60,7 +62,8 @@ func respond(w http.ResponseWriter, code int, payload interface{}) {
 		log.Fatal(err)
 	}
 	w.Header().Set("Content-Length", strconv.Itoa(len(b)))
-	w.Header().Add("yo", "weeeesssshhhhhh")
+	w.Header().Add("marcel", "patulacci")
+	w.Header()["API_KEY"] = []string{"abc"}
 	w.Write(b)
 }
 

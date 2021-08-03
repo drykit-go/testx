@@ -57,12 +57,36 @@ func (stringValue) Match(rgx *regexp.Regexp) StringChecker {
 	}
 }
 
+func (stringValue) NotMatch(rgx *regexp.Regexp) StringChecker {
+	return stringCheck{
+		passFunc: func(got string) bool { return !rgx.MatchString(got) },
+		explFunc: func(label string, got interface{}) string {
+			return fmt.Sprintf(
+				"expect %s not to match regexp %s, got %s",
+				label, rgx.String(), got,
+			)
+		},
+	}
+}
+
 func (stringValue) Contains(tar string) StringChecker {
 	return stringCheck{
 		passFunc: func(got string) bool { return strings.Contains(got, tar) },
 		explFunc: func(label string, got interface{}) string {
 			return fmt.Sprintf(
 				"expect %s to contain substring %s, got %s",
+				label, tar, got,
+			)
+		},
+	}
+}
+
+func (stringValue) NotContains(tar string) StringChecker {
+	return stringCheck{
+		passFunc: func(got string) bool { return !strings.Contains(got, tar) },
+		explFunc: func(label string, got interface{}) string {
+			return fmt.Sprintf(
+				"expect %s not to contain substring %s, got %s",
 				label, tar, got,
 			)
 		},
