@@ -27,20 +27,28 @@ func TestHandlerFunc(t *testing.T) {
 	r, _ := http.NewRequest(http.MethodGet, "/", nil)
 
 	testix.HandlerFunc(h, r).
-		ResponseStatus(check.String.Contains("Timeout")).
-		ResponseStatus(check.String.NotContains("OK")).
-		ResponseCode(check.Int.Equal(408)).
-		ResponseCode(check.Int.NotEqual(200)).
-		ResponseCode(check.Int.NotInRange(200, 299)).
-		ResponseCode(check.Int.InRange(400, 499)).
-		ResponseCode(isEven).
+		ResponseStatus(
+			check.String.Contains("Timeout"),
+			check.String.NotContains("OK"),
+		).
+		ResponseCode(
+			check.Int.Equal(408),
+			check.Int.NotEqual(200),
+			check.Int.NotInRange(200, 299),
+			check.Int.InRange(400, 499),
+			checkIntIsEven,
+		).
+		ResponseBody(
+			check.Bytes.Equal([]byte(expBody)),
+			check.Bytes.Len(check.Int.GreaterOrEqual(20)),
+		).
+		ResponseHeader(
+			check.HTTPHeader.ValueOf("marcel", check.String.Contains("patulacci")),
+			check.HTTPHeader.ValueNotSet("secret"),
+			check.HTTPHeader.KeySet("API_KEY"),
+			check.HTTPHeader.KeyNotSet("password"),
+		).
 		Duration(check.Duration.Under(50 * time.Millisecond)).
-		ResponseBody(check.Bytes.Equal([]byte(expBody))).
-		ResponseBody(check.Bytes.Len(check.Int.GreaterOrEqual(20))).
-		ResponseHeader(check.HTTPHeader.ValueOf("marcel", check.String.Contains("patulacci"))).
-		ResponseHeader(check.HTTPHeader.ValueNotSet("secret")).
-		ResponseHeader(check.HTTPHeader.KeySet("API_KEY")).
-		ResponseHeader(check.HTTPHeader.KeyNotSet("password")).
 		Run(t)
 }
 
@@ -67,7 +75,7 @@ func respond(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(b)
 }
 
-var isEven = check.NewIntCheck(
+var checkIntIsEven = check.NewIntCheck(
 	func(got int) bool {
 		return got%2 == 0
 	},

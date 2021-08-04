@@ -50,19 +50,28 @@ func FromHTTPHeader(c check.HTTPHeaderChecker) check.UntypedChecker {
 // 	pf := untypedPassFunc(checker)
 // }
 
-func untypedPassFunc(c interface{}) check.UntypedPassFunc {
-	switch c.(type) {
-	case check.BytesPassFunc:
-		return untypedBytesPassFunc(c.(check.BytesChecker))
+// UntypedChecker takes a typed checker parameter (such as check.IntChecker)
+// and returns its untyped version.
+// It can be used to facilitate checkers usage by test runners.
+func UntypedChecker(checker interface{}) check.UntypedChecker {
+	switch c := checker.(type) {
+	case check.BytesChecker:
+		return FromBytes(c)
 
-	case check.StringPassFunc:
-		return untypedStringPassFunc(c.(check.StringChecker))
+	case check.StringChecker:
+		return FromString(c)
 
-	case check.IntPassFunc:
-		return untypedIntPassFunc(c.(check.IntChecker))
+	case check.IntChecker:
+		return FromInt(c)
 
-	case check.DurationPassFunc:
-		return untypedDurationPassFunc(c.(check.DurationChecker))
+	case check.DurationChecker:
+		return FromDuration(c)
+
+	case check.HTTPHeaderChecker:
+		return FromHTTPHeader(c)
+
+	case check.UntypedChecker:
+		return c
 
 	default:
 		log.Fatal("bad conversion")

@@ -26,11 +26,6 @@ import (
 // - testix.HandlerFunc(h, r).Run(t)
 // - testix.HandlerFunc(t, h, r).Run()
 
-type baseTest struct {
-	// t      *testing.T
-	checks []testCheck
-}
-
 type testCheck struct {
 	label string
 	get   func() gotType // TODO: func() (gotType, error)
@@ -39,18 +34,7 @@ type testCheck struct {
 
 type gotType interface{}
 
-func (test *baseTest) addCheck(c testCheck) {
-	test.checks = append(test.checks, c)
-}
-
-func (test *baseTest) run(t *testing.T) {
-	for _, current := range test.checks {
-		got := current.get()
-		if !current.check.Pass(got) {
-			fail(t, current.check.Explain(current.label, got))
-		}
-	}
-}
+type getFunc func() gotType
 
 // func failVal(t *testing.T, label string, exp, got interface{}) {
 // 	t.Errorf("expected %s %v, got %v", label, exp, got)
