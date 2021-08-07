@@ -24,15 +24,6 @@ func (bytesValue) Equal(tar []byte) BytesChecker {
 	}
 }
 
-// TODO: find a way to handle errors
-//
-// suggestion:
-//
-// c := bytesCheck{
-//	explainErr: func(label string, err error) string
-// }
-//
-// TODO: ExplainFunc
 func (bytesValue) EqualJSON(tar []byte) BytesChecker {
 	var decGot, decTar interface{}
 	return bytesCheck{
@@ -62,7 +53,7 @@ func (bytesValue) Len(c IntChecker) BytesChecker {
 		explFunc: func(label string, got interface{}) string {
 			return fmt.Sprintf(
 				"unexpected %s length: %s",
-				label, c.Explain(label, len(got.([]byte))), // TODO: handle assertion error
+				label, c.Explain(label, len(got.([]byte))),
 			)
 		},
 	}
