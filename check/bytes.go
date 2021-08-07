@@ -8,19 +8,6 @@ import (
 	"reflect"
 )
 
-type bytesCheck struct {
-	passFunc BytesPassFunc
-	explFunc ExplainFunc
-}
-
-func (c bytesCheck) Pass(got []byte) bool {
-	return c.passFunc(got)
-}
-
-func (c bytesCheck) Explain(label string, got interface{}) string {
-	return c.explFunc(label, got)
-}
-
 type bytesValue struct{}
 
 func (bytesValue) Equal(tar []byte) BytesChecker {

@@ -5,19 +5,6 @@ import (
 	"time"
 )
 
-type durationCheck struct {
-	passFunc DurationPassFunc
-	explFunc ExplainFunc
-}
-
-func (c durationCheck) Pass(got time.Duration) bool {
-	return c.passFunc(got)
-}
-
-func (c durationCheck) Explain(label string, got interface{}) string {
-	return c.explFunc(label, got)
-}
-
 type durationValue struct{}
 
 func (durationValue) Over(tar time.Duration) DurationChecker {

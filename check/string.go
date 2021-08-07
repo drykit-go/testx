@@ -6,19 +6,6 @@ import (
 	"strings"
 )
 
-type stringCheck struct {
-	passFunc StringPassFunc
-	explFunc ExplainFunc
-}
-
-func (c stringCheck) Pass(got string) bool {
-	return c.passFunc(got)
-}
-
-func (c stringCheck) Explain(label string, got interface{}) string {
-	return c.explFunc(label, got)
-}
-
 type stringValue struct{}
 
 func (stringValue) Equal(tar string) StringChecker {

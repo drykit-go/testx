@@ -5,19 +5,6 @@ import (
 	"net/http"
 )
 
-type httpHeaderCheck struct {
-	passFunc HTTPHeaderPassFunc
-	explFunc ExplainFunc
-}
-
-func (c httpHeaderCheck) Pass(got http.Header) bool {
-	return c.passFunc(got)
-}
-
-func (c httpHeaderCheck) Explain(label string, got interface{}) string {
-	return c.explFunc(label, got)
-}
-
 type httpHeaderValue struct{}
 
 func (httpHeaderValue) KeySet(key string) HTTPHeaderChecker {

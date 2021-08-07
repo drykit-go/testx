@@ -2,19 +2,6 @@ package check
 
 import "fmt"
 
-type intCheck struct {
-	passFunc IntPassFunc
-	explFunc ExplainFunc
-}
-
-func (c intCheck) Pass(got int) bool {
-	return c.passFunc(got)
-}
-
-func (c intCheck) Explain(label string, got interface{}) string {
-	return c.explFunc(label, got)
-}
-
 type intValue struct{}
 
 func (intValue) InRange(lo, hi int) IntChecker {
