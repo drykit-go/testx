@@ -1,0 +1,31 @@
+// Package checkconv provides functions to convert typed checks
+// into generic untyped ones.
+package checkconv
+
+{{range . -}}
+{{if ne .N "Untyped" }}
+func From{{.N}}(c check.{{.N}}Checker) check.UntypedChecker {
+	return check.NewUntypedCheck(
+		func(got interface{}) bool { return c.Pass(got.({{.T}})) },
+		c.Explain,
+	)
+}
+{{end}}
+{{end}}
+
+// UntypedChecker takes a typed checker parameter (such as check.IntChecker)
+// and returns its untyped version.
+// It can be used to facilitate checkers usage by test runners.
+func UntypedChecker(checker interface{}) check.UntypedChecker {
+	switch c := checker.(type) {
+	{{range . -}}
+	{{if ne .N "Untyped" -}}
+	case check.{{.N}}Checker:
+		return From{{.N}}(c)
+	{{end -}}
+	{{end -}}
+	default:
+		log.Fatal("bad conversion")
+		return nil
+	}
+}
