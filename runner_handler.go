@@ -56,6 +56,7 @@ func (test *handlerTestRunner) Run(t *testing.T) {
 
 func (test *handlerTestRunner) setResponse(rr *httptest.ResponseRecorder) {
 	result := rr.Result()
+	defer result.Body.Close()
 	test.response.header = rr.Header()
 	test.response.status = result.Status
 	test.response.code = result.StatusCode

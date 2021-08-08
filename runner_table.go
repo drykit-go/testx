@@ -8,6 +8,11 @@ import (
 
 // TODO: refactor funcs -> tableRunner methods, reorder
 
+type TableRunner interface {
+	Runner
+	Cases(cases []Case) TableRunner
+}
+
 type tableRunner struct {
 	t      *testing.T
 	label  string
@@ -15,22 +20,34 @@ type tableRunner struct {
 	cases  []Case
 	config *TableConfig
 
-	result struct {
-		npass int
-		nfail int
-	}
+	// TODO:
+	// result struct {
+	// 	npass int
+	// 	nfail int
+	// }
 }
 
 func (r *tableRunner) Run(t *testing.T) {
-	deq := func(a, b interface{}) bool { return reflect.DeepEqual(a, b) }
-	pass := func(eq, reverse bool) bool { return eq != reverse }
-
 	r.t = t
 	for _, c := range r.cases {
-		if got := r.get(c.In); !pass(deq(got, c.Exp), c.Not) {
+		if got, ok := r.pass(c); !ok {
+			// TODO: in a near future, change the implementation so that
+			// the result data is stored and we only fail the test once
+			// per Table. Then provide information such as which failed,
+			// which quantity etc.
 			r.fail(c.In, got, c.Exp, c.Not)
 		}
 	}
+}
+
+// TODO: once results data is stored into tableRunner,
+// change back the return value to bool only
+func (r *tableRunner) pass(c Case) (got interface{}, ok bool) {
+	deq := reflect.DeepEqual
+	xor := func(a, b bool) bool { return a != b }
+	got = r.get(c.In)
+	ok = xor(deq(got, c.Exp), c.Not)
+	return
 }
 
 func (r *tableRunner) Cases(cases []Case) TableRunner {
@@ -75,11 +92,6 @@ type Case struct {
 	Not bool
 }
 
-type TableRunner interface {
-	Runner
-	Cases(cases []Case) TableRunner
-}
-
 func Table(testedFunc interface{}, config *TableConfig) TableRunner {
 	cfg, err := safeTableConfig(config)
 	panicOnErr(err)
@@ -102,41 +114,6 @@ func Table(testedFunc interface{}, config *TableConfig) TableRunner {
 		},
 		config: &cfg,
 	}
-}
-
-func (cfg *TableConfig) validateFuncCompat(f *funcReflection) error {
-	if outPos, numOut := cfg.OutPos, f.rtyp.NumOut(); outPos >= numOut {
-		return fmt.Errorf(
-			"invalid value for OutPos: must be < to the number of values returned by %s (%d > %d)",
-			f.name, outPos, numOut,
-		)
-	}
-	if inPos, numIn := cfg.InPos, f.rtyp.NumIn(); inPos >= numIn {
-		return fmt.Errorf(
-			"invalid value for InPos: must be < to the number of parameters of %s (%d > %d)",
-			f.name, inPos, numIn,
-		)
-	}
-	return nil
-}
-
-func safeTableConfig(cfg *TableConfig) (TableConfig, error) {
-	if cfg == nil {
-		return TableConfig{}, nil
-	}
-	if cfg.InPos < 0 {
-		return TableConfig{}, fmt.Errorf(
-			"invalid value for InPos: must be int >= 0, got %d",
-			cfg.InPos,
-		)
-	}
-	if cfg.OutPos < 0 {
-		return TableConfig{}, fmt.Errorf(
-			"invalid value for OutPos: must be int >= 0, got %d",
-			cfg.OutPos,
-		)
-	}
-	return *cfg, nil
 }
 
 type funcReflection struct {
@@ -220,13 +197,6 @@ func makeArgs(f *funcReflection, cfg *TableConfig) ([]reflect.Value, error) {
 	}
 }
 
-func funcName(f interface{}, name string) string {
-	if name != "" {
-		return name
-	}
-	return getFuncName(f)
-}
-
 // TableConfig is an object of options allowing to configure
 // the table runner. Its main purpose is to deal with tested functions
 // that have multiple input parameters or outputs by setting
@@ -253,4 +223,39 @@ type TableConfig struct {
 	// These values will be used for all the cases.
 	// It must be used with InPos to work expectedly.
 	FixedArgs []interface{}
+}
+
+func (cfg *TableConfig) validateFuncCompat(f *funcReflection) error {
+	if outPos, numOut := cfg.OutPos, f.rtyp.NumOut(); outPos >= numOut {
+		return fmt.Errorf(
+			"invalid value for OutPos: must be < to the number of values returned by %s (%d > %d)",
+			f.name, outPos, numOut,
+		)
+	}
+	if inPos, numIn := cfg.InPos, f.rtyp.NumIn(); inPos >= numIn {
+		return fmt.Errorf(
+			"invalid value for InPos: must be < to the number of parameters of %s (%d > %d)",
+			f.name, inPos, numIn,
+		)
+	}
+	return nil
+}
+
+func safeTableConfig(cfg *TableConfig) (TableConfig, error) {
+	if cfg == nil {
+		return TableConfig{}, nil
+	}
+	if cfg.InPos < 0 {
+		return TableConfig{}, fmt.Errorf(
+			"invalid value for InPos: must be int >= 0, got %d",
+			cfg.InPos,
+		)
+	}
+	if cfg.OutPos < 0 {
+		return TableConfig{}, fmt.Errorf(
+			"invalid value for OutPos: must be int >= 0, got %d",
+			cfg.OutPos,
+		)
+	}
+	return *cfg, nil
 }
