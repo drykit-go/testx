@@ -9,18 +9,14 @@ import (
 	"github.com/drykit-go/testix/check"
 )
 
-type HandlerTest struct {
-	*HandlerFuncTest
-}
+var _ HandlerTestRunner = (*handlerTestRunner)(nil)
 
-type HandlerFuncTest struct {
+type handlerTestRunner struct {
 	baseTest
+
 	hf http.HandlerFunc
 	rr *httptest.ResponseRecorder
 	rq *http.Request
-
-	hasDurationCheck bool
-	handlingDuration time.Duration
 
 	response struct {
 		header http.Header
@@ -28,23 +24,25 @@ type HandlerFuncTest struct {
 		code   int
 		body   []byte
 	}
+
+	hasDurationCheck bool
+	handlingDuration time.Duration
 }
 
 type Runner interface {
 	Run(t *testing.T)
 }
 
-type HandlerTester interface {
+type HandlerTestRunner interface {
 	Runner
-	// ContentLength(check.IntChecker) HandlerTester
-	ResponseHeader(...check.HTTPHeaderChecker) HandlerTester
-	ResponseStatus(...check.StringChecker) HandlerTester
-	ResponseCode(...check.IntChecker) HandlerTester
-	ResponseBody(...check.BytesChecker) HandlerTester
-	Duration(...check.DurationChecker) HandlerTester
+	ResponseHeader(...check.HTTPHeaderChecker) HandlerTestRunner
+	ResponseStatus(...check.StringChecker) HandlerTestRunner
+	ResponseCode(...check.IntChecker) HandlerTestRunner
+	ResponseBody(...check.BytesChecker) HandlerTestRunner
+	Duration(...check.DurationChecker) HandlerTestRunner
 }
 
-func (test *HandlerFuncTest) Run(t *testing.T) {
+func (test *handlerTestRunner) Run(t *testing.T) {
 	main := func() { test.hf(test.rr, test.rq) }
 	if test.hasDurationCheck {
 		test.handlingDuration = timeFunc(main)
@@ -56,7 +54,7 @@ func (test *HandlerFuncTest) Run(t *testing.T) {
 	test.run(t)
 }
 
-func (test *HandlerFuncTest) setResponse(rr *httptest.ResponseRecorder) {
+func (test *handlerTestRunner) setResponse(rr *httptest.ResponseRecorder) {
 	result := rr.Result()
 	test.response.header = rr.Header()
 	test.response.status = result.Status
@@ -64,7 +62,7 @@ func (test *HandlerFuncTest) setResponse(rr *httptest.ResponseRecorder) {
 	test.response.body = mustReadIO("response body", result.Body)
 }
 
-func (test *HandlerFuncTest) ResponseStatus(checks ...check.StringChecker) HandlerTester {
+func (test *handlerTestRunner) ResponseStatus(checks ...check.StringChecker) HandlerTestRunner {
 	test.addStringChecks(
 		"response status",
 		func() gotType { return test.response.status },
@@ -73,7 +71,7 @@ func (test *HandlerFuncTest) ResponseStatus(checks ...check.StringChecker) Handl
 	return test
 }
 
-func (test *HandlerFuncTest) ResponseCode(checks ...check.IntChecker) HandlerTester {
+func (test *handlerTestRunner) ResponseCode(checks ...check.IntChecker) HandlerTestRunner {
 	test.addIntChecks(
 		"response code",
 		func() gotType { return test.response.code },
@@ -82,7 +80,7 @@ func (test *HandlerFuncTest) ResponseCode(checks ...check.IntChecker) HandlerTes
 	return test
 }
 
-func (test *HandlerFuncTest) ResponseBody(checks ...check.BytesChecker) HandlerTester {
+func (test *handlerTestRunner) ResponseBody(checks ...check.BytesChecker) HandlerTestRunner {
 	test.addBytesChecks(
 		"response body",
 		func() gotType { return test.response.body },
@@ -91,7 +89,7 @@ func (test *HandlerFuncTest) ResponseBody(checks ...check.BytesChecker) HandlerT
 	return test
 }
 
-func (test *HandlerFuncTest) Duration(checks ...check.DurationChecker) HandlerTester {
+func (test *handlerTestRunner) Duration(checks ...check.DurationChecker) HandlerTestRunner {
 	test.hasDurationCheck = true
 	test.addDurationChecks(
 		"handling duration",
@@ -101,7 +99,7 @@ func (test *HandlerFuncTest) Duration(checks ...check.DurationChecker) HandlerTe
 	return test
 }
 
-func (test *HandlerFuncTest) ResponseHeader(checks ...check.HTTPHeaderChecker) HandlerTester {
+func (test *handlerTestRunner) ResponseHeader(checks ...check.HTTPHeaderChecker) HandlerTestRunner {
 	test.addHTTPHeaderChecks(
 		"response header",
 		func() gotType { return test.response.header },
@@ -110,14 +108,14 @@ func (test *HandlerFuncTest) ResponseHeader(checks ...check.HTTPHeaderChecker) H
 	return test
 }
 
-func HandlerFunc(hf http.HandlerFunc, r *http.Request) HandlerTester {
-	return &HandlerFuncTest{
+func HandlerFunc(hf http.HandlerFunc, r *http.Request) HandlerTestRunner {
+	return &handlerTestRunner{
 		hf: hf,
 		rr: httptest.NewRecorder(),
 		rq: r,
 	}
 }
 
-func Handler(h http.Handler, r *http.Request) HandlerTester {
+func Handler(h http.Handler, r *http.Request) HandlerTestRunner {
 	return HandlerFunc(h.ServeHTTP, r)
 }
