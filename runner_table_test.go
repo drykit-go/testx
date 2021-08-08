@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/drykit-go/testx"
+	"github.com/drykit-go/testx/check"
 )
 
 var expFixedArgs = map[string]interface{}{
@@ -53,6 +54,16 @@ func TestTableRunner(t *testing.T) {
 			// should accept len(FixedArgs) == nparams
 			FixedArgs: []interface{}{0: a0, 2: a2},
 		}).Cases(cases).Run(t)
+	})
+
+	t.Run("using check.IntChecker", func(t *testing.T) {
+		testx.
+			Table(func(n int) int { return 2 * n }, nil).
+			Cases([]testx.Case{
+				{In: 21, Exp: check.Int.Equal(42)},
+				{In: -10, Exp: check.Int.InRange(-100, 0)},
+			}).
+			Run(t)
 	})
 }
 

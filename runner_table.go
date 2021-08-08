@@ -46,8 +46,42 @@ func (r *tableRunner) pass(c Case) (got interface{}, ok bool) {
 	deq := reflect.DeepEqual
 	xor := func(a, b bool) bool { return a != b }
 	got = r.get(c.In)
-	ok = xor(deq(got, c.Exp), c.Not)
-	return
+
+	passExp := func() bool { return xor(deq(got, c.Exp), c.Not) }
+
+	expv := reflect.ValueOf(c.Exp)
+
+	passChecker := func() bool {
+		gotv := reflect.ValueOf(got)
+		outv := expv.MethodByName("Pass").Call([]reflect.Value{gotv})
+		pass := outv[0].Bool()
+		expv.NumMethod()
+
+		if !pass {
+			lab := c.Lab
+			if lab == "" {
+				lab = r.label
+			}
+			labv := reflect.ValueOf(lab)
+			expl := expv.MethodByName("Explain").Call([]reflect.Value{labv, gotv})
+			explstr := expl[0].String()
+			r.t.Log(explstr)
+		}
+		return pass
+	}
+
+	expChecker := func() bool {
+		hasPass := expv.MethodByName("Pass").IsValid()
+		hasExpl := expv.MethodByName("Explain").IsValid()
+		return hasPass && hasExpl
+	}
+
+	switch {
+	case expChecker():
+		return got, passChecker()
+	default:
+		return got, passExp()
+	}
 }
 
 func (r *tableRunner) Cases(cases []Case) TableRunner {
@@ -90,6 +124,8 @@ type Case struct {
 	Exp interface{}
 	// Not reverses the test check for an equality
 	Not bool
+
+	Check interface{}
 }
 
 func Table(testedFunc interface{}, config *TableConfig) TableRunner {
