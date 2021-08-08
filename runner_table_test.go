@@ -60,7 +60,7 @@ func evenSingle(a1 int) bool {
 	return a1&1 == 0
 }
 
-func evenMultipleOut(a1 int) (string, interface{}, bool, int) {
+func evenMultipleOut(a1 int) (string, interface{}, bool, int) { //nolint: gocritic,unamedResult
 	return "", struct{}{}, evenSingle(a1), -1
 }
 
@@ -69,7 +69,7 @@ func evenMultipleIn(a0 []byte, a1 int, a2 map[rune][][]float64) bool {
 	return evenSingle(a1)
 }
 
-func evenMultipleInOut(a0 []byte, a1 int, a2 map[rune][][]float64) (string, interface{}, bool, int) {
+func evenMultipleInOut(a0 []byte, a1 int, a2 map[rune][][]float64) (string, interface{}, bool, int) { //nolint: gocritic,unamedResult
 	panicOnUnexpectedArgs(a0, a2)
 	return evenMultipleOut(a1)
 }
