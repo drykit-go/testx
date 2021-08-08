@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/drykit-go/testix/check"
+	"github.com/drykit-go/testx/check"
 )
 
 func FromBytes(c check.BytesChecker) check.UntypedChecker {

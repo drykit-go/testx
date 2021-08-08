@@ -1,11 +1,11 @@
-package testix_test
+package testx_test
 
 import (
 	"log"
 	"reflect"
 	"testing"
 
-	"github.com/drykit-go/testix"
+	"github.com/drykit-go/testx"
 )
 
 var expFixedArgs = map[string]interface{}{
@@ -13,10 +13,10 @@ var expFixedArgs = map[string]interface{}{
 	"a2": map[rune][][]float64{'π': {[]float64{3.14}}},
 }
 
-// TestTableRunner ensures testix.Table behaves correctly, in particular
+// TestTableRunner ensures testx.Table behaves correctly, in particular
 // when dealing with functions with multiple inputs and outputs.
 func TestTableRunner(t *testing.T) {
-	cases := []testix.Case{
+	cases := []testx.Case{
 		{In: 42, Exp: true},
 		{In: 99, Exp: false},
 	}
@@ -29,17 +29,17 @@ func TestTableRunner(t *testing.T) {
 	a0, a2 := expFixedArgs["a0"], expFixedArgs["a2"]
 
 	t.Run("single in single out", func(t *testing.T) {
-		testix.Table(evenSingle, nil).Cases(cases).Run(t)
+		testx.Table(evenSingle, nil).Cases(cases).Run(t)
 	})
 
 	t.Run("single in multiple out", func(t *testing.T) {
-		testix.Table(evenMultipleOut, &testix.TableConfig{
+		testx.Table(evenMultipleOut, &testx.TableConfig{
 			OutPos: outPos,
 		}).Cases(cases).Run(t)
 	})
 
 	t.Run("multiple in single out", func(t *testing.T) {
-		testix.Table(evenMultipleIn, &testix.TableConfig{
+		testx.Table(evenMultipleIn, &testx.TableConfig{
 			InPos: inPos,
 			// should accept len(FixedArgs) == nparams-1
 			FixedArgs: []interface{}{a0, a2},
@@ -47,7 +47,7 @@ func TestTableRunner(t *testing.T) {
 	})
 
 	t.Run("multiple in multiple out", func(t *testing.T) {
-		testix.Table(evenMultipleInOut, &testix.TableConfig{
+		testx.Table(evenMultipleInOut, &testx.TableConfig{
 			InPos:  inPos,
 			OutPos: outPos,
 			// should accept len(FixedArgs) == nparams

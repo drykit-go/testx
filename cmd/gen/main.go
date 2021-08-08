@@ -5,7 +5,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/drykit-go/testix/check/gen"
+	"github.com/drykit-go/testx/check/gen"
 )
 
 func main() {

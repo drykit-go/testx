@@ -1,4 +1,4 @@
-package testix
+package testx
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/drykit-go/testix/check"
+	"github.com/drykit-go/testx/check"
 )
 
 var _ HandlerTestRunner = (*handlerTestRunner)(nil)

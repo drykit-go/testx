@@ -1,3 +1,3 @@
-module github.com/drykit-go/testix
+module github.com/drykit-go/testx
 
 go 1.16

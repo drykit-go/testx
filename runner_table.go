@@ -1,4 +1,4 @@
-package testix
+package testx
 
 import (
 	"fmt"

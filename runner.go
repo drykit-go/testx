@@ -1,10 +1,10 @@
-package testix
+package testx
 
 import (
 	"testing"
 
-	"github.com/drykit-go/testix/check"
-	"github.com/drykit-go/testix/check/checkconv"
+	"github.com/drykit-go/testx/check"
+	"github.com/drykit-go/testx/check/checkconv"
 )
 
 type baseTest struct {

@@ -1,4 +1,4 @@
-package testix_test
+package testx_test
 
 import (
 	"encoding/json"
@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	testix "github.com/drykit-go/testix"
-	"github.com/drykit-go/testix/check"
+	testx "github.com/drykit-go/testx"
+	"github.com/drykit-go/testx/check"
 )
 
 type responseBody map[string]interface{}
@@ -26,7 +26,7 @@ func TestHandlerFunc(t *testing.T) {
 	h := handler(408, responseBody{"message": "Hello World!"})
 	r, _ := http.NewRequest(http.MethodGet, "/", nil)
 
-	testix.HandlerFunc(h, r).
+	testx.HandlerFunc(h, r).
 		ResponseStatus(
 			check.String.Contains("Timeout"),
 			check.String.NotContains("OK"),

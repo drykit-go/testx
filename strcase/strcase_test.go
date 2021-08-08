@@ -3,12 +3,12 @@ package strcase_test
 import (
 	"testing"
 
-	"github.com/drykit-go/testix"
-	"github.com/drykit-go/testix/strcase"
+	"github.com/drykit-go/testx"
+	"github.com/drykit-go/testx/strcase"
 )
 
 func TestCamel(t *testing.T) {
-	testix.Table(strcase.Camel, nil).Cases([]testix.Case{
+	testx.Table(strcase.Camel, nil).Cases([]testx.Case{
 		{In: "A", Exp: "a"},
 		{In: "ABC", Exp: "abc"},
 		{In: "Name", Exp: "name"},
