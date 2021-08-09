@@ -43,8 +43,25 @@ func getFuncName(f interface{}) string {
 	return filepath.Base(path)
 }
 
+// panicOnErr panics if the given err is not nil.
 func panicOnErr(err error) {
 	if err != nil {
 		log.Panic(err)
 	}
+}
+
+func condValue(vtrue, vfalse interface{}, istrue bool) interface{} {
+	if istrue {
+		return vtrue
+	}
+	return vfalse
+}
+
+func condString(vtrue, vfalse string, istrue bool) string {
+	return condValue(vtrue, vfalse, istrue).(string)
+}
+
+// defaultString returns val if val !== "", def otherwise.
+func defaultString(val, def string) string {
+	return condString(val, def, val != "")
 }

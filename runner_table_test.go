@@ -9,6 +9,8 @@ import (
 	"github.com/drykit-go/testx/check"
 )
 
+// Tests
+
 var expFixedArgs = map[string]interface{}{
 	"a0": []byte("arg0"),
 	"a2": map[rune][][]float64{'π': {[]float64{3.14}}},
@@ -34,38 +36,47 @@ func TestTableRunner(t *testing.T) {
 	})
 
 	t.Run("single in multiple out", func(t *testing.T) {
-		testx.Table(evenMultipleOut, &testx.TableConfig{
-			OutPos: outPos,
-		}).Cases(cases).Run(t)
+		testx.
+			Table(evenMultipleOut, &testx.TableConfig{
+				OutPos: outPos,
+			}).
+			Cases(cases).
+			Run(t)
 	})
 
 	t.Run("multiple in single out", func(t *testing.T) {
-		testx.Table(evenMultipleIn, &testx.TableConfig{
-			InPos: inPos,
-			// should accept len(FixedArgs) == nparams-1
-			FixedArgs: []interface{}{a0, a2},
-		}).Cases(cases).Run(t)
+		testx.
+			Table(evenMultipleIn, &testx.TableConfig{
+				InPos:     inPos,
+				FixedArgs: []interface{}{a0, a2}, // len(FixedArgs) == nparams-1
+			}).
+			Cases(cases).
+			Run(t)
 	})
 
 	t.Run("multiple in multiple out", func(t *testing.T) {
-		testx.Table(evenMultipleInOut, &testx.TableConfig{
-			InPos:  inPos,
-			OutPos: outPos,
-			// should accept len(FixedArgs) == nparams
-			FixedArgs: []interface{}{0: a0, 2: a2},
-		}).Cases(cases).Run(t)
+		testx.
+			Table(evenMultipleInOut, &testx.TableConfig{
+				InPos:     inPos,
+				OutPos:    outPos,
+				FixedArgs: []interface{}{0: a0, 2: a2}, // len(FixedArgs) == nparams
+			}).
+			Cases(cases).
+			Run(t)
 	})
 
 	t.Run("using check.IntChecker", func(t *testing.T) {
 		testx.
-			Table(func(n int) int { return 2 * n }, nil).
+			Table(double, nil).
 			Cases([]testx.Case{
 				{In: 21, Exp: check.Int.Equal(42)},
-				{In: -10, Exp: check.Int.InRange(-100, 0)},
+				{In: -4, Exp: check.Int.InRange(-10, 0)},
 			}).
 			Run(t)
 	})
 }
+
+// Tested funcs
 
 func evenSingle(a1 int) bool {
 	return a1&1 == 0
@@ -85,15 +96,18 @@ func evenMultipleInOut(a0 []byte, a1 int, a2 map[rune][][]float64) (string, inte
 	return evenMultipleOut(a1)
 }
 
+func double(n int) int {
+	return 2 * n
+}
+
+// Helpers
+
 func panicOnUnexpectedArgs(a0 []byte, a2 map[rune][][]float64) {
+	deq := reflect.DeepEqual
 	if !deq(a0, expFixedArgs["a0"]) || !deq(a2, expFixedArgs["a2"]) {
 		log.Fatalf(
 			"received unexpected args:\na0: %#v\nexp0: %#v\na2: %#v\nexp2: %#v",
 			a0, expFixedArgs["a0"], a2, expFixedArgs["a2"],
 		)
 	}
-}
-
-func deq(a, b interface{}) bool {
-	return reflect.DeepEqual(a, b)
 }
