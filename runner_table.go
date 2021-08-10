@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/drykit-go/testx/check/checkconv"
 )
 
 // TODO: refactor funcs -> tableRunner methods, reorder
@@ -19,35 +21,67 @@ type tableRunner struct {
 	get    func(interface{}) interface{}
 	cases  []Case
 	config *TableConfig
-
-	// TODO:
-	// result struct {
-	// 	npass int
-	// 	nfail int
-	// }
 }
 
 func (r *tableRunner) Run(t *testing.T) {
 	r.t = t
 	for _, c := range r.cases {
-		if got, ok := r.pass(c); !ok {
-			// TODO: in a near future, change the implementation so that
-			// the result data is stored and we only fail the test once
-			// per Table. Then provide information such as which failed,
-			// which quantity etc.
-			r.fail(c.In, got, c.Exp, c.Not)
+		got := r.get(c.In)
+		if pass, expl := r.pass(c, got); !pass {
+			r.fail(expl)
 		}
 	}
 }
 
 // TODO: once results data is stored into tableRunner,
 // change back the return value to bool only
-func (r *tableRunner) pass(c Case) (got interface{}, ok bool) {
+// TODO: method of Case instead of tableRunner?
+// -> implies to add testName to Case struct for default label
+func (r *tableRunner) pass(c Case, got interface{}) (bool, string) {
+	switch {
+	case checkconv.IsChecker(c.Exp):
+		return r.passChecker(c, got)
+	default:
+		return r.passValue(c, got)
+	}
+}
+
+func (r *tableRunner) passValue(c Case, got interface{}) (bool, string) {
 	deq := reflect.DeepEqual
 	xor := func(a, b bool) bool { return a != b }
-	got = r.get(c.In)
-	ok = xor(deq(got, c.Exp), c.Not)
-	return
+	pass, expl := xor(deq(got, c.Exp), c.Not), ""
+	if !pass {
+		expl = r.explValue(c.In, got, c.Exp, c.Not)
+	}
+	return pass, expl
+}
+
+func (r *tableRunner) explValue(in, got, exp interface{}, not bool) string {
+	return fmt.Sprintf(
+		"%s(%v) -> expect %s%v, got %v",
+		r.label, in, condString("not ", "", not), exp, got,
+	)
+}
+
+// NOTE: passChecker does not support c.Not, because c.Not is to be removed.
+func (r *tableRunner) passChecker(c Case, got interface{}) (bool, string) {
+	gotv := reflect.ValueOf(got)
+	expv := reflect.ValueOf(c.Exp)
+	outv := expv.MethodByName("Pass").Call([]reflect.Value{gotv})
+	pass, expl := outv[0].Bool(), ""
+	if !pass {
+		expl = r.explChecker(c.Lab, c.In, gotv, expv)
+	}
+	return pass, expl
+}
+
+func (r *tableRunner) explChecker(label string, in interface{}, gotv, expv reflect.Value) string {
+	labv := reflect.ValueOf(defaultString(label, "value"))
+	expl := expv.MethodByName("Explain").Call([]reflect.Value{labv, gotv})[0]
+	return fmt.Sprintf(
+		"%s(%v) -> checker returned the following error:\n%s",
+		r.label, in, expl.String(),
+	)
 }
 
 func (r *tableRunner) Cases(cases []Case) TableRunner {
@@ -69,16 +103,8 @@ func (r *tableRunner) Label(label string) TableRunner {
 	return r
 }
 
-func (r *tableRunner) fail(in, got, exp interface{}, not bool) {
-	notStr := func(not bool) string {
-		if not {
-			return "not "
-		}
-		return ""
-	}
-	r.t.Errorf("%s(%v) -> expect %s%v, got %v",
-		r.label, in, notStr(not), exp, got,
-	)
+func (r *tableRunner) fail(expl string) {
+	r.t.Error(expl)
 }
 
 type Case struct {
@@ -90,6 +116,8 @@ type Case struct {
 	Exp interface{}
 	// Not reverses the test check for an equality
 	Not bool
+
+	Check interface{}
 }
 
 func Table(testedFunc interface{}, config *TableConfig) TableRunner {
