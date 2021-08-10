@@ -6,9 +6,9 @@ import (
 	"strings"
 )
 
-type stringValue struct{}
+type stringCheckFactory struct{}
 
-func (stringValue) Equal(tar string) StringChecker {
+func (stringCheckFactory) Equal(tar string) StringChecker {
 	return stringCheck{
 		passFunc: func(got string) bool { return got == tar },
 		explFunc: func(label string, got interface{}) string {
@@ -20,7 +20,7 @@ func (stringValue) Equal(tar string) StringChecker {
 	}
 }
 
-func (stringValue) Len(c IntChecker) StringChecker {
+func (stringCheckFactory) Len(c IntChecker) StringChecker {
 	return stringCheck{
 		passFunc: func(got string) bool { return c.Pass(len(got)) },
 		explFunc: func(label string, got interface{}) string {
@@ -32,7 +32,7 @@ func (stringValue) Len(c IntChecker) StringChecker {
 	}
 }
 
-func (stringValue) Match(rgx *regexp.Regexp) StringChecker {
+func (stringCheckFactory) Match(rgx *regexp.Regexp) StringChecker {
 	return stringCheck{
 		passFunc: func(got string) bool { return rgx.MatchString(got) },
 		explFunc: func(label string, got interface{}) string {
@@ -44,7 +44,7 @@ func (stringValue) Match(rgx *regexp.Regexp) StringChecker {
 	}
 }
 
-func (stringValue) NotMatch(rgx *regexp.Regexp) StringChecker {
+func (stringCheckFactory) NotMatch(rgx *regexp.Regexp) StringChecker {
 	return stringCheck{
 		passFunc: func(got string) bool { return !rgx.MatchString(got) },
 		explFunc: func(label string, got interface{}) string {
@@ -56,7 +56,7 @@ func (stringValue) NotMatch(rgx *regexp.Regexp) StringChecker {
 	}
 }
 
-func (stringValue) Contains(tar string) StringChecker {
+func (stringCheckFactory) Contains(tar string) StringChecker {
 	return stringCheck{
 		passFunc: func(got string) bool { return strings.Contains(got, tar) },
 		explFunc: func(label string, got interface{}) string {
@@ -68,7 +68,7 @@ func (stringValue) Contains(tar string) StringChecker {
 	}
 }
 
-func (stringValue) NotContains(tar string) StringChecker {
+func (stringCheckFactory) NotContains(tar string) StringChecker {
 	return stringCheck{
 		passFunc: func(got string) bool { return !strings.Contains(got, tar) },
 		explFunc: func(label string, got interface{}) string {

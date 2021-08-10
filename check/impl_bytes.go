@@ -8,9 +8,9 @@ import (
 	"reflect"
 )
 
-type bytesValue struct{}
+type bytesCheckFactory struct{}
 
-func (bytesValue) Equal(tar []byte) BytesChecker {
+func (bytesCheckFactory) Equal(tar []byte) BytesChecker {
 	return bytesCheck{
 		passFunc: func(got []byte) bool {
 			return bytes.Equal(got, tar)
@@ -24,7 +24,7 @@ func (bytesValue) Equal(tar []byte) BytesChecker {
 	}
 }
 
-func (bytesValue) EqualJSON(tar []byte) BytesChecker {
+func (bytesCheckFactory) EqualJSON(tar []byte) BytesChecker {
 	var decGot, decTar interface{}
 	return bytesCheck{
 		passFunc: func(got []byte) bool {
@@ -45,7 +45,7 @@ func (bytesValue) EqualJSON(tar []byte) BytesChecker {
 	}
 }
 
-func (bytesValue) Len(c IntChecker) BytesChecker {
+func (bytesCheckFactory) Len(c IntChecker) BytesChecker {
 	return bytesCheck{
 		passFunc: func(got []byte) bool {
 			return c.Pass(len(got))

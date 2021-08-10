@@ -5,9 +5,9 @@ import (
 	"net/http"
 )
 
-type httpHeaderValue struct{}
+type httpHeaderCheckFactory struct{}
 
-func (httpHeaderValue) KeySet(key string) HTTPHeaderChecker {
+func (httpHeaderCheckFactory) KeySet(key string) HTTPHeaderChecker {
 	return httpHeaderCheck{
 		passFunc: func(got http.Header) bool { return keySet(key, got) },
 		explFunc: func(label string, got interface{}) string {
@@ -19,7 +19,7 @@ func (httpHeaderValue) KeySet(key string) HTTPHeaderChecker {
 	}
 }
 
-func (httpHeaderValue) KeyNotSet(key string) HTTPHeaderChecker {
+func (httpHeaderCheckFactory) KeyNotSet(key string) HTTPHeaderChecker {
 	return httpHeaderCheck{
 		passFunc: func(got http.Header) bool { return !keySet(key, got) },
 		explFunc: func(label string, got interface{}) string {
@@ -31,7 +31,7 @@ func (httpHeaderValue) KeyNotSet(key string) HTTPHeaderChecker {
 	}
 }
 
-func (httpHeaderValue) ValueSet(val string) HTTPHeaderChecker {
+func (httpHeaderCheckFactory) ValueSet(val string) HTTPHeaderChecker {
 	return httpHeaderCheck{
 		passFunc: func(got http.Header) bool { return valueSet(val, got) },
 		explFunc: func(label string, got interface{}) string {
@@ -43,7 +43,7 @@ func (httpHeaderValue) ValueSet(val string) HTTPHeaderChecker {
 	}
 }
 
-func (httpHeaderValue) ValueNotSet(val string) HTTPHeaderChecker {
+func (httpHeaderCheckFactory) ValueNotSet(val string) HTTPHeaderChecker {
 	return httpHeaderCheck{
 		passFunc: func(got http.Header) bool { return !valueSet(val, got) },
 		explFunc: func(label string, got interface{}) string {
@@ -55,7 +55,7 @@ func (httpHeaderValue) ValueNotSet(val string) HTTPHeaderChecker {
 	}
 }
 
-func (httpHeaderValue) ValueOf(key string, c StringChecker) HTTPHeaderChecker {
+func (httpHeaderCheckFactory) ValueOf(key string, c StringChecker) HTTPHeaderChecker {
 	var val string
 	return httpHeaderCheck{
 		passFunc: func(got http.Header) bool { val = got.Get(key); return c.Pass(val) },

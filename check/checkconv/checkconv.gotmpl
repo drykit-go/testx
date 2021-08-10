@@ -24,6 +24,8 @@ func UntypedChecker(checker interface{}) check.UntypedChecker {
 		return From{{.N}}(c)
 	{{end -}}
 	{{end -}}
+	case check.UntypedChecker:
+		return c
 	default:
 		log.Fatal("bad conversion")
 		return nil
