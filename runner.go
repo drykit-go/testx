@@ -7,15 +7,16 @@ import (
 	"github.com/drykit-go/testx/check/checkconv"
 )
 
-type testCheck struct {
-	label string
-	get   func() gotType
-	check check.UntypedChecker
-}
+type (
+	gotType interface{}
+	getFunc func() gotType
 
-type Runner interface {
-	Run(t *testing.T)
-}
+	testCheck struct {
+		label string
+		get   func() gotType
+		check check.UntypedChecker
+	}
+)
 
 type baseRunner struct {
 	// t      *testing.T
@@ -75,7 +76,11 @@ func (r *baseRunner) run(t *testing.T) {
 	for _, current := range r.checks {
 		got := current.get()
 		if !current.check.Pass(got) {
-			fail(t, current.check.Explain(current.label, got))
+			r.fail(t, current.check.Explain(current.label, got))
 		}
 	}
+}
+
+func (r *baseRunner) fail(t *testing.T, msg string) {
+	t.Error(msg)
 }

@@ -8,12 +8,9 @@ import (
 	"github.com/drykit-go/testx/check/checkconv"
 )
 
-// TODO: refactor funcs -> tableRunner methods, reorder
+var _ TableRunner = (*tableRunner)(nil)
 
-type TableRunner interface {
-	Runner
-	Cases(cases []Case) TableRunner
-}
+// TODO: refactor funcs -> tableRunner methods, reorder
 
 type tableRunner struct {
 	t      *testing.T

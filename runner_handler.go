@@ -29,15 +29,6 @@ type handlerRunner struct {
 	handlingDuration time.Duration
 }
 
-type HandlerRunner interface {
-	Runner
-	ResponseHeader(...check.HTTPHeaderChecker) HandlerRunner
-	ResponseStatus(...check.StringChecker) HandlerRunner
-	ResponseCode(...check.IntChecker) HandlerRunner
-	ResponseBody(...check.BytesChecker) HandlerRunner
-	Duration(...check.DurationChecker) HandlerRunner
-}
-
 func (r *handlerRunner) Run(t *testing.T) {
 	main := func() { r.hf(r.rr, r.rq) }
 	if r.hasDurationCheck {

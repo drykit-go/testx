@@ -7,12 +7,7 @@ import (
 	"github.com/drykit-go/testx/check"
 )
 
-type ValueRunner interface {
-	Runner
-	MustBe(v interface{}) ValueRunner
-	MustNotBe(v ...interface{}) ValueRunner
-	MustPass(checker ...interface{}) ValueRunner
-}
+var _ ValueRunner = (*valueRunner)(nil)
 
 type valueRunner struct {
 	baseRunner
