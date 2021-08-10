@@ -8,12 +8,9 @@ import (
 	"github.com/drykit-go/testx/check/checkconv"
 )
 
-// TODO: refactor funcs -> tableRunner methods, reorder
+var _ TableRunner = (*tableRunner)(nil)
 
-type TableRunner interface {
-	Runner
-	Cases(cases []Case) TableRunner
-}
+// TODO: refactor funcs -> tableRunner methods, reorder
 
 type tableRunner struct {
 	t      *testing.T
@@ -47,8 +44,6 @@ func (r *tableRunner) pass(c Case, got interface{}) (bool, string) {
 }
 
 func (r *tableRunner) passValue(c Case, got interface{}) (bool, string) {
-	deq := reflect.DeepEqual
-	xor := func(a, b bool) bool { return a != b }
 	pass, expl := xor(deq(got, c.Exp), c.Not), ""
 	if !pass {
 		expl = r.explValue(c.In, got, c.Exp, c.Not)

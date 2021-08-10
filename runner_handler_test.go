@@ -17,10 +17,10 @@ type responseBody map[string]interface{}
 
 // Main tests
 
-func TestHandlerFunc(t *testing.T) {
+func TestHandlerRunner(t *testing.T) {
 	const (
 		expCode = 200
-		expBody = `{"message":"Hello World!"}`
+		expBody = `{   "message"  :  "Hello World!"   }`
 	)
 
 	h := handler(408, responseBody{"message": "Hello World!"})
@@ -39,11 +39,11 @@ func TestHandlerFunc(t *testing.T) {
 			checkIntIsEven,
 		).
 		ResponseBody(
-			check.Bytes.Equal([]byte(expBody)),
+			check.Bytes.EqualJSON([]byte(expBody)),
 			check.Bytes.Len(check.Int.GreaterOrEqual(20)),
 		).
 		ResponseHeader(
-			check.HTTPHeader.ValueOf("marcel", check.String.Contains("patulacci")),
+			check.HTTPHeader.ValueOf("marcel", check.String.Equal("patulacci")),
 			check.HTTPHeader.ValueNotSet("secret"),
 			check.HTTPHeader.KeySet("API_KEY"),
 			check.HTTPHeader.KeyNotSet("password"),

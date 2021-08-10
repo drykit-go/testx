@@ -6,16 +6,27 @@ import (
 	"github.com/drykit-go/testx/check"
 )
 
-type testCheck struct {
-	label string
-	get   func() gotType // TODO: func() (gotType, error)
-	check check.UntypedChecker
+type Runner interface {
+	Run(t *testing.T)
 }
 
-type gotType interface{}
+type ValueRunner interface {
+	Runner
+	MustBe(v interface{}) ValueRunner
+	MustNotBe(v ...interface{}) ValueRunner
+	MustPass(checker ...interface{}) ValueRunner
+}
 
-type getFunc func() gotType
+type TableRunner interface {
+	Runner
+	Cases(cases []Case) TableRunner
+}
 
-func fail(t *testing.T, msg string) {
-	t.Error(msg)
+type HandlerRunner interface {
+	Runner
+	ResponseHeader(...check.HTTPHeaderChecker) HandlerRunner
+	ResponseStatus(...check.StringChecker) HandlerRunner
+	ResponseCode(...check.IntChecker) HandlerRunner
+	ResponseBody(...check.BytesChecker) HandlerRunner
+	Duration(...check.DurationChecker) HandlerRunner
 }

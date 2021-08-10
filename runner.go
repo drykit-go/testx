@@ -7,60 +7,80 @@ import (
 	"github.com/drykit-go/testx/check/checkconv"
 )
 
-type baseTest struct {
+type (
+	gotType interface{}
+	getFunc func() gotType
+
+	testCheck struct {
+		label string
+		get   func() gotType
+		check check.UntypedChecker
+	}
+)
+
+type baseRunner struct {
 	// t      *testing.T
 	checks []testCheck
 }
 
-func (test *baseTest) addCheck(c testCheck) {
-	test.checks = append(test.checks, c)
+func (r *baseRunner) addCheck(c testCheck) {
+	r.checks = append(r.checks, c)
 }
 
-// addChecks is unused for now. It could be used to avoid an addXxxChecks method
-// for each typed Checker, but it implies to make the conversion from []TChecker
-// to []interface{} upstream (which requires to iterate on the slice just for
-// the conversion).
-func (test *baseTest) addChecks(label string, get getFunc, checks []interface{}) {
+func (r *baseRunner) addChecks(label string, get getFunc, checks []interface{}) {
 	for _, c := range checks {
-		test.addCheck(testCheck{label: label, get: get, check: checkconv.UntypedChecker(c)})
+		if !checkconv.IsChecker(c) {
+			panic("invalid checker provided to MustPass")
+		}
+		r.addCheck(testCheck{label: label, get: get, check: checkconv.UntypedChecker(c)})
 	}
 }
 
-func (test *baseTest) addIntChecks(label string, get getFunc, checks []check.IntChecker) {
+func (r *baseRunner) addIntChecks(label string, get getFunc, checks []check.IntChecker) {
 	for _, c := range checks {
-		test.addCheck(testCheck{label: label, get: get, check: checkconv.FromInt(c)})
+		r.addCheck(testCheck{label: label, get: get, check: checkconv.FromInt(c)})
 	}
 }
 
-func (test *baseTest) addBytesChecks(label string, get getFunc, checks []check.BytesChecker) {
+func (r *baseRunner) addBytesChecks(label string, get getFunc, checks []check.BytesChecker) {
 	for _, c := range checks {
-		test.addCheck(testCheck{label: label, get: get, check: checkconv.FromBytes(c)})
+		r.addCheck(testCheck{label: label, get: get, check: checkconv.FromBytes(c)})
 	}
 }
 
-func (test *baseTest) addStringChecks(label string, get getFunc, checks []check.StringChecker) {
+func (r *baseRunner) addStringChecks(label string, get getFunc, checks []check.StringChecker) {
 	for _, c := range checks {
-		test.addCheck(testCheck{label: label, get: get, check: checkconv.FromString(c)})
+		r.addCheck(testCheck{label: label, get: get, check: checkconv.FromString(c)})
 	}
 }
 
-func (test *baseTest) addDurationChecks(label string, get getFunc, checks []check.DurationChecker) {
+func (r *baseRunner) addDurationChecks(label string, get getFunc, checks []check.DurationChecker) {
 	for _, c := range checks {
-		test.addCheck(testCheck{label: label, get: get, check: checkconv.FromDuration(c)})
+		r.addCheck(testCheck{label: label, get: get, check: checkconv.FromDuration(c)})
 	}
 }
 
-func (test *baseTest) addHTTPHeaderChecks(label string, get getFunc, checks []check.HTTPHeaderChecker) {
+func (r *baseRunner) addHTTPHeaderChecks(label string, get getFunc, checks []check.HTTPHeaderChecker) {
 	for _, c := range checks {
-		test.addCheck(testCheck{label: label, get: get, check: checkconv.FromHTTPHeader(c)})
+		r.addCheck(testCheck{label: label, get: get, check: checkconv.FromHTTPHeader(c)})
 	}
 }
 
-func (test *baseTest) run(t *testing.T) {
-	for _, current := range test.checks {
+func (r *baseRunner) addUntypedChecks(label string, get getFunc, checks []check.UntypedChecker) {
+	for _, c := range checks {
+		r.addCheck(testCheck{label: label, get: get, check: c})
+	}
+}
+
+func (r *baseRunner) run(t *testing.T) {
+	for _, current := range r.checks {
 		got := current.get()
 		if !current.check.Pass(got) {
-			fail(t, current.check.Explain(current.label, got))
+			r.fail(t, current.check.Explain(current.label, got))
 		}
 	}
+}
+
+func (r *baseRunner) fail(t *testing.T, msg string) {
+	t.Error(msg)
 }
