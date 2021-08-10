@@ -7,6 +7,12 @@ import (
 	"github.com/drykit-go/testx/check/checkconv"
 )
 
+type testCheck struct {
+	label string
+	get   func() gotType
+	check check.UntypedChecker
+}
+
 type Runner interface {
 	Run(t *testing.T)
 }
@@ -20,12 +26,11 @@ func (r *baseRunner) addCheck(c testCheck) {
 	r.checks = append(r.checks, c)
 }
 
-// addChecks is unused for now. It could be used to avoid an addXxxChecks method
-// for each typed Checker, but it implies to make the conversion from []TChecker
-// to []interface{} upstream (which requires to iterate on the slice just for
-// the conversion).
 func (r *baseRunner) addChecks(label string, get getFunc, checks []interface{}) {
 	for _, c := range checks {
+		if !checkconv.IsChecker(c) {
+			panic("invalid checker provided to MustPass")
+		}
 		r.addCheck(testCheck{label: label, get: get, check: checkconv.UntypedChecker(c)})
 	}
 }
@@ -57,6 +62,12 @@ func (r *baseRunner) addDurationChecks(label string, get getFunc, checks []check
 func (r *baseRunner) addHTTPHeaderChecks(label string, get getFunc, checks []check.HTTPHeaderChecker) {
 	for _, c := range checks {
 		r.addCheck(testCheck{label: label, get: get, check: checkconv.FromHTTPHeader(c)})
+	}
+}
+
+func (r *baseRunner) addUntypedChecks(label string, get getFunc, checks []check.UntypedChecker) {
+	for _, c := range checks {
+		r.addCheck(testCheck{label: label, get: get, check: c})
 	}
 }
 
