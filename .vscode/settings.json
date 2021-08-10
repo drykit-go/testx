@@ -1,8 +1,0 @@
-{
-    "go.useLanguageServer": true,
-    "go.lintTool": "golangci-lint",
-    "go.lintFlags": ["--fast"],
-    "gopls": {
-        "formatting.local": "github.com/drykit-go/testx"
-    }
-}
