@@ -2,9 +2,9 @@ package check
 
 import "fmt"
 
-type intValue struct{}
+type intCheckFactory struct{}
 
-func (intValue) InRange(lo, hi int) IntChecker {
+func (intCheckFactory) InRange(lo, hi int) IntChecker {
 	return intCheck{
 		passFunc: func(got int) bool {
 			return got >= lo && got <= hi
@@ -18,7 +18,7 @@ func (intValue) InRange(lo, hi int) IntChecker {
 	}
 }
 
-func (intValue) NotInRange(lo, hi int) IntChecker {
+func (intCheckFactory) NotInRange(lo, hi int) IntChecker {
 	return intCheck{
 		passFunc: func(got int) bool {
 			return got < lo || got > hi
@@ -32,7 +32,7 @@ func (intValue) NotInRange(lo, hi int) IntChecker {
 	}
 }
 
-func (intValue) Equal(tar int) IntChecker {
+func (intCheckFactory) Equal(tar int) IntChecker {
 	return intCheck{
 		passFunc: func(got int) bool {
 			return got == tar
@@ -46,7 +46,7 @@ func (intValue) Equal(tar int) IntChecker {
 	}
 }
 
-func (intValue) NotEqual(tar int) IntChecker {
+func (intCheckFactory) NotEqual(tar int) IntChecker {
 	return intCheck{
 		passFunc: func(got int) bool {
 			return got != tar
@@ -60,7 +60,7 @@ func (intValue) NotEqual(tar int) IntChecker {
 	}
 }
 
-func (intValue) GreaterThan(tar int) IntChecker {
+func (intCheckFactory) GreaterThan(tar int) IntChecker {
 	return intCheck{
 		passFunc: func(got int) bool {
 			return got > tar
@@ -74,7 +74,7 @@ func (intValue) GreaterThan(tar int) IntChecker {
 	}
 }
 
-func (intValue) GreaterOrEqual(tar int) IntChecker {
+func (intCheckFactory) GreaterOrEqual(tar int) IntChecker {
 	return intCheck{
 		passFunc: func(got int) bool {
 			return got >= tar
@@ -88,7 +88,7 @@ func (intValue) GreaterOrEqual(tar int) IntChecker {
 	}
 }
 
-func (intValue) LesserThan(tar int) IntChecker {
+func (intCheckFactory) LesserThan(tar int) IntChecker {
 	return intCheck{
 		passFunc: func(got int) bool {
 			return got < tar
@@ -102,7 +102,7 @@ func (intValue) LesserThan(tar int) IntChecker {
 	}
 }
 
-func (intValue) LesserOrEqual(tar int) IntChecker {
+func (intCheckFactory) LesserOrEqual(tar int) IntChecker {
 	return intCheck{
 		passFunc: func(got int) bool {
 			return got <= tar

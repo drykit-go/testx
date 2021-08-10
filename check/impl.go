@@ -51,10 +51,10 @@ type (
 )
 
 var (
-	Bytes      BytesNativeChecks      = bytesValue{}      // Bytes provides checks on type []byte
-	String     StringNativeChecks     = stringValue{}     // String provides checks on type []byte
-	Int        IntNativeChecks        = intValue{}        // Int provides checks on type int
-	Duration   DurationNativeChecks   = durationValue{}   // Duration provides checks on type time.Duration
-	HTTPHeader HTTPHeaderNativeChecks = httpHeaderValue{} // HTTPHeader provides checks on type http.Header
-	Untyped    UntypedNativeChecks    = untypedValue{}    // Untyped provides checks on untyped values
+	Bytes      BytesNativeChecks      = bytesCheckFactory{}      // Bytes provides checks on type []byte
+	String     StringNativeChecks     = stringCheckFactory{}     // String provides checks on type string
+	Int        IntNativeChecks        = intCheckFactory{}        // Int provides checks on type int
+	Duration   DurationNativeChecks   = durationCheckFactory{}   // Duration provides checks on type time.Duration
+	HTTPHeader HTTPHeaderNativeChecks = httpHeaderCheckFactory{} // HTTPHeader provides checks on type http.Header
+	Untyped    UntypedNativeChecks    = untypedCheckFactory{}    // Untyped provides checks on type interface{}
 )

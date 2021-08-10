@@ -2,9 +2,9 @@ package check
 
 import "fmt"
 
-type untypedValue struct{}
+type untypedCheckFactory struct{}
 
-func (untypedValue) Custom(desc string, f UntypedPassFunc) UntypedChecker {
+func (untypedCheckFactory) Custom(desc string, f UntypedPassFunc) UntypedChecker {
 	return untypedCheck{
 		passFunc: f,
 		explFunc: func(label string, got interface{}) string {
