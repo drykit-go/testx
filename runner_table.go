@@ -47,8 +47,6 @@ func (r *tableRunner) pass(c Case, got interface{}) (bool, string) {
 }
 
 func (r *tableRunner) passValue(c Case, got interface{}) (bool, string) {
-	deq := reflect.DeepEqual
-	xor := func(a, b bool) bool { return a != b }
 	pass, expl := xor(deq(got, c.Exp), c.Not), ""
 	if !pass {
 		expl = r.explValue(c.In, got, c.Exp, c.Not)
