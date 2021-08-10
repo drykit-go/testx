@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/drykit-go/testx/strcase"
+	"github.com/drykit-go/strcase"
 )
 
 var tplFuncs = template.FuncMap{
