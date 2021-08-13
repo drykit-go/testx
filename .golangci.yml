@@ -69,3 +69,7 @@ linters:
     - varcheck # unused global var and const
     - wastedassign
   fast: false
+
+issues:
+  exclude:
+    "should have comment or be unexported"
