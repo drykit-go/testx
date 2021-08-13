@@ -10,7 +10,7 @@ import (
 func TestValueRunner(t *testing.T) {
 	testx.Value(42).
 		MustBe(42).
-		MustNotBe(42, 42).
-		MustPass(check.Int.InRange(43, 44)).
+		MustNotBe(3, "hello").
+		MustPass(check.Int.InRange(41, 43)).
 		Run(t)
 }
