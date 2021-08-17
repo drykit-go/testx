@@ -3,28 +3,83 @@ package testx
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/drykit-go/testx/check"
 )
 
 var _ ValueRunner = (*valueRunner)(nil)
 
+type checkResult struct {
+	passed bool
+	reason string
+}
+
+type BaseResults struct {
+	Passed   bool
+	Failed   bool
+	NPassed  int
+	NFailed  int
+	NChecks  int
+	ExecTime time.Duration
+}
+
+type ValueRunnerResults struct {
+	BaseResults
+	checks []checkResult
+}
+
 type valueRunner struct {
 	baseRunner
-	value interface{}
+	value   interface{}
+	results ValueRunnerResults
 }
 
 func (r *valueRunner) Run(t *testing.T) {
 	r.run(t)
 }
 
+func (r *valueRunner) DryRun() ValueRunnerResults {
+	r.results.Passed = true
+	for _, c := range r.checks {
+		r.updateResults(c)
+	}
+	return r.results
+}
+
+func (r *valueRunner) updateResults(c testCheck) {
+	got := c.get()
+	passed := c.check.Pass(got)
+	reason := condString("", c.check.Explain(c.label, got), passed)
+
+	// update counts
+	r.results.NChecks++
+	if !passed {
+		r.results.NFailed++
+	} else {
+		r.results.NPassed++
+	}
+
+	// update status
+	if !passed && !r.results.Failed {
+		r.results.Failed = true
+		r.results.Passed = !r.results.Failed
+	}
+
+	// update checks results
+	r.results.checks = append(r.results.checks, checkResult{
+		passed: passed,
+		reason: reason,
+	})
+}
+
 func (r *valueRunner) MustBe(exp interface{}) ValueRunner {
 	pass := func(got interface{}) bool { return deq(got, exp) }
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf("%s: expect to be %v, is %v", label, exp, got)
+		return fmt.Sprintf("%s: expect %v, got %v", label, exp, got)
 	}
 	r.addCheck(testCheck{
-		"value check",
+		"value",
 		func() gotType { return r.value },
 		check.NewUntypedCheck(pass, expl),
 	})
@@ -33,12 +88,13 @@ func (r *valueRunner) MustBe(exp interface{}) ValueRunner {
 
 func (r *valueRunner) MustNotBe(values ...interface{}) ValueRunner {
 	for _, nexp := range values {
+		nexp := nexp
 		pass := func(got interface{}) bool { return !deq(got, nexp) }
 		expl := func(label string, got interface{}) string {
-			return fmt.Sprintf("%s: expect not to be %v, is %v", label, nexp, got)
+			return fmt.Sprintf("%s: expect not %v, got %v", label, nexp, got)
 		}
 		r.addCheck(testCheck{
-			"value check",
+			"value",
 			func() gotType { return r.value },
 			check.NewUntypedCheck(pass, expl),
 		})
@@ -46,8 +102,8 @@ func (r *valueRunner) MustNotBe(values ...interface{}) ValueRunner {
 	return r
 }
 
-func (r *valueRunner) MustPass(checks ...interface{}) ValueRunner {
-	r.addChecks("value check", func() gotType { return r.value }, checks)
+func (r *valueRunner) MustPass(checkers ...interface{}) ValueRunner {
+	r.addChecks("value", func() gotType { return r.value }, checkers)
 	return r
 }
 

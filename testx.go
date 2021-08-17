@@ -15,6 +15,7 @@ type ValueRunner interface {
 	MustBe(v interface{}) ValueRunner
 	MustNotBe(v ...interface{}) ValueRunner
 	MustPass(checker ...interface{}) ValueRunner
+	DryRun() ValueRunnerResults
 }
 
 type TableRunner interface {
