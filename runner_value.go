@@ -3,44 +3,23 @@ package testx
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/drykit-go/testx/check"
 )
 
 var _ ValueRunner = (*valueRunner)(nil)
 
-type checkResult struct {
-	passed bool
-	reason string
-}
-
-type BaseResults struct {
-	Passed   bool
-	Failed   bool
-	NPassed  int
-	NFailed  int
-	NChecks  int
-	ExecTime time.Duration
-}
-
-type ValueRunnerResults struct {
-	BaseResults
-	checks []checkResult
-}
-
 type valueRunner struct {
 	baseRunner
 	value   interface{}
-	results ValueRunnerResults
+	results baseResults
 }
 
 func (r *valueRunner) Run(t *testing.T) {
 	r.run(t)
 }
 
-func (r *valueRunner) DryRun() ValueRunnerResults {
-	r.results.Passed = true
+func (r *valueRunner) DryRun() Resulter {
 	for _, c := range r.checks {
 		r.updateResults(c)
 	}
@@ -52,24 +31,14 @@ func (r *valueRunner) updateResults(c testCheck) {
 	passed := c.check.Pass(got)
 	reason := condString("", c.check.Explain(c.label, got), passed)
 
-	// update counts
-	r.results.NChecks++
 	if !passed {
-		r.results.NFailed++
-	} else {
-		r.results.NPassed++
-	}
-
-	// update status
-	if !passed && !r.results.Failed {
-		r.results.Failed = true
-		r.results.Passed = !r.results.Failed
+		r.results.nFailed++
 	}
 
 	// update checks results
-	r.results.checks = append(r.results.checks, checkResult{
-		passed: passed,
-		reason: reason,
+	r.results.checks = append(r.results.checks, CheckResult{
+		Passed: passed,
+		Reason: reason,
 	})
 }
 
