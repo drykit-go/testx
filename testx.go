@@ -1,6 +1,7 @@
 package testx
 
 import (
+	"net/http"
 	"testing"
 	"time"
 
@@ -32,6 +33,7 @@ type (
 		ResponseCode(...check.IntChecker) HandlerRunner
 		ResponseBody(...check.BytesChecker) HandlerRunner
 		Duration(...check.DurationChecker) HandlerRunner
+		DryRun() HandlerResulter
 	}
 )
 
@@ -44,6 +46,15 @@ type Resulter interface {
 	NPassed() int
 	NFailed() int
 	ExecTime() time.Duration
+}
+
+type HandlerResulter interface {
+	Resulter
+	ResponseHeader() http.Header
+	ResponseStatus() string
+	ResponseCode() int
+	ResponseBody() []byte
+	ResponseDuration() time.Duration
 }
 
 type CheckResult struct {

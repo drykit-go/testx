@@ -11,6 +11,14 @@ import (
 
 var _ HandlerRunner = (*handlerRunner)(nil)
 
+type httpResponse struct {
+	header   http.Header
+	status   string
+	code     int
+	body     []byte
+	duration time.Duration
+}
+
 type handlerRunner struct {
 	baseRunner
 
@@ -18,27 +26,46 @@ type handlerRunner struct {
 	rr *httptest.ResponseRecorder
 	rq *http.Request
 
-	response struct {
-		header http.Header
-		status string
-		code   int
-		body   []byte
-	}
+	response httpResponse
+
+	results handlerResults
 
 	hasDurationCheck bool
-	handlingDuration time.Duration
 }
 
 func (r *handlerRunner) Run(t *testing.T) {
 	main := func() { r.hf(r.rr, r.rq) }
 	if r.hasDurationCheck {
-		r.handlingDuration = timeFunc(main)
+		r.response.duration = timeFunc(main)
 	} else {
 		main()
 	}
 
 	r.setResponse(r.rr)
 	r.run(t)
+}
+
+func (r *handlerRunner) DryRun() HandlerResulter {
+	main := func() { r.hf(r.rr, r.rq) }
+	if r.hasDurationCheck {
+		r.response.duration = timeFunc(main)
+	} else {
+		main()
+	}
+	r.setResponse(r.rr)
+
+	for _, c := range r.checks {
+		r.updateBaseResults(c)
+	}
+	r.updateSpecificResults()
+	return r.results
+}
+
+func (r *handlerRunner) updateSpecificResults() {
+	r.results = handlerResults{
+		baseResults: r.baseResults,
+		response:    r.response,
+	}
 }
 
 func (r *handlerRunner) setResponse(rr *httptest.ResponseRecorder) {
@@ -81,7 +108,7 @@ func (r *handlerRunner) Duration(checks ...check.DurationChecker) HandlerRunner 
 	r.hasDurationCheck = true
 	r.addDurationChecks(
 		"handling duration",
-		func() gotType { return r.handlingDuration },
+		func() gotType { return r.response.duration },
 		checks,
 	)
 	return r
@@ -106,4 +133,31 @@ func HandlerFunc(hf http.HandlerFunc, r *http.Request) HandlerRunner {
 
 func Handler(h http.Handler, r *http.Request) HandlerRunner {
 	return HandlerFunc(h.ServeHTTP, r)
+}
+
+type handlerResults struct {
+	baseResults
+	response httpResponse
+}
+
+var _ HandlerResulter = (*handlerResults)(nil)
+
+func (r handlerResults) ResponseHeader() http.Header {
+	return r.response.header
+}
+
+func (r handlerResults) ResponseStatus() string {
+	return r.response.status
+}
+
+func (r handlerResults) ResponseCode() int {
+	return r.response.code
+}
+
+func (r handlerResults) ResponseBody() []byte {
+	return r.response.body
+}
+
+func (r handlerResults) ResponseDuration() time.Duration {
+	return r.response.duration
 }
