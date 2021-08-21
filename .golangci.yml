@@ -18,9 +18,9 @@ linters-settings:
 
     settings:
       hugeParam:
-        sizeThreshold: 128
+        sizeThreshold: 256
       rangeValCopy:
-        sizeThreshold: 128
+        sizeThreshold: 256
 
   gocyclo:
     min-complexity: 8
@@ -30,7 +30,7 @@ linters-settings:
     extra-rules: true
 
   goimports:
-    local-prefixes: github.com/drykit-got/testix
+    local-prefixes: github.com/drykit-got/testixxz
 
   misspell:
     locale: US
@@ -72,4 +72,4 @@ linters:
 
 issues:
   exclude:
-    "should have comment or be unexported"
+    - "should have comment or be unexported"
