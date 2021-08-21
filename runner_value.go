@@ -11,8 +11,7 @@ var _ ValueRunner = (*valueRunner)(nil)
 
 type valueRunner struct {
 	baseRunner
-	value   interface{}
-	results baseResults
+	value interface{}
 }
 
 func (r *valueRunner) Run(t *testing.T) {
@@ -21,25 +20,9 @@ func (r *valueRunner) Run(t *testing.T) {
 
 func (r *valueRunner) DryRun() Resulter {
 	for _, c := range r.checks {
-		r.updateResults(c)
+		r.updateBaseResults(c)
 	}
-	return r.results
-}
-
-func (r *valueRunner) updateResults(c testCheck) {
-	got := c.get()
-	passed := c.check.Pass(got)
-	reason := condString("", c.check.Explain(c.label, got), passed)
-
-	if !passed {
-		r.results.nFailed++
-	}
-
-	// update checks results
-	r.results.checks = append(r.results.checks, CheckResult{
-		Passed: passed,
-		Reason: reason,
-	})
+	return r.baseResults
 }
 
 func (r *valueRunner) MustBe(exp interface{}) ValueRunner {

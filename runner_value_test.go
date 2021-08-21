@@ -15,7 +15,7 @@ func TestValueRunner(t *testing.T) {
 			MustPass(check.Int.InRange(41, 43)).
 			DryRun()
 
-		exp := results{
+		exp := baseResults{
 			passed:  true,
 			failed:  false,
 			nPassed: 4,
@@ -29,7 +29,7 @@ func TestValueRunner(t *testing.T) {
 			},
 		}
 
-		assertEqualResults(t, res, exp)
+		assertEqualBaseResults(t, res, exp)
 	})
 
 	t.Run("should fail", func(t *testing.T) {
@@ -39,7 +39,7 @@ func TestValueRunner(t *testing.T) {
 			MustPass(check.Int.LesserThan(10)).
 			DryRun()
 
-		exp := results{
+		exp := baseResults{
 			passed:  false,
 			failed:  true,
 			nPassed: 1,
@@ -53,6 +53,6 @@ func TestValueRunner(t *testing.T) {
 			},
 		}
 
-		assertEqualResults(t, res, exp)
+		assertEqualBaseResults(t, res, exp)
 	})
 }

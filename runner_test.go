@@ -10,21 +10,25 @@ import (
 
 var deq = reflect.DeepEqual
 
-type results struct {
+type baseResults struct {
 	checks                    []testx.CheckResult
 	passed, failed            bool
 	nPassed, nFailed, nChecks int
 	execTime                  time.Duration
 }
 
-func assertEqualResults(t *testing.T, res testx.Resulter, exp results) {
-	if got := toTestResults(res); !deq(got, exp) {
-		t.Errorf("bad results\nexp %#v\ngot %#v", exp, got)
+func assertEqualBaseResults(t *testing.T, res testx.Resulter, exp baseResults) {
+	if got := toBaseResults(res); !deq(got, exp) {
+		failBadResults(t, got, exp)
 	}
 }
 
-func toTestResults(res testx.Resulter) results {
-	return results{
+func failBadResults(t *testing.T, got, exp interface{}) {
+	t.Errorf("bad results\nexp %#v\ngot %#v", exp, got)
+}
+
+func toBaseResults(res testx.Resulter) baseResults {
+	return baseResults{
 		checks:   res.Checks(),
 		passed:   res.Passed(),
 		failed:   res.Failed(),
