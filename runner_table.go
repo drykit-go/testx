@@ -5,78 +5,31 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/check/checkconv"
 )
 
 var _ TableRunner = (*tableRunner)(nil)
 
-// TODO: refactor funcs -> tableRunner methods, reorder
-
 type tableRunner struct {
-	t      *testing.T
+	baseRunner
+
 	label  string
-	get    func(interface{}) interface{}
+	config TableConfig
+	get    func(in interface{}) gotType
 	cases  []Case
-	config *TableConfig
 }
 
 func (r *tableRunner) Run(t *testing.T) {
-	r.t = t
 	for _, c := range r.cases {
-		got := r.get(c.In)
-		if pass, expl := r.pass(c, got); !pass {
-			r.fail(expl)
-		}
+		c := c
+		r.addCheck(testCheck{
+			label: defaultString(c.Lab, "value"), // TODO: check for unexpected formattings
+			get:   func() gotType { return r.get(c.In) },
+			check: r.makeChecker(c),
+		})
 	}
-}
-
-// TODO: once results data is stored into tableRunner,
-// change back the return value to bool only
-// TODO: method of Case instead of tableRunner?
-// -> implies to add testName to Case struct for default label
-func (r *tableRunner) pass(c Case, got interface{}) (bool, string) {
-	switch {
-	case checkconv.IsChecker(c.Exp):
-		return r.passChecker(c, got)
-	default:
-		return r.passValue(c, got)
-	}
-}
-
-func (r *tableRunner) passValue(c Case, got interface{}) (bool, string) {
-	pass, expl := xor(deq(got, c.Exp), c.Not), ""
-	if !pass {
-		expl = r.explValue(c.In, got, c.Exp, c.Not)
-	}
-	return pass, expl
-}
-
-func (r *tableRunner) explValue(in, got, exp interface{}, not bool) string {
-	return fmt.Sprintf(
-		"%s(%v) -> expect %s%v, got %v",
-		r.label, in, condString("not ", "", not), exp, got,
-	)
-}
-
-// NOTE: passChecker does not support c.Not, because c.Not is to be removed.
-func (r *tableRunner) passChecker(c Case, got interface{}) (bool, string) {
-	gotv := reflect.ValueOf(got)
-	expv := reflect.ValueOf(c.Exp)
-	outv := expv.MethodByName("Pass").Call([]reflect.Value{gotv})
-	pass, expl := outv[0].Bool(), ""
-	if !pass {
-		expl = r.explChecker(c.Lab, c.In, gotv, expv)
-	}
-	return pass, expl
-}
-
-func (r *tableRunner) explChecker(label string, in interface{}, gotv, expv reflect.Value) string {
-	labv := reflect.ValueOf(defaultString(label, "value"))
-	expl := expv.MethodByName("Explain").Call([]reflect.Value{labv, gotv})[0]
-	return fmt.Sprintf(
-		"%s(%v) -> checker returned the following error:\n%s",
-		r.label, in, expl.String(),
-	)
+	r.run(t)
 }
 
 func (r *tableRunner) Cases(cases []Case) TableRunner {
@@ -84,104 +37,166 @@ func (r *tableRunner) Cases(cases []Case) TableRunner {
 	return r
 }
 
-// TODO:
-func (r *tableRunner) Config(config *TableConfig) TableRunner {
-	if config != nil {
-		r.config = config
-	}
+func (r *tableRunner) Config(cfg *TableConfig) TableRunner {
+	r.setConfig(cfg)
 	return r
 }
 
-// TODO:
 func (r *tableRunner) Label(label string) TableRunner {
 	r.label = label
 	return r
 }
 
-func (r *tableRunner) fail(expl string) {
-	r.t.Error(expl)
+func (r *tableRunner) FixedArgs(args ...interface{}) TableRunner {
+	r.config.FixedArgs = args
+	return r
 }
 
-type Case struct {
-	// Lab is the label of the current case
-	Lab string
-	// In is the input value to the tested func
-	In interface{}
-	// Exp is the expected value expected to be returned by Get.
-	Exp interface{}
-	// Not reverses the test check for an equality
-	Not bool
-
-	Check interface{}
+func (r *tableRunner) InPos(pos int) TableRunner {
+	r.config.InPos = pos
+	return r
 }
 
-func Table(testedFunc interface{}, config *TableConfig) TableRunner {
-	cfg, err := safeTableConfig(config)
+func (r *tableRunner) OutPos(pos int) TableRunner {
+	r.config.OutPos = pos
+	return r
+}
+
+func Table(testedFunc interface{}, cfg *TableConfig) TableRunner {
+	r := tableRunner{}
+	r.setConfig(cfg)
+
+	f, err := r.makeFuncReflection(testedFunc)
 	panicOnErr(err)
 
-	f, err := newFuncReflection(testedFunc, cfg.Name)
+	panicOnErr(r.validateConfig(f))
+
+	args, err := r.makeArgs(f, r.config)
 	panicOnErr(err)
 
-	panicOnErr(cfg.validateFuncCompat(f))
+	r.label = f.name
+	r.setGetFunc(f, args)
 
-	args, err := makeArgs(f, &cfg)
-	panicOnErr(err)
+	return &r
+}
 
-	return &tableRunner{
-		label: f.name,
-		get: func(in interface{}) interface{} {
-			args[cfg.InPos] = reflect.ValueOf(in)
-			out := f.rval.Call(args)
-			got := out[cfg.OutPos]
-			return got.Interface()
-		},
-		config: &cfg,
+func (r *tableRunner) setConfig(cfg *TableConfig) {
+	if cfg == nil {
+		r.config = TableConfig{}
+	} else {
+		r.config = *cfg
 	}
 }
 
-type funcReflection struct {
-	name string
-	rval reflect.Value
-	rtyp reflect.Type
+func (r *tableRunner) setGetFunc(f funcReflection, args []reflect.Value) {
+	r.get = func(in interface{}) gotType {
+		args[r.config.InPos] = reflect.ValueOf(in)
+		out := f.rval.Call(args)
+		got := out[r.config.OutPos]
+		return got.Interface()
+	}
 }
 
-func newFuncReflection(in interface{}, name string) (*funcReflection, error) {
+func (r *tableRunner) validateConfig(f funcReflection) error {
+	if r.config.InPos < 0 {
+		return fmt.Errorf(
+			"invalid value for InPos: must be >= 0, got %d",
+			r.config.InPos,
+		)
+	}
+	if r.config.OutPos < 0 {
+		return fmt.Errorf(
+			"invalid value for OutPos: must be >= 0, got %d",
+			r.config.OutPos,
+		)
+	}
+	if outPos, numOut := r.config.OutPos, f.rtyp.NumOut(); outPos >= numOut {
+		return fmt.Errorf(
+			"invalid value for OutPos: must be < to the number of values returned by %s (%d > %d)",
+			f.name, outPos, numOut,
+		)
+	}
+	if inPos, numIn := r.config.InPos, f.rtyp.NumIn(); inPos >= numIn {
+		return fmt.Errorf(
+			"invalid value for InPos: must be < to the number of parameters of %s (%d > %d)",
+			f.name, inPos, numIn,
+		)
+	}
+	return nil
+}
+
+func (r *tableRunner) makeChecker(c Case) check.UntypedChecker {
+	var (
+		pass check.UntypedPassFunc
+		expl check.ExplainFunc
+	)
+
+	if checkconv.IsChecker(c.Exp) {
+		pass = func(got interface{}) bool {
+			gotv := reflect.ValueOf(got)
+			expv := reflect.ValueOf(c.Exp)
+			outv := expv.MethodByName("Pass").Call([]reflect.Value{gotv})
+			return outv[0].Bool()
+		}
+		expl = func(label string, got interface{}) string {
+			gotv := reflect.ValueOf(got)
+			expv := reflect.ValueOf(c.Exp)
+			labv := reflect.ValueOf(defaultString(label, "value"))
+			expl := expv.MethodByName("Explain").Call([]reflect.Value{labv, gotv})[0]
+			return fmt.Sprintf(
+				"%s(%v) -> checker returned the following error:\n%s",
+				r.label, c.In, expl.String(),
+			)
+		}
+	} else {
+		pass = func(got interface{}) bool {
+			return xor(deq(got, c.Exp), c.Not)
+		}
+		expl = func(label string, got interface{}) string {
+			return fmt.Sprintf(
+				"%s(%v) -> expect %s%v, got %v",
+				r.label, c.In, condString("not ", "", c.Not), c.Exp, got,
+			)
+		}
+	}
+	return check.NewUntypedCheck(pass, expl)
+}
+
+func (r *tableRunner) makeFuncReflection(in interface{}) (funcReflection, error) {
 	rval := reflect.ValueOf(in)
 	rtyp := rval.Type()
 
 	if kind := rtyp.Kind(); kind != reflect.Func {
-		return nil, fmt.Errorf(
+		return funcReflection{}, fmt.Errorf(
 			"calling Table(f) with a non func argument (got %s %s)",
 			rtyp.String(), rval.String(),
 		)
 	}
 
-	if name == "" {
-		name = getFuncName(in)
-	}
+	name := getFuncName(in)
 
 	if rtyp.NumIn() == 0 {
-		return nil, fmt.Errorf(
-			"%s is not a valid func: it must accept at least 1 parameter(s)",
+		return funcReflection{}, fmt.Errorf(
+			"%s is not a valid func: it must accept at least 1 parameter",
 			name,
 		)
 	}
 
 	if rtyp.NumOut() == 0 {
-		return nil, fmt.Errorf(
-			"%s is not a valid func: it must return at least 1 value(s)",
+		return funcReflection{}, fmt.Errorf(
+			"%s is not a valid func: it must return at least 1 value",
 			name,
 		)
 	}
 
-	return &funcReflection{
+	return funcReflection{
 		name: name,
 		rval: rval,
 		rtyp: rtyp,
 	}, nil
 }
 
-func makeArgs(f *funcReflection, cfg *TableConfig) ([]reflect.Value, error) {
+func (r *tableRunner) makeArgs(f funcReflection, cfg TableConfig) ([]reflect.Value, error) {
 	nparams := f.rtyp.NumIn()
 	nargs := len(cfg.FixedArgs)
 	args := make([]reflect.Value, nparams)
@@ -215,70 +230,52 @@ func makeArgs(f *funcReflection, cfg *TableConfig) ([]reflect.Value, error) {
 	case 1:
 		return fillskip(cfg.InPos), nil
 	default:
-		// TODO: + specific
 		return nil, fmt.Errorf("invalid FixedArgs number: %d", nargs)
 	}
 }
 
-// TableConfig is an object of options allowing to configure
-// the table runner. Its main purpose is to deal with tested functions
-// that have multiple input parameters or outputs by setting
-// the injection position of In value, the output position to read
-// the obtained value from, and a slice of fixed arguments.
-type TableConfig struct {
-	// Name is a custom name for the given tested func.
-	// Default name is computed in format mypackage.MyFunc.
-	Name string
+// Case represents a Table test case. It must be provided an In value
+// and an Exp value at least.
+type Case struct {
+	// Lab is the label of the current case. If provided it will be printed
+	// if a test case fails.
+	Lab string
 
+	// In is the input value to the tested func.
+	In interface{}
+
+	// Exp is the value expected to be returned when calling the tested func.
+	Exp interface{}
+
+	// Not reverses the test check for an equality.
+	Not bool
+}
+
+type funcReflection struct {
+	name string
+	rval reflect.Value
+	rtyp reflect.Type
+}
+
+// TableConfig is an object of options allowing to configure a table runner.
+// It allows to test functions having multiple input parameters or multiple
+// return values.
+type TableConfig struct {
 	// InPos is the nth parameter in which In value is injected.
-	// It must be used when the tested function accepts several parameters
-	// and you want to inject the cases input at nth position.
+	// It is required if the tested func accepts multiple parameters.
 	// Default is 0.
 	InPos int
 
 	// OutPos is the nth output value that is tested against Exp.
-	// It must be used when the tested function returns several values
-	// and you want to test the nth returned value.
+	// It is required if the tested func returns multiple values.
 	// Default is 0.
 	OutPos int
 
-	// Args is a mapping of parameter position with fixed values.
-	// These values will be used for all the cases.
-	// It must be used with InPos to work expectedly.
+	// FixedArgs is a slice of arguments to be injected into the tested func.
+	// It is required if the tested func accepts multiple parameters.
+	// len(FixedArgs) must equal nparams or nparams - 1, nparams being
+	// the number of parameters of the tested func.
+	// Depending on the value of len(FixedArgs) - nparams, Case.In will either
+	// replace (0) or be inserted (-1) at index InPos.
 	FixedArgs []interface{}
-}
-
-func (cfg *TableConfig) validateFuncCompat(f *funcReflection) error {
-	if outPos, numOut := cfg.OutPos, f.rtyp.NumOut(); outPos >= numOut {
-		return fmt.Errorf(
-			"invalid value for OutPos: must be < to the number of values returned by %s (%d > %d)",
-			f.name, outPos, numOut,
-		)
-	}
-	if inPos, numIn := cfg.InPos, f.rtyp.NumIn(); inPos >= numIn {
-		return fmt.Errorf(
-			"invalid value for InPos: must be < to the number of parameters of %s (%d > %d)",
-			f.name, inPos, numIn,
-		)
-	}
-	return nil
-}
-
-func safeTableConfig(cfg *TableConfig) (TableConfig, error) {
-	if cfg == nil {
-		return TableConfig{}, nil
-	}
-	if cfg.InPos < 0 {
-		return TableConfig{}, fmt.Errorf(
-			"invalid value for InPos: must be int >= 0, got %d",
-			cfg.InPos,
-		)
-	}
-	if cfg.OutPos < 0 {
-		return TableConfig{}, fmt.Errorf(
-			"invalid value for OutPos: must be int >= 0, got %d",
-			cfg.OutPos,
-		)
-	}
-	return *cfg, nil
 }
