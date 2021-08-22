@@ -9,7 +9,7 @@ func (untypedCheckFactory) Custom(desc string, f UntypedPassFunc) UntypedChecker
 		passFunc: f,
 		explFunc: func(label string, got interface{}) string {
 			return fmt.Sprintf(
-				"expect %s to %s, got %v",
+				"%s: %s, got %v",
 				label, desc, got,
 			)
 		},
