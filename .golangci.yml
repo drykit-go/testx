@@ -14,7 +14,88 @@ linters-settings:
 
   gocritic:
     enabled-checks:
-      [appendassign, appendcombine, argorder, assignop, badcall, badcond, badlock, badregexp, boolexprsimplify, builtinshadow, builtinshadowdecl, captlocal, caseorder, codegencomment, commentedoutcode, commentedoutimport, commentformatting, defaultcaseorder, deferunlambda, deprecatedcomment, docstub, duparg, dupbranchbody, dupcase, dupimport, dupsubexpr, elseif, emptyfallthrough, emptystringtest, equalfold, evalorder, exitafterdefer, filepathjoin, flagderef, flagname, hexliteral, hugeparam, ifelsechain, importshadow, indexalloc, initclause, mapkey, methodexprcall, nestingreduce, newderef, nilvalreturn, octalliteral, offby1, paramtypecombine, ptrtorefparam, rangeexprcopy, rangevalcopy, regexpmust, regexppattern, regexpsimplify, ruleguard, singlecaseswitch, sloppylen, sloppyreassign, sloppytypeassert, sortslice, sqlquery, stringxbytes, switchtrue, toomanyresultschecker, truncatecmp, typeassertchain, typedeffirst, typeswitchvar, typeunparen, underef, unlabelstmt, unlambda, unnecessaryblock, unnecessarydefer, unslice, valswap, weakcond, wrapperfunc, yodastyleexpr]
+      - appendassign
+      - appendcombine
+      - argorder
+      - assignop
+      - badcall
+      - badcond
+      - badlock
+      - badregexp
+      - boolexprsimplify
+      - builtinshadow
+      - builtinshadowdecl
+      - captlocal
+      - caseorder
+      - codegencomment
+      - commentedoutcode
+      - commentedoutimport
+      - commentformatting
+      - defaultcaseorder
+      - deferunlambda
+      - deprecatedcomment
+      - docstub
+      - duparg
+      - dupbranchbody
+      - dupcase
+      - dupimport
+      - dupsubexpr
+      - elseif
+      - emptyfallthrough
+      - emptystringtest
+      - equalfold
+      - evalorder
+      - exitafterdefer
+      - filepathjoin
+      - flagderef
+      - flagname
+      - hexliteral
+      - hugeparam
+      - ifelsechain
+      - importshadow
+      - indexalloc
+      - initclause
+      - mapkey
+      - methodexprcall
+      - nestingreduce
+      - newderef
+      - nilvalreturn
+      - octalliteral
+      - offby1
+      - paramtypecombine
+      - ptrtorefparam
+      - rangeexprcopy
+      - rangevalcopy
+      - regexpmust
+      - regexppattern
+      - regexpsimplify
+      - ruleguard
+      - singlecaseswitch
+      - sloppylen
+      - sloppyreassign
+      - sloppytypeassert
+      - sortslice
+      - sqlquery
+      - stringxbytes
+      - switchtrue
+      - toomanyresultschecker
+      - truncatecmp
+      - typeassertchain
+      - typedeffirst
+      - typeswitchvar
+      - typeunparen
+      - underef
+      # - unamedresult
+      - unlabelstmt
+      - unlambda
+      - unnecessaryblock
+      - unnecessarydefer
+      - unslice
+      - valswap
+      - weakcond
+      # - whynolint
+      - wrapperfunc
+      - yodastyleexpr
 
     settings:
       hugeParam:
@@ -30,7 +111,7 @@ linters-settings:
     extra-rules: true
 
   goimports:
-    local-prefixes: github.com/drykit-got/testixxz
+    local-prefixes: github.com/drykit-go/testx
 
   misspell:
     locale: US
