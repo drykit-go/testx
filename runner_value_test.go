@@ -1,11 +1,28 @@
 package testx_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/drykit-go/testx"
 	"github.com/drykit-go/testx/check"
 )
+
+// Example
+
+func ExampleValueRunner() {
+	results := testx.Value(42).
+		MustBe(42).
+		MustNotBe(3, "hello").
+		MustPass(check.Int.InRange(41, 43)).
+		// Run(t) // can be used in a test func
+		DryRun()
+
+	fmt.Println(results.Passed())
+	// Output: true
+}
+
+// Tests
 
 func TestValueRunner(t *testing.T) {
 	t.Run("should pass", func(t *testing.T) {
