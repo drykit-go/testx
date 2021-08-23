@@ -16,48 +16,30 @@ import (
 func ExampleHandlerRunner() {
 	// dummy handler to be tested
 	h := func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(408)
+		w.WriteHeader(http.StatusTeapot)
 		w.Header().Set("Content-Type", "application/json")
-		w.Header()["SOME_SECRET"] = []string{""}
 		b, _ := json.Marshal(map[string]interface{}{"message": "Hello World!"})
 		w.Write(b)
 	}
 	// request to the tested handler
 	r, _ := http.NewRequest(http.MethodGet, "/", nil)
-	// custom checker example
-	checkIntIsEven := check.NewIntCheck(
-		func(got int) bool {
-			return got%2 == 0
-		},
-		func(label string, got interface{}) string {
-			return fmt.Sprintf("expect %s to be odd, got odd value %d", label, got)
-		},
-	)
 
 	results := testx.HandlerFunc(h, r).
-		ResponseStatus(
-			check.String.Contains("Timeout"),
-			check.String.NotContains("OK"),
-		).
+		ResponseStatus(check.String.Contains("teapot")).
 		ResponseCode(
-			check.Int.Equal(408),
-			check.Int.NotEqual(200),
 			check.Int.NotInRange(200, 299),
-			check.Int.InRange(400, 499),
-			checkIntIsEven, // some custom check
+			check.Int.NotEqual(304),
 		).
 		ResponseBody(
-			check.Bytes.EqualJSON([]byte(`{ "message"    : "Hello World!"       }`)),
+			check.Bytes.EqualJSON([]byte(`{ "message"    : "Hello World!"   }  `)),
 			check.Bytes.Len(check.Int.GreaterOrEqual(20)),
 		).
 		ResponseHeader(
-			check.HTTPHeader.KeySet("SOME_SECRET"),
-			check.HTTPHeader.ValueNotSet("SOME_SECRET"),
-			check.HTTPHeader.KeyNotSet("password"),
+			check.HTTPHeader.KeyNotSet("SOME_SECRET"),
 			check.HTTPHeader.ValueOf("Content-Type", check.String.Contains("json")),
 		).
 		Duration(check.Duration.Under(50 * time.Millisecond)).
-		// Run(t *testing.T) can be used in a testing func
+		// Run(t) // can be used in a test func
 		DryRun()
 
 	fmt.Println(results.Passed())
