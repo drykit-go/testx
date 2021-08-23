@@ -117,11 +117,11 @@ func TestHandlerRunner(t *testing.T) {
 
 type handlerResults struct {
 	baseResults
-	header   http.Header
-	status   string
-	code     int
-	body     []byte
-	duration time.Duration
+	header http.Header
+	status string
+	code   int
+	body   []byte
+	// duration time.Duration // cannot predict exact duration
 }
 
 func assertEqualHandlerResults(t *testing.T, res testx.HandlerResulter, exp handlerResults) {
@@ -137,6 +137,6 @@ func toHandlerResults(res testx.HandlerResulter) handlerResults {
 		status:      res.ResponseStatus(),
 		code:        res.ResponseCode(),
 		body:        res.ResponseBody(),
-		duration:    res.ResponseDuration(),
+		// duration:    res.ResponseDuration(), // cannot predict exact duration
 	}
 }

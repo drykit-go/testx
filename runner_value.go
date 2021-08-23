@@ -19,10 +19,7 @@ func (r *valueRunner) Run(t *testing.T) {
 }
 
 func (r *valueRunner) DryRun() Resulter {
-	for _, c := range r.checks {
-		r.updateBaseResults(c)
-	}
-	return r.baseResults
+	return r.baseResults()
 }
 
 func (r *valueRunner) MustBe(exp interface{}) ValueRunner {

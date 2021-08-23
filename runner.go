@@ -20,8 +20,7 @@ type (
 )
 
 type baseRunner struct {
-	checks      []testCheck
-	baseResults baseResults
+	checks []testCheck
 }
 
 func (r *baseRunner) addCheck(c testCheck) {
@@ -86,18 +85,22 @@ func (r *baseRunner) fail(t *testing.T, msg string) {
 	t.Error(msg)
 }
 
-func (r *baseRunner) updateBaseResults(c testCheck) {
-	got := c.get()
-	passed := c.check.Pass(got)
-	reason := condString("", c.check.Explain(c.label, got), passed)
-
-	r.baseResults.checks = append(r.baseResults.checks, CheckResult{
-		Passed: passed,
-		Reason: reason,
-	})
-	if !passed {
-		r.baseResults.nFailed++
+func (r *baseRunner) baseResults() baseResults {
+	results := baseResults{}
+	for _, c := range r.checks {
+		got := c.get()
+		passed := c.check.Pass(got)
+		reason := condString("", c.check.Explain(c.label, got), passed)
+		results.checks = append(results.checks, CheckResult{
+			Passed: passed,
+			Reason: reason,
+			label:  c.label,
+		})
+		if !passed {
+			results.nFailed++
+		}
 	}
+	return results
 }
 
 type baseResults struct {

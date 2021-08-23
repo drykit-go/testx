@@ -28,53 +28,36 @@ type handlerRunner struct {
 
 	response httpResponse
 
-	results handlerResults
-
 	hasDurationCheck bool
 }
 
 func (r *handlerRunner) Run(t *testing.T) {
-	main := func() { r.hf(r.rr, r.rq) }
-	if r.hasDurationCheck {
-		r.response.duration = timeFunc(main)
-	} else {
-		main()
-	}
-
-	r.setResponse(r.rr)
+	r.dryRun()
 	r.run(t)
 }
 
 func (r *handlerRunner) DryRun() HandlerResulter {
-	main := func() { r.hf(r.rr, r.rq) }
-	if r.hasDurationCheck {
-		r.response.duration = timeFunc(main)
-	} else {
-		main()
-	}
-	r.setResponse(r.rr)
-
-	for _, c := range r.checks {
-		r.updateBaseResults(c)
-	}
-	r.updateSpecificResults()
-	return r.results
-}
-
-func (r *handlerRunner) updateSpecificResults() {
-	r.results = handlerResults{
-		baseResults: r.baseResults,
+	r.dryRun()
+	return handlerResults{
+		baseResults: r.baseResults(),
 		response:    r.response,
 	}
 }
 
-func (r *handlerRunner) setResponse(rr *httptest.ResponseRecorder) {
+func (r *handlerRunner) dryRun() {
+	main := func() { r.hf(r.rr, r.rq) }
+	duration := timeFunc(main)
+	r.setResponse(r.rr, duration)
+}
+
+func (r *handlerRunner) setResponse(rr *httptest.ResponseRecorder, d time.Duration) {
 	result := rr.Result()
 	defer result.Body.Close()
 	r.response.header = rr.Header()
 	r.response.status = result.Status
 	r.response.code = result.StatusCode
 	r.response.body = mustReadIO("response body", result.Body)
+	r.response.duration = d
 }
 
 func (r *handlerRunner) ResponseStatus(checks ...check.StringChecker) HandlerRunner {
