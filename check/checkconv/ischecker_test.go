@@ -45,7 +45,7 @@ type validCheckerInterface struct{}
 func (validCheckerInterface) Pass(interface{}) bool              { return true }
 func (validCheckerInterface) Explain(string, interface{}) string { return "" }
 
-func TestIsChecker(t *testing.T) { //nolint: gocognit
+func TestIsChecker(t *testing.T) {
 	t.Run("should not be considered a checker", func(t *testing.T) {
 		values := []interface{}{
 			"a string",

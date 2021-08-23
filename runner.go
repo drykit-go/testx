@@ -2,6 +2,7 @@ package testx
 
 import (
 	"testing"
+	"time"
 
 	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/check/checkconv"
@@ -19,7 +20,6 @@ type (
 )
 
 type baseRunner struct {
-	// t      *testing.T
 	checks []testCheck
 }
 
@@ -83,4 +83,56 @@ func (r *baseRunner) run(t *testing.T) {
 
 func (r *baseRunner) fail(t *testing.T, msg string) {
 	t.Error(msg)
+}
+
+func (r *baseRunner) baseResults() baseResults {
+	results := baseResults{}
+	for _, c := range r.checks {
+		got := c.get()
+		passed := c.check.Pass(got)
+		reason := condString("", c.check.Explain(c.label, got), passed)
+		results.checks = append(results.checks, CheckResult{
+			Passed: passed,
+			Reason: reason,
+			label:  c.label,
+		})
+		if !passed {
+			results.nFailed++
+		}
+	}
+	return results
+}
+
+type baseResults struct {
+	checks   []CheckResult
+	nFailed  int
+	execTime time.Duration
+}
+
+func (r baseResults) Checks() []CheckResult {
+	return r.checks
+}
+
+func (r baseResults) Passed() bool {
+	return r.nFailed == 0
+}
+
+func (r baseResults) Failed() bool {
+	return !r.Passed()
+}
+
+func (r baseResults) NPassed() int {
+	return r.NChecks() - r.nFailed
+}
+
+func (r baseResults) NFailed() int {
+	return r.nFailed
+}
+
+func (r baseResults) NChecks() int {
+	return len(r.checks)
+}
+
+func (r baseResults) ExecTime() time.Duration {
+	return r.execTime
 }

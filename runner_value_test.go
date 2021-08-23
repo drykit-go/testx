@@ -1,16 +1,75 @@
 package testx_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/drykit-go/testx"
 	"github.com/drykit-go/testx/check"
 )
 
-func TestValueRunner(t *testing.T) {
-	testx.Value(42).
+// Example
+
+func ExampleValueRunner() {
+	results := testx.Value(42).
 		MustBe(42).
 		MustNotBe(3, "hello").
 		MustPass(check.Int.InRange(41, 43)).
-		Run(t)
+		// Run(t) // can be used in a test func
+		DryRun()
+
+	fmt.Println(results.Passed())
+	// Output: true
+}
+
+// Tests
+
+func TestValueRunner(t *testing.T) {
+	t.Run("should pass", func(t *testing.T) {
+		res := testx.Value(42).
+			MustBe(42).
+			MustNotBe(3, "hello").
+			MustPass(check.Int.InRange(41, 43)).
+			DryRun()
+
+		exp := baseResults{
+			passed:  true,
+			failed:  false,
+			nPassed: 4,
+			nFailed: 0,
+			nChecks: 4,
+			checks: []testx.CheckResult{
+				{Passed: true, Reason: ""},
+				{Passed: true, Reason: ""},
+				{Passed: true, Reason: ""},
+				{Passed: true, Reason: ""},
+			},
+		}
+
+		assertEqualBaseResults(t, res, exp)
+	})
+
+	t.Run("should fail", func(t *testing.T) {
+		res := testx.Value(42).
+			MustBe(99).
+			MustNotBe(99, 42).
+			MustPass(check.Int.LesserThan(10)).
+			DryRun()
+
+		exp := baseResults{
+			passed:  false,
+			failed:  true,
+			nPassed: 1,
+			nFailed: 3,
+			nChecks: 4,
+			checks: []testx.CheckResult{
+				{Passed: false, Reason: "value: expect 99, got 42"},
+				{Passed: true, Reason: ""},
+				{Passed: false, Reason: "value: expect not 42, got 42"},
+				{Passed: false, Reason: "expect value < 10, got 42"},
+			},
+		}
+
+		assertEqualBaseResults(t, res, exp)
+	})
 }
