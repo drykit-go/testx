@@ -24,6 +24,7 @@ type (
 	TableRunner interface {
 		Runner
 		Cases(cases []Case) TableRunner
+		DryRun() TableResulter
 	}
 
 	HandlerRunner interface {
@@ -57,7 +58,20 @@ type HandlerResulter interface {
 	ResponseDuration() time.Duration
 }
 
+type TableResulter interface {
+	Resulter
+	// PassedAt returns true if the ith test case passed.
+	PassedAt(index int) bool
+	// PassedAt returns true if the ith test case failed.
+	FailedAt(index int) bool
+	// PassedAt returns true if the test case with matching label passed.
+	PassedLabel(label string) bool
+	// PassedAt returns true if the test case with matching label failed.
+	FailedLabel(label string) bool
+}
+
 type CheckResult struct {
 	Passed bool
 	Reason string
+	label  string
 }

@@ -2,6 +2,7 @@ package testx
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"testing"
 
@@ -11,29 +12,72 @@ import (
 
 var _ TableRunner = (*tableRunner)(nil)
 
+// Case represents a Table test case. It must be provided an In value
+// and an Exp value at least.
+type Case struct {
+	// Lab is the label of the current case. If provided it will be printed
+	// if a test case fails.
+	Lab string
+
+	// In is the input value to the tested func.
+	In interface{}
+
+	// Exp is the value expected to be returned when calling the tested func.
+	Exp interface{}
+
+	// Not reverses the test check for an equality.
+	Not bool
+}
+
+// TableConfig is an object of options allowing to configure a table runner.
+// It allows to test functions having multiple input parameters or multiple
+// return values.
+
+type TableConfig struct {
+	// InPos is the nth parameter in which In value is injected.
+	// It is required if the tested func accepts multiple parameters.
+	// Default is 0.
+	InPos int
+
+	// OutPos is the nth output value that is tested against Exp.
+	// It is required if the tested func returns multiple values.
+	// Default is 0.
+	OutPos int
+
+	// FixedArgs is a slice of arguments to be injected into the tested func.
+	// It is required if the tested func accepts multiple parameters.
+	// len(FixedArgs) must equal nparams or nparams - 1, nparams being
+	// the number of parameters of the tested func.
+	// Depending on the value of len(FixedArgs) - nparams, Case.In will either
+	// replace (0) or be inserted (-1) at index InPos.
+	FixedArgs []interface{}
+}
+
 type tableRunner struct {
 	baseRunner
 
 	label  string
 	config TableConfig
 	get    func(in interface{}) gotType
-	cases  []Case
 }
 
 func (r *tableRunner) Run(t *testing.T) {
-	for _, c := range r.cases {
+	r.run(t)
+}
+
+func (r *tableRunner) DryRun() TableResulter {
+	return tableResults{baseResults: r.baseResults()}
+}
+
+func (r *tableRunner) Cases(cases []Case) TableRunner {
+	for _, c := range cases {
 		c := c
 		r.addCheck(testCheck{
-			label: defaultString(c.Lab, "value"), // TODO: check for unexpected formattings
+			label: c.Lab,
 			get:   func() gotType { return r.get(c.In) },
 			check: r.makeChecker(c),
 		})
 	}
-	r.run(t)
-}
-
-func (r *tableRunner) Cases(cases []Case) TableRunner {
-	r.cases = append(r.cases, cases...)
 	return r
 }
 
@@ -60,24 +104,6 @@ func (r *tableRunner) InPos(pos int) TableRunner {
 func (r *tableRunner) OutPos(pos int) TableRunner {
 	r.config.OutPos = pos
 	return r
-}
-
-func Table(testedFunc interface{}, cfg *TableConfig) TableRunner {
-	r := tableRunner{}
-	r.setConfig(cfg)
-
-	f, err := r.makeFuncReflection(testedFunc)
-	panicOnErr(err)
-
-	panicOnErr(r.validateConfig(f))
-
-	args, err := r.makeArgs(f, r.config)
-	panicOnErr(err)
-
-	r.label = f.name
-	r.setGetFunc(f, args)
-
-	return &r
 }
 
 func (r *tableRunner) setConfig(cfg *TableConfig) {
@@ -125,6 +151,7 @@ func (r *tableRunner) validateConfig(f funcReflection) error {
 	return nil
 }
 
+// TODO: refactoring
 func (r *tableRunner) makeChecker(c Case) check.UntypedChecker {
 	var (
 		pass check.UntypedPassFunc
@@ -144,8 +171,8 @@ func (r *tableRunner) makeChecker(c Case) check.UntypedChecker {
 			labv := reflect.ValueOf(defaultString(label, "value"))
 			expl := expv.MethodByName("Explain").Call([]reflect.Value{labv, gotv})[0]
 			return fmt.Sprintf(
-				"%s(%v) -> checker returned the following error:\n%s",
-				r.label, c.In, expl.String(),
+				"%s\n%s(%v) -> checker returned the following error:\n%s",
+				c.Lab, r.label, c.In, expl.String(),
 			)
 		}
 	} else {
@@ -154,8 +181,8 @@ func (r *tableRunner) makeChecker(c Case) check.UntypedChecker {
 		}
 		expl = func(label string, got interface{}) string {
 			return fmt.Sprintf(
-				"%s(%v) -> expect %s%v, got %v",
-				r.label, c.In, condString("not ", "", c.Not), c.Exp, got,
+				"%s\n%s(%v) -> expect %s%v, got %v",
+				c.Lab, r.label, c.In, condString("not ", "", c.Not), c.Exp, got,
 			)
 		}
 	}
@@ -234,21 +261,22 @@ func (r *tableRunner) makeArgs(f funcReflection, cfg TableConfig) ([]reflect.Val
 	}
 }
 
-// Case represents a Table test case. It must be provided an In value
-// and an Exp value at least.
-type Case struct {
-	// Lab is the label of the current case. If provided it will be printed
-	// if a test case fails.
-	Lab string
+func Table(testedFunc interface{}, cfg *TableConfig) TableRunner {
+	r := tableRunner{}
+	r.setConfig(cfg)
 
-	// In is the input value to the tested func.
-	In interface{}
+	f, err := r.makeFuncReflection(testedFunc)
+	panicOnErr(err)
 
-	// Exp is the value expected to be returned when calling the tested func.
-	Exp interface{}
+	panicOnErr(r.validateConfig(f))
 
-	// Not reverses the test check for an equality.
-	Not bool
+	args, err := r.makeArgs(f, r.config)
+	panicOnErr(err)
+
+	r.label = f.name
+	r.setGetFunc(f, args)
+
+	return &r
 }
 
 type funcReflection struct {
@@ -257,25 +285,31 @@ type funcReflection struct {
 	rtyp reflect.Type
 }
 
-// TableConfig is an object of options allowing to configure a table runner.
-// It allows to test functions having multiple input parameters or multiple
-// return values.
-type TableConfig struct {
-	// InPos is the nth parameter in which In value is injected.
-	// It is required if the tested func accepts multiple parameters.
-	// Default is 0.
-	InPos int
+type tableResults struct {
+	baseResults
+}
 
-	// OutPos is the nth output value that is tested against Exp.
-	// It is required if the tested func returns multiple values.
-	// Default is 0.
-	OutPos int
+func (res tableResults) PassedAt(i int) bool {
+	if i >= len(res.checks) {
+		log.Panicf("Provided index %d is out of range", i)
+	}
+	return res.checks[i].Passed
+}
 
-	// FixedArgs is a slice of arguments to be injected into the tested func.
-	// It is required if the tested func accepts multiple parameters.
-	// len(FixedArgs) must equal nparams or nparams - 1, nparams being
-	// the number of parameters of the tested func.
-	// Depending on the value of len(FixedArgs) - nparams, Case.In will either
-	// replace (0) or be inserted (-1) at index InPos.
-	FixedArgs []interface{}
+func (res tableResults) FailedAt(i int) bool {
+	return !res.PassedAt(i)
+}
+
+func (res tableResults) PassedLabel(label string) bool {
+	for _, c := range res.checks {
+		if c.label == label {
+			return c.Passed
+		}
+	}
+	log.Panicf("No test case with label %s", label)
+	return false
+}
+
+func (res tableResults) FailedLabel(label string) bool {
+	return !res.PassedLabel(label)
 }

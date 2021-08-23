@@ -126,7 +126,7 @@ type handlerResults struct {
 
 func assertEqualHandlerResults(t *testing.T, res testx.HandlerResulter, exp handlerResults) {
 	if got := toHandlerResults(res); !deq(got, exp) {
-		failBadResults(t, got, exp)
+		failBadResults(t, "handlerResults", got, exp)
 	}
 }
 
