@@ -151,40 +151,18 @@ func (r *tableRunner) validateConfig(f funcReflection) error {
 	return nil
 }
 
-// TODO: refactoring
 func (r *tableRunner) makeChecker(c Case) check.UntypedChecker {
-	var (
-		pass check.UntypedPassFunc
-		expl check.ExplainFunc
-	)
-
 	if checkconv.IsChecker(c.Exp) {
-		pass = func(got interface{}) bool {
-			gotv := reflect.ValueOf(got)
-			expv := reflect.ValueOf(c.Exp)
-			outv := expv.MethodByName("Pass").Call([]reflect.Value{gotv})
-			return outv[0].Bool()
-		}
-		expl = func(label string, got interface{}) string {
-			gotv := reflect.ValueOf(got)
-			expv := reflect.ValueOf(c.Exp)
-			labv := reflect.ValueOf(defaultString(label, "value"))
-			expl := expv.MethodByName("Explain").Call([]reflect.Value{labv, gotv})[0]
-			return fmt.Sprintf(
-				"%s\n%s(%v) -> checker returned the following error:\n%s",
-				c.Lab, r.label, c.In, expl.String(),
-			)
-		}
-	} else {
-		pass = func(got interface{}) bool {
-			return xor(deq(got, c.Exp), c.Not)
-		}
-		expl = func(label string, got interface{}) string {
-			return fmt.Sprintf(
-				"%s\n%s(%v) -> expect %s%v, got %v",
-				c.Lab, r.label, c.In, condString("not ", "", c.Not), c.Exp, got,
-			)
-		}
+		checker, _ := checkconv.Retrieve(c.Exp)
+		return checker
+	}
+
+	pass := func(got interface{}) bool { return xor(deq(got, c.Exp), c.Not) }
+	expl := func(label string, got interface{}) string {
+		return fmt.Sprintf(
+			"%s\n%s(%v) -> expect %s%v, got %v",
+			c.Lab, r.label, c.In, condString("not ", "", c.Not), c.Exp, got,
+		)
 	}
 	return check.NewUntypedCheck(pass, expl)
 }

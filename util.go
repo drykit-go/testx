@@ -65,8 +65,3 @@ func condValue(vtrue, vfalse interface{}, istrue bool) interface{} {
 func condString(vtrue, vfalse string, istrue bool) string {
 	return condValue(vtrue, vfalse, istrue).(string)
 }
-
-// defaultString returns val if val !== "", def otherwise.
-func defaultString(val, def string) string {
-	return condString(val, def, val != "")
-}
