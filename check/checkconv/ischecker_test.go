@@ -38,29 +38,37 @@ type checkerAsFields struct {
 type validCheckerInt struct{}
 
 func (validCheckerInt) Pass(int) bool                      { return true }
-func (validCheckerInt) Explain(string, interface{}) string { return "" }
+func (validCheckerInt) Explain(string, interface{}) string { return "ok" }
 
 type validCheckerInterface struct{}
 
 func (validCheckerInterface) Pass(interface{}) bool              { return true }
-func (validCheckerInterface) Explain(string, interface{}) string { return "" }
+func (validCheckerInterface) Explain(string, interface{}) string { return "ok" }
+
+var badCheckers = []interface{}{
+	onlyPasser{},
+	onlyExplainer{},
+	badPasser{},
+	badExplainerIn{},
+	badExplainerOut{},
+	checkerAsFields{
+		Pass:    func(int) bool { return true },
+		Explain: func(string, interface{}) string { return "" },
+	},
+}
+
+var goodCheckers = []interface{}{
+	validCheckerInt{},
+	validCheckerInterface{},
+}
 
 func TestIsChecker(t *testing.T) {
-	t.Run("should not be considered a checker", func(t *testing.T) {
-		values := []interface{}{
+	t.Run("invalid checkers", func(t *testing.T) {
+		values := append([]interface{}{
 			"a string",
 			42,
 			func(int) bool { return true },
-			onlyPasser{},
-			onlyExplainer{},
-			badPasser{},
-			badExplainerIn{},
-			badExplainerOut{},
-			checkerAsFields{
-				Pass:    func(int) bool { return true },
-				Explain: func(string, interface{}) string { return "" },
-			},
-		}
+		}, badCheckers...)
 
 		for _, v := range values {
 			if checkconv.IsChecker(v) {
@@ -69,13 +77,8 @@ func TestIsChecker(t *testing.T) {
 		}
 	})
 
-	t.Run("should be considered a checker", func(t *testing.T) {
-		values := []interface{}{
-			validCheckerInt{},
-			validCheckerInterface{},
-		}
-
-		for _, v := range values {
+	t.Run("valid checkers", func(t *testing.T) {
+		for _, v := range goodCheckers {
 			if !checkconv.IsChecker(v) {
 				t.Errorf("checker %v was wrongly considered not a checker", v)
 			}
