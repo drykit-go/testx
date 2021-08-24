@@ -32,7 +32,6 @@ type Case struct {
 // TableConfig is an object of options allowing to configure a table runner.
 // It allows to test functions having multiple input parameters or multiple
 // return values.
-
 type TableConfig struct {
 	// InPos is the nth parameter in which In value is injected.
 	// It is required if the tested func accepts multiple parameters.
@@ -239,6 +238,10 @@ func (r *tableRunner) makeArgs(f funcReflection, cfg TableConfig) ([]reflect.Val
 	}
 }
 
+// Table returns a TableRunner that runs test cases provided via
+// Cases() method on the given testedFunc. A TableConfig may be
+// required if the testedFunc accepts several parameters or returns
+// several values.
 func Table(testedFunc interface{}, cfg *TableConfig) TableRunner {
 	r := tableRunner{}
 	r.setConfig(cfg)
