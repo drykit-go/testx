@@ -1,6 +1,7 @@
 package checkconv_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/drykit-go/testx/check/checkconv"
@@ -40,12 +41,20 @@ type validCheckerInt struct{}
 func (validCheckerInt) Pass(int) bool                      { return true }
 func (validCheckerInt) Explain(string, interface{}) string { return "ok" }
 
+type validCheckerFloat64 struct{}
+
+func (validCheckerFloat64) Pass(float64) bool                  { return true }
+func (validCheckerFloat64) Explain(string, interface{}) string { return "ok" }
+
 type validCheckerInterface struct{}
 
 func (validCheckerInterface) Pass(interface{}) bool              { return true }
 func (validCheckerInterface) Explain(string, interface{}) string { return "ok" }
 
 var badCheckers = []interface{}{
+	-1,
+	"hi",
+	errors.New(""),
 	onlyPasser{},
 	onlyExplainer{},
 	badPasser{},
@@ -59,6 +68,7 @@ var badCheckers = []interface{}{
 
 var goodCheckers = []interface{}{
 	validCheckerInt{},
+	validCheckerFloat64{},
 	validCheckerInterface{},
 }
 

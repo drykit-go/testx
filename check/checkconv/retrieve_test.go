@@ -97,6 +97,10 @@ func assertRetrieved(t *testing.T, tc checkerTestcase) {
 	if !ok {
 		t.Errorf("failed to retrieve checker: %#v", tc.checker)
 	}
+	assertValidUntypedChecker(t, c, tc)
+}
+
+func assertValidUntypedChecker(t *testing.T, c check.UntypedChecker, tc checkerTestcase) {
 	if pass := c.Pass(tc.in); pass != tc.expPass {
 		t.Errorf(
 			"unexpected Pass return value with checker %#v: exp %v, got %v",
