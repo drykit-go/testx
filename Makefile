@@ -39,5 +39,5 @@ tests:
 
 .PHONY: docs
 docs:
+	@echo "\033[4mhttp://localhost:9995/pkg/github.com/drykit-go/testx/\033[0m"
 	@godoc -http=localhost:9995
-
