@@ -61,6 +61,7 @@ type tableRunner struct {
 }
 
 func (r *tableRunner) Run(t *testing.T) {
+	t.Helper()
 	r.run(t)
 }
 

@@ -86,6 +86,7 @@ func isEvenExpl(_ string, got interface{}) string {
 // Test helpers
 
 func assertValidValueChecker(t *testing.T, c check.ValueChecker, tc checkerTestcase) {
+	t.Helper()
 	if pass := c.Pass(tc.in); pass != tc.expPass {
 		t.Errorf(
 			"unexpected Pass return value with checker %#v: exp %v, got %v",

@@ -73,6 +73,7 @@ func (r *baseRunner) addUntypedChecks(label string, get getfunc, checks []check.
 }
 
 func (r *baseRunner) run(t *testing.T) {
+	t.Helper()
 	for _, current := range r.checks {
 		got := current.get()
 		if !current.checker.Pass(got) {
@@ -82,6 +83,7 @@ func (r *baseRunner) run(t *testing.T) {
 }
 
 func (r *baseRunner) fail(t *testing.T, msg string) {
+	t.Helper()
 	t.Error(msg)
 }
 

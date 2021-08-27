@@ -32,6 +32,7 @@ type handlerRunner struct {
 }
 
 func (r *handlerRunner) Run(t *testing.T) {
+	t.Helper()
 	r.dryRun()
 	r.run(t)
 }

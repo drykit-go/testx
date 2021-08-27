@@ -18,12 +18,14 @@ type baseResults struct {
 }
 
 func assertEqualBaseResults(t *testing.T, res testx.Resulter, exp baseResults) {
+	t.Helper()
 	if got := toBaseResults(res); !deq(got, exp) {
 		failBadResults(t, "baseResults", got, exp)
 	}
 }
 
 func failBadResults(t *testing.T, label string, got, exp interface{}) {
+	t.Helper()
 	t.Errorf("bad results: %s\nexp %#v\ngot %#v", label, exp, got)
 }
 

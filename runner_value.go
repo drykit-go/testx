@@ -15,6 +15,7 @@ type valueRunner struct {
 }
 
 func (r *valueRunner) Run(t *testing.T) {
+	t.Helper()
 	r.run(t)
 }
 

@@ -52,6 +52,7 @@ func TestAssert(t *testing.T) {
 }
 
 func assertPanic(t *testing.T, expMessage string) {
+	t.Helper()
 	r := recover()
 	if r == nil {
 		t.Errorf("expected to panic but did not")

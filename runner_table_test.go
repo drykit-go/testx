@@ -179,6 +179,7 @@ type tableResults struct {
 }
 
 func assertEqualTableResults(t *testing.T, res testx.TableResulter, exp tableResults) {
+	t.Helper()
 	assertEqualBaseResults(t, res, exp.baseResults)
 	for i, v := range exp.passedAt {
 		if got := res.PassedAt(i); got != v {

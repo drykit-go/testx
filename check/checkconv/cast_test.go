@@ -92,6 +92,7 @@ func TestCast(t *testing.T) {
 }
 
 func assertCasted(t *testing.T, tc checkerTestcase) {
+	t.Helper()
 	c, ok := checkconv.Cast(tc.checker)
 	if !ok {
 		t.Errorf("failed to retrieve checker: %#v", tc.checker)
@@ -100,6 +101,7 @@ func assertCasted(t *testing.T, tc checkerTestcase) {
 }
 
 func assertNotCasted(t *testing.T, badChecker interface{}) {
+	t.Helper()
 	got, ok := checkconv.Cast(badChecker)
 	if ok {
 		t.Errorf("returned ok from bad input: %#v", badChecker)
