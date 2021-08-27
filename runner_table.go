@@ -151,8 +151,8 @@ func (r *tableRunner) validateConfig(f funcReflection) error {
 }
 
 func (r *tableRunner) makeChecker(c Case) check.UntypedChecker {
-	if checkconv.IsChecker(c.Exp) {
-		checker, _ := checkconv.Assert(c.Exp)
+	checker, ok := checkconv.Assert(c.Exp)
+	if ok {
 		return checker
 	}
 
