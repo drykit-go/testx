@@ -34,33 +34,33 @@ var (
 
 // IsChecker returns true if the provided value is a valid checker.
 // A valid checker is any type exposing two methods:
-// - Pass(got T) bool
-// - Explain(label string, got interface{}) string
+// 	- Pass(got T) bool
+// 	- Explain(label string, got interface{}) string
 // Any custom implementation is considered valid whether or not it uses
 // the package check.
 //
 // Note: The nature of Pass(got T) method, whose signature depend on the
-// type of the tested value, prevents us from using a regular interface
-// to identify a checker, hence the need of this helper.
+// type of the tested value, prevents using a regular interface to identify
+// a checker, hence the need of this helper.
 func IsChecker(in interface{}) bool {
 	v := reflect.ValueOf(in)
 	return isPasser(v) && isExplainer(v)
 }
 
 func isPasser(v reflect.Value) bool {
-	return is(v, keyPass)
+	return isCheckerMethod(v, keyPass)
 }
 
 func isExplainer(v reflect.Value) bool {
-	return is(v, keyExpl)
+	return isCheckerMethod(v, keyExpl)
 }
 
-func is(v reflect.Value, k methodKey) bool {
+func isCheckerMethod(v reflect.Value, k methodKey) bool {
 	s, ok := checkerSignatures[k]
-	return ok && match(v, s)
+	return ok && matchMethod(v, s)
 }
 
-func match(v reflect.Value, s signature) bool {
+func matchMethod(v reflect.Value, s signature) bool {
 	m := v.MethodByName(s.name)
 	if !m.IsValid() {
 		return false
@@ -70,21 +70,19 @@ func match(v reflect.Value, s signature) bool {
 }
 
 func matchIn(t reflect.Type, in []reflect.Kind) bool {
-	getKind := func(i int) reflect.Kind { return t.In(i).Kind() }
-	return matchValuesKind(t.NumIn(), getKind, in)
+	return matchValuesKind(t.NumIn(), t.In, in)
 }
 
 func matchOut(t reflect.Type, out []reflect.Kind) bool {
-	getKind := func(i int) reflect.Kind { return t.Out(i).Kind() }
-	return matchValuesKind(t.NumOut(), getKind, out)
+	return matchValuesKind(t.NumOut(), t.Out, out)
 }
 
-func matchValuesKind(num int, kindGetter func(int) reflect.Kind, kinds []reflect.Kind) bool {
-	if num != len(kinds) {
+func matchValuesKind(gotLen int, getIthVal func(int) reflect.Type, expKinds []reflect.Kind) bool {
+	if gotLen != len(expKinds) {
 		return false
 	}
-	for i := 0; i < num; i++ {
-		if gotk, expk := kindGetter(i), kinds[i]; expk != reflect.Invalid && gotk != expk {
+	for i := 0; i < gotLen; i++ {
+		if gotk, expk := getIthVal(i).Kind(), expKinds[i]; expk != reflect.Invalid && gotk != expk {
 			return false
 		}
 	}
