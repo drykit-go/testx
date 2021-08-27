@@ -49,9 +49,11 @@ func getFuncName(f interface{}) string {
 }
 
 // panicOnErr panics if the given err is not nil.
-func panicOnErr(err error) {
-	if err != nil {
-		log.Panic(err)
+func panicOnErr(errs ...error) {
+	for _, err := range errs {
+		if err != nil {
+			log.Panic(err)
+		}
 	}
 }
 

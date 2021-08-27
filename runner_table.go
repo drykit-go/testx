@@ -152,7 +152,7 @@ func (r *tableRunner) validateConfig(f funcReflection) error {
 
 func (r *tableRunner) makeChecker(c Case) check.UntypedChecker {
 	if checkconv.IsChecker(c.Exp) {
-		checker, _ := checkconv.Retrieve(c.Exp)
+		checker, _ := checkconv.Assert(c.Exp)
 		return checker
 	}
 
@@ -200,9 +200,9 @@ func (r *tableRunner) makeFuncReflection(in interface{}) (funcReflection, error)
 	}, nil
 }
 
-func (r *tableRunner) makeArgs(f funcReflection, cfg TableConfig) ([]reflect.Value, error) {
+func (r *tableRunner) makeFixedArgs(f funcReflection) ([]reflect.Value, error) {
 	nparams := f.rtyp.NumIn()
-	nargs := len(cfg.FixedArgs)
+	nargs := len(r.config.FixedArgs)
 	args := make([]reflect.Value, nparams)
 
 	fillskip := func(at int) []reflect.Value {
@@ -212,9 +212,9 @@ func (r *tableRunner) makeArgs(f funcReflection, cfg TableConfig) ([]reflect.Val
 			case i == at:
 				v = nil
 			case i > at:
-				v = cfg.FixedArgs[i-1]
+				v = r.config.FixedArgs[i-1]
 			default:
-				v = cfg.FixedArgs[i]
+				v = r.config.FixedArgs[i]
 			}
 			args[i] = reflect.ValueOf(v)
 		}
@@ -222,7 +222,7 @@ func (r *tableRunner) makeArgs(f funcReflection, cfg TableConfig) ([]reflect.Val
 	}
 
 	fillall := func() []reflect.Value {
-		for i, v := range cfg.FixedArgs {
+		for i, v := range r.config.FixedArgs {
 			args[i] = reflect.ValueOf(v)
 		}
 		return args
@@ -232,7 +232,7 @@ func (r *tableRunner) makeArgs(f funcReflection, cfg TableConfig) ([]reflect.Val
 	case 0:
 		return fillall(), nil
 	case 1:
-		return fillskip(cfg.InPos), nil
+		return fillskip(r.config.InPos), nil
 	default:
 		return nil, fmt.Errorf("invalid FixedArgs number: %d", nargs)
 	}
@@ -251,7 +251,7 @@ func Table(testedFunc interface{}, cfg *TableConfig) TableRunner {
 
 	panicOnErr(r.validateConfig(f))
 
-	args, err := r.makeArgs(f, r.config)
+	args, err := r.makeFixedArgs(f)
 	panicOnErr(err)
 
 	r.label = f.name

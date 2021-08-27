@@ -15,7 +15,7 @@ type checkerTestcase struct {
 	expExpl string
 }
 
-func TestRetrieve(t *testing.T) {
+func TestAssert(t *testing.T) {
 	t.Run("native checker", func(t *testing.T) {
 		cases := []checkerTestcase{
 			{
@@ -93,7 +93,7 @@ func TestRetrieve(t *testing.T) {
 }
 
 func assertRetrieved(t *testing.T, tc checkerTestcase) {
-	c, ok := checkconv.Retrieve(tc.checker)
+	c, ok := checkconv.Assert(tc.checker)
 	if !ok {
 		t.Errorf("failed to retrieve checker: %#v", tc.checker)
 	}
@@ -116,7 +116,7 @@ func assertValidUntypedChecker(t *testing.T, c check.UntypedChecker, tc checkerT
 }
 
 func assertNotRetrieved(t *testing.T, badChecker interface{}) {
-	got, ok := checkconv.Retrieve(badChecker)
+	got, ok := checkconv.Assert(badChecker)
 	if ok {
 		t.Errorf("returned ok from bad input: %#v", badChecker)
 	}
