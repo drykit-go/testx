@@ -63,7 +63,7 @@ func (r *handlerRunner) setResponse(rr *httptest.ResponseRecorder, d time.Durati
 func (r *handlerRunner) ResponseStatus(checks ...check.StringChecker) HandlerRunner {
 	r.addStringChecks(
 		"response status",
-		func() gotType { return r.response.status },
+		func() gottype { return r.response.status },
 		checks,
 	)
 	return r
@@ -72,7 +72,7 @@ func (r *handlerRunner) ResponseStatus(checks ...check.StringChecker) HandlerRun
 func (r *handlerRunner) ResponseCode(checks ...check.IntChecker) HandlerRunner {
 	r.addIntChecks(
 		"response code",
-		func() gotType { return r.response.code },
+		func() gottype { return r.response.code },
 		checks,
 	)
 	return r
@@ -81,7 +81,7 @@ func (r *handlerRunner) ResponseCode(checks ...check.IntChecker) HandlerRunner {
 func (r *handlerRunner) ResponseBody(checks ...check.BytesChecker) HandlerRunner {
 	r.addBytesChecks(
 		"response body",
-		func() gotType { return r.response.body },
+		func() gottype { return r.response.body },
 		checks,
 	)
 	return r
@@ -91,7 +91,7 @@ func (r *handlerRunner) Duration(checks ...check.DurationChecker) HandlerRunner 
 	r.hasDurationCheck = true
 	r.addDurationChecks(
 		"handling duration",
-		func() gotType { return r.response.duration },
+		func() gottype { return r.response.duration },
 		checks,
 	)
 	return r
@@ -100,7 +100,7 @@ func (r *handlerRunner) Duration(checks ...check.DurationChecker) HandlerRunner 
 func (r *handlerRunner) ResponseHeader(checks ...check.HTTPHeaderChecker) HandlerRunner {
 	r.addHTTPHeaderChecks(
 		"response header",
-		func() gotType { return r.response.header },
+		func() gottype { return r.response.header },
 		checks,
 	)
 	return r

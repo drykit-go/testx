@@ -27,9 +27,9 @@ func (r *valueRunner) MustBe(exp interface{}) ValueRunner {
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf("%s: expect %v, got %v", label, exp, got)
 	}
-	r.addCheck(testCheck{
+	r.addCheck(baseCheck{
 		"value",
-		func() gotType { return r.value },
+		func() gottype { return r.value },
 		check.NewUntypedCheck(pass, expl),
 	})
 	return r
@@ -42,9 +42,9 @@ func (r *valueRunner) MustNotBe(values ...interface{}) ValueRunner {
 		expl := func(label string, got interface{}) string {
 			return fmt.Sprintf("%s: expect not %v, got %v", label, nexp, got)
 		}
-		r.addCheck(testCheck{
+		r.addCheck(baseCheck{
 			"value",
-			func() gotType { return r.value },
+			func() gottype { return r.value },
 			check.NewUntypedCheck(pass, expl),
 		})
 	}
@@ -52,7 +52,7 @@ func (r *valueRunner) MustNotBe(values ...interface{}) ValueRunner {
 }
 
 func (r *valueRunner) MustPass(checkers ...interface{}) ValueRunner {
-	r.addChecks("value", func() gotType { return r.value }, checkers)
+	r.addChecks("value", func() gottype { return r.value }, checkers, false)
 	return r
 }
 

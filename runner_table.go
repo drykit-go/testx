@@ -57,7 +57,7 @@ type tableRunner struct {
 
 	label  string
 	config TableConfig
-	get    func(in interface{}) gotType
+	get    func(in interface{}) gottype
 }
 
 func (r *tableRunner) Run(t *testing.T) {
@@ -71,10 +71,10 @@ func (r *tableRunner) DryRun() TableResulter {
 func (r *tableRunner) Cases(cases []Case) TableRunner {
 	for _, c := range cases {
 		c := c
-		r.addCheck(testCheck{
-			label: c.Lab,
-			get:   func() gotType { return r.get(c.In) },
-			check: r.makeChecker(c),
+		r.addCheck(baseCheck{
+			label:   c.Lab,
+			get:     func() gottype { return r.get(c.In) },
+			checker: r.makeChecker(c),
 		})
 	}
 	return r
@@ -114,7 +114,7 @@ func (r *tableRunner) setConfig(cfg *TableConfig) {
 }
 
 func (r *tableRunner) setGetFunc(f funcReflection, args []reflect.Value) {
-	r.get = func(in interface{}) gotType {
+	r.get = func(in interface{}) gottype {
 		args[r.config.InPos] = reflect.ValueOf(in)
 		out := f.rval.Call(args)
 		got := out[r.config.OutPos]

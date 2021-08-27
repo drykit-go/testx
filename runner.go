@@ -9,74 +9,74 @@ import (
 )
 
 type (
-	gotType interface{}
-	getFunc func() gotType
+	gottype interface{}
+	getfunc func() gottype
 
-	testCheck struct {
-		label string
-		get   func() gotType
-		check check.UntypedChecker
+	baseCheck struct {
+		label   string
+		get     getfunc
+		checker check.UntypedChecker
 	}
 )
 
 type baseRunner struct {
-	checks []testCheck
+	checks []baseCheck
 }
 
-func (r *baseRunner) addCheck(c testCheck) {
+func (r *baseRunner) addCheck(c baseCheck) {
 	r.checks = append(r.checks, c)
 }
 
-func (r *baseRunner) addChecks(label string, get getFunc, checks []interface{}) {
-	for _, c := range checks {
-		if !checkconv.IsChecker(c) {
+func (r *baseRunner) addChecks(label string, get getfunc, checkers []interface{}, safe bool) {
+	for _, c := range checkers {
+		if !safe && !checkconv.IsChecker(c) {
 			panic("invalid checker provided to MustPass")
 		}
-		r.addCheck(testCheck{label: label, get: get, check: checkconv.Cast(c)})
+		r.addCheck(baseCheck{label: label, get: get, checker: checkconv.Cast(c)})
 	}
 }
 
-func (r *baseRunner) addIntChecks(label string, get getFunc, checks []check.IntChecker) {
+func (r *baseRunner) addIntChecks(label string, get getfunc, checks []check.IntChecker) {
 	for _, c := range checks {
-		r.addCheck(testCheck{label: label, get: get, check: checkconv.FromInt(c)})
+		r.addCheck(baseCheck{label: label, get: get, checker: checkconv.FromInt(c)})
 	}
 }
 
-func (r *baseRunner) addBytesChecks(label string, get getFunc, checks []check.BytesChecker) {
+func (r *baseRunner) addBytesChecks(label string, get getfunc, checks []check.BytesChecker) {
 	for _, c := range checks {
-		r.addCheck(testCheck{label: label, get: get, check: checkconv.FromBytes(c)})
+		r.addCheck(baseCheck{label: label, get: get, checker: checkconv.FromBytes(c)})
 	}
 }
 
-func (r *baseRunner) addStringChecks(label string, get getFunc, checks []check.StringChecker) {
+func (r *baseRunner) addStringChecks(label string, get getfunc, checks []check.StringChecker) {
 	for _, c := range checks {
-		r.addCheck(testCheck{label: label, get: get, check: checkconv.FromString(c)})
+		r.addCheck(baseCheck{label: label, get: get, checker: checkconv.FromString(c)})
 	}
 }
 
-func (r *baseRunner) addDurationChecks(label string, get getFunc, checks []check.DurationChecker) {
+func (r *baseRunner) addDurationChecks(label string, get getfunc, checks []check.DurationChecker) {
 	for _, c := range checks {
-		r.addCheck(testCheck{label: label, get: get, check: checkconv.FromDuration(c)})
+		r.addCheck(baseCheck{label: label, get: get, checker: checkconv.FromDuration(c)})
 	}
 }
 
-func (r *baseRunner) addHTTPHeaderChecks(label string, get getFunc, checks []check.HTTPHeaderChecker) {
+func (r *baseRunner) addHTTPHeaderChecks(label string, get getfunc, checks []check.HTTPHeaderChecker) {
 	for _, c := range checks {
-		r.addCheck(testCheck{label: label, get: get, check: checkconv.FromHTTPHeader(c)})
+		r.addCheck(baseCheck{label: label, get: get, checker: checkconv.FromHTTPHeader(c)})
 	}
 }
 
-func (r *baseRunner) addUntypedChecks(label string, get getFunc, checks []check.UntypedChecker) {
+func (r *baseRunner) addUntypedChecks(label string, get getfunc, checks []check.UntypedChecker) {
 	for _, c := range checks {
-		r.addCheck(testCheck{label: label, get: get, check: c})
+		r.addCheck(baseCheck{label: label, get: get, checker: c})
 	}
 }
 
 func (r *baseRunner) run(t *testing.T) {
 	for _, current := range r.checks {
 		got := current.get()
-		if !current.check.Pass(got) {
-			r.fail(t, current.check.Explain(current.label, got))
+		if !current.checker.Pass(got) {
+			r.fail(t, current.checker.Explain(current.label, got))
 		}
 	}
 }
@@ -89,8 +89,8 @@ func (r *baseRunner) baseResults() baseResults {
 	results := baseResults{}
 	for _, c := range r.checks {
 		got := c.get()
-		passed := c.check.Pass(got)
-		reason := condString("", c.check.Explain(c.label, got), passed)
+		passed := c.checker.Pass(got)
+		reason := condString("", c.checker.Explain(c.label, got), passed)
 		results.checks = append(results.checks, CheckResult{
 			Passed: passed,
 			Reason: reason,
