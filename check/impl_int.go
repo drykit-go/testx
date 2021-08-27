@@ -18,7 +18,7 @@ func (intCheckFactory) InRange(lo, hi int) IntChecker {
 	}
 }
 
-func (intCheckFactory) NotInRange(lo, hi int) IntChecker {
+func (intCheckFactory) OutRange(lo, hi int) IntChecker {
 	return intCheck{
 		passFunc: func(got int) bool {
 			return got < lo || got > hi
@@ -32,7 +32,7 @@ func (intCheckFactory) NotInRange(lo, hi int) IntChecker {
 	}
 }
 
-func (intCheckFactory) Equal(tar int) IntChecker {
+func (intCheckFactory) Is(tar int) IntChecker {
 	return intCheck{
 		passFunc: func(got int) bool {
 			return got == tar
@@ -46,7 +46,7 @@ func (intCheckFactory) Equal(tar int) IntChecker {
 	}
 }
 
-func (intCheckFactory) NotEqual(tar int) IntChecker {
+func (intCheckFactory) Not(tar int) IntChecker {
 	return intCheck{
 		passFunc: func(got int) bool {
 			return got != tar
@@ -60,7 +60,7 @@ func (intCheckFactory) NotEqual(tar int) IntChecker {
 	}
 }
 
-func (intCheckFactory) GreaterThan(tar int) IntChecker {
+func (intCheckFactory) GT(tar int) IntChecker {
 	return intCheck{
 		passFunc: func(got int) bool {
 			return got > tar
@@ -74,7 +74,7 @@ func (intCheckFactory) GreaterThan(tar int) IntChecker {
 	}
 }
 
-func (intCheckFactory) GreaterOrEqual(tar int) IntChecker {
+func (intCheckFactory) GTE(tar int) IntChecker {
 	return intCheck{
 		passFunc: func(got int) bool {
 			return got >= tar
@@ -88,7 +88,7 @@ func (intCheckFactory) GreaterOrEqual(tar int) IntChecker {
 	}
 }
 
-func (intCheckFactory) LesserThan(tar int) IntChecker {
+func (intCheckFactory) LT(tar int) IntChecker {
 	return intCheck{
 		passFunc: func(got int) bool {
 			return got < tar
@@ -102,7 +102,7 @@ func (intCheckFactory) LesserThan(tar int) IntChecker {
 	}
 }
 
-func (intCheckFactory) LesserOrEqual(tar int) IntChecker {
+func (intCheckFactory) LTE(tar int) IntChecker {
 	return intCheck{
 		passFunc: func(got int) bool {
 			return got <= tar

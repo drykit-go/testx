@@ -8,7 +8,7 @@ import (
 
 type stringCheckFactory struct{}
 
-func (stringCheckFactory) Equal(tar string) StringChecker {
+func (stringCheckFactory) Is(tar string) StringChecker {
 	return stringCheck{
 		passFunc: func(got string) bool { return got == tar },
 		explFunc: func(label string, got interface{}) string {

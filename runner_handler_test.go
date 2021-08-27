@@ -27,12 +27,12 @@ func ExampleHandlerRunner() {
 	results := testx.HandlerFunc(h, r).
 		ResponseStatus(check.String.Contains("teapot")).
 		ResponseCode(
-			check.Int.NotInRange(200, 299),
-			check.Int.NotEqual(304),
+			check.Int.OutRange(200, 299),
+			check.Int.Not(304),
 		).
 		ResponseBody(
-			check.Bytes.EqualJSON([]byte(`{ "message"    : "Hello World!"   }  `)),
-			check.Bytes.Len(check.Int.GreaterOrEqual(20)),
+			check.Bytes.SameJSON([]byte(`{ "message"    : "Hello World!"   }  `)),
+			check.Bytes.Len(check.Int.GTE(20)),
 		).
 		ResponseHeader(
 			check.HTTPHeader.KeyNotSet("SOME_SECRET"),
@@ -60,8 +60,8 @@ func TestHandlerRunner(t *testing.T) {
 
 	t.Run("should pass", func(t *testing.T) {
 		res := testx.HandlerFunc(hf, r).
-			ResponseCode(check.Int.Equal(200)).
-			ResponseBody(check.Bytes.EqualJSON(expBody)).
+			ResponseCode(check.Int.Is(200)).
+			ResponseBody(check.Bytes.SameJSON(expBody)).
 			DryRun()
 
 		exp := handlerResults{
@@ -87,8 +87,8 @@ func TestHandlerRunner(t *testing.T) {
 
 	t.Run("should fail", func(t *testing.T) {
 		res := testx.HandlerFunc(hf, r).
-			ResponseCode(check.Int.Equal(-1)).
-			ResponseBody(check.Bytes.EqualJSON(expBody)).
+			ResponseCode(check.Int.Is(-1)).
+			ResponseBody(check.Bytes.SameJSON(expBody)).
 			DryRun()
 
 		exp := handlerResults{

@@ -8,11 +8,11 @@ import (
 type (
 	// BytesNativeChecks provides checks on type []byte.
 	BytesNativeChecks interface {
-		// Equal checks the gotten []byte is equal to the target.
-		Equal(tar []byte) BytesChecker
-		// EqualJSON checks the gotten []byte and the target returns
+		// Is checks the gotten []byte is equal to the target.
+		Is(tar []byte) BytesChecker
+		// SameJSON checks the gotten []byte and the target returns
 		// the same JSON object.
-		EqualJSON(tar []byte) BytesChecker
+		SameJSON(tar []byte) BytesChecker
 		// Len checks the gotten []byte's length passes the provided
 		// IntChecker.
 		Len(c IntChecker) BytesChecker
@@ -20,8 +20,8 @@ type (
 
 	// StringNativeChecks provides checks on type string.
 	StringNativeChecks interface {
-		// Equal checks the gotten string is equal to the target.
-		Equal(tar string) StringChecker
+		// Is checks the gotten string is equal to the target.
+		Is(tar string) StringChecker
 		// Contains checks the gotten string contains the target substring.
 		Contains(tar string) StringChecker
 		// NotContains checks the gotten string do not contain the target
@@ -39,20 +39,20 @@ type (
 	IntNativeChecks interface {
 		// InRange checks the gotten int is in the closed interval [lo:hi].
 		InRange(lo, hi int) IntChecker
-		// NotInRange checks the gotten int is not in the closed interval [lo:hi].
-		NotInRange(lo, hi int) IntChecker
-		// Equal checks the gotten int is equal to the target.
-		Equal(tar int) IntChecker
-		// NotEqual checks the gotten int is not equal to the target.
-		NotEqual(tar int) IntChecker
-		// GreaterThan checks the gotten int is greater than the target.
-		GreaterThan(tar int) IntChecker
-		// GreaterOrEqual checks the gotten int is greater or equal to the target.
-		GreaterOrEqual(tar int) IntChecker
-		// LesserThan checks the gotten int is lesser than the target.
-		LesserThan(tar int) IntChecker
-		// LesserOrEqual checks the gotten int is lesser or equal to the target.
-		LesserOrEqual(tar int) IntChecker
+		// OutRange checks the gotten int is not in the closed interval [lo:hi].
+		OutRange(lo, hi int) IntChecker
+		// Is checks the gotten int is equal to the target.
+		Is(tar int) IntChecker
+		// Not checks the gotten int is not equal to the target.
+		Not(tar int) IntChecker
+		// GT checks the gotten int is greater than the target.
+		GT(tar int) IntChecker
+		// GTE checks the gotten int is greater or equal to the target.
+		GTE(tar int) IntChecker
+		// LT checks the gotten int is lesser than the target.
+		LT(tar int) IntChecker
+		// LTE checks the gotten int is lesser or equal to the target.
+		LTE(tar int) IntChecker
 	}
 
 	// DurationNativeChecks provides checks on type time.Duration.

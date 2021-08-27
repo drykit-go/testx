@@ -10,7 +10,7 @@ import (
 
 type bytesCheckFactory struct{}
 
-func (bytesCheckFactory) Equal(tar []byte) BytesChecker {
+func (bytesCheckFactory) Is(tar []byte) BytesChecker {
 	return bytesCheck{
 		passFunc: func(got []byte) bool {
 			return bytes.Equal(got, tar)
@@ -24,7 +24,7 @@ func (bytesCheckFactory) Equal(tar []byte) BytesChecker {
 	}
 }
 
-func (bytesCheckFactory) EqualJSON(tar []byte) BytesChecker {
+func (bytesCheckFactory) SameJSON(tar []byte) BytesChecker {
 	var decGot, decTar interface{}
 	return bytesCheck{
 		passFunc: func(got []byte) bool {

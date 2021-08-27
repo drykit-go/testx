@@ -65,7 +65,7 @@ func TestTableRunner(t *testing.T) {
 	t.Run("using check.IntChecker", func(t *testing.T) {
 		testx.Table(double, nil).
 			Cases([]testx.Case{
-				{In: 21, Exp: check.Int.Equal(42)},
+				{In: 21, Exp: check.Int.Is(42)},
 				{In: -4, Exp: check.Int.InRange(-10, 0)},
 			}).
 			Run(t)

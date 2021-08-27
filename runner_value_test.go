@@ -53,7 +53,7 @@ func TestValueRunner(t *testing.T) {
 		res := testx.Value(42).
 			MustBe(99).
 			MustNotBe(99, 42).
-			MustPass(check.Int.LesserThan(10)).
+			MustPass(check.Int.LT(10)).
 			DryRun()
 
 		exp := baseResults{

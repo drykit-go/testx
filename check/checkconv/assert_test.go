@@ -19,7 +19,7 @@ func TestAssert(t *testing.T) {
 	t.Run("native checker", func(t *testing.T) {
 		cases := []checkerTestcase{
 			{
-				checker: check.Bytes.Equal([]byte{42}),
+				checker: check.Bytes.Is([]byte{42}),
 				in:      []byte{42},
 				expPass: true,
 				expExpl: "",

@@ -247,9 +247,7 @@ func Table(testedFunc interface{}, cfg *TableConfig) TableRunner {
 	r.setConfig(cfg)
 
 	f, err := r.makeFuncReflection(testedFunc)
-	panicOnErr(err)
-
-	panicOnErr(r.validateConfig(f))
+	panicOnErr(err, r.validateConfig(f))
 
 	args, err := r.makeFixedArgs(f)
 	panicOnErr(err)
