@@ -57,6 +57,6 @@ func (r *valueRunner) Pass(checkers ...interface{}) ValueRunner {
 	return r
 }
 
-func Value(v interface{}) ValueRunner {
+func newValueRunner(v interface{}) ValueRunner {
 	return &valueRunner{value: v}
 }

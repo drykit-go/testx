@@ -125,3 +125,31 @@ type CheckResult struct {
 	Reason string
 	label  string
 }
+
+//
+// Runners
+//
+
+// Value returns a ValueRunner to run tests on a single value.
+func Value(v interface{}) ValueRunner {
+	return newValueRunner(v)
+}
+
+// Handler returns a HandlerRunner to run tests on a http.Handler
+// response to given request.
+func Handler(h http.Handler, r *http.Request) HandlerRunner {
+	return newHandlerRunner(h.ServeHTTP, r)
+}
+
+// HandlerFunc returns a HandlerRunner to run tests on a http.HandlerFunc
+// response to a given request.
+func HandlerFunc(hf http.HandlerFunc, r *http.Request) HandlerRunner {
+	return newHandlerRunner(hf, r)
+}
+
+// Table returns a TableRunner to run test cases on a func. By default,
+// it works with funcs having a single input and output value. However,
+// with an appropriate config it is compatible with any func signature.
+func Table(testedFunc interface{}, cfg *TableConfig) TableRunner {
+	return newTableRunner(testedFunc, cfg)
+}

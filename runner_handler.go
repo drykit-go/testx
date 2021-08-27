@@ -107,16 +107,12 @@ func (r *handlerRunner) ResponseHeader(checks ...check.HTTPHeaderChecker) Handle
 	return r
 }
 
-func HandlerFunc(hf http.HandlerFunc, r *http.Request) HandlerRunner {
+func newHandlerRunner(hf http.HandlerFunc, r *http.Request) HandlerRunner {
 	return &handlerRunner{
 		hf: hf,
 		rr: httptest.NewRecorder(),
 		rq: r,
 	}
-}
-
-func Handler(h http.Handler, r *http.Request) HandlerRunner {
-	return HandlerFunc(h.ServeHTTP, r)
 }
 
 type handlerResults struct {

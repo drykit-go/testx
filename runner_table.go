@@ -243,7 +243,7 @@ func (r *tableRunner) makeFixedArgs(f funcReflection) ([]reflect.Value, error) {
 // Cases() method on the given testedFunc. A TableConfig may be
 // required if the testedFunc accepts several parameters or returns
 // several values.
-func Table(testedFunc interface{}, cfg *TableConfig) TableRunner {
+func newTableRunner(testedFunc interface{}, cfg *TableConfig) TableRunner {
 	r := tableRunner{}
 	r.setConfig(cfg)
 
