@@ -2,33 +2,56 @@ package checkconv
 
 import "reflect"
 
-type methodKey string
-
-const (
-	keyPass methodKey = "Pass"
-	keyExpl methodKey = "Explain"
-)
-
 type signature struct {
 	name    string
 	in, out []reflect.Kind
 }
 
+func (s signature) match(v reflect.Value) bool {
+	m := v.MethodByName(s.name)
+	if !m.IsValid() {
+		return false
+	}
+	t := m.Type()
+	return s.matchIn(t) && s.matchOut(t)
+}
+
+func (s signature) matchIn(t reflect.Type) bool {
+	return s.matchValues(t.NumIn(), t.In, s.in)
+}
+
+func (s signature) matchOut(t reflect.Type) bool {
+	return s.matchValues(t.NumOut(), t.Out, s.out)
+}
+
+func (s signature) matchValues(numValues int, getIthVal func(int) reflect.Type, expKinds []reflect.Kind) bool {
+	if numValues != len(expKinds) {
+		return false
+	}
+	for i := 0; i < numValues; i++ {
+		if !s.validKind(getIthVal(i).Kind(), expKinds[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func (s signature) validKind(gotk, expk reflect.Kind) bool {
+	// reflect.Invalid is used as a generic wildcard
+	return expk == reflect.Invalid || gotk == expk
+}
+
 var (
 	signaturePass = signature{
-		name: string(keyPass),
-		in:   []reflect.Kind{reflect.Invalid}, // we use reflect.Invalid as a "any" wildcard
+		name: "Pass",
+		in:   []reflect.Kind{reflect.Invalid}, // reflect.Invalid is used as a generic wildcard
 		out:  []reflect.Kind{reflect.Bool},
 	}
+
 	signatureExpl = signature{
-		name: string(keyExpl),
+		name: "Explain",
 		in:   []reflect.Kind{reflect.String, reflect.Interface},
 		out:  []reflect.Kind{reflect.String},
-	}
-
-	checkerSignatures = map[methodKey]signature{
-		keyPass: signaturePass,
-		keyExpl: signatureExpl,
 	}
 )
 
@@ -48,43 +71,9 @@ func IsChecker(in interface{}) bool {
 }
 
 func isPasser(v reflect.Value) bool {
-	return isCheckerMethod(v, keyPass)
+	return signaturePass.match(v)
 }
 
 func isExplainer(v reflect.Value) bool {
-	return isCheckerMethod(v, keyExpl)
-}
-
-func isCheckerMethod(v reflect.Value, k methodKey) bool {
-	s, ok := checkerSignatures[k]
-	return ok && matchMethod(v, s)
-}
-
-func matchMethod(v reflect.Value, s signature) bool {
-	m := v.MethodByName(s.name)
-	if !m.IsValid() {
-		return false
-	}
-	t := m.Type()
-	return matchIn(t, s.in) && matchOut(t, s.out)
-}
-
-func matchIn(t reflect.Type, in []reflect.Kind) bool {
-	return matchValuesKind(t.NumIn(), t.In, in)
-}
-
-func matchOut(t reflect.Type, out []reflect.Kind) bool {
-	return matchValuesKind(t.NumOut(), t.Out, out)
-}
-
-func matchValuesKind(gotLen int, getIthVal func(int) reflect.Type, expKinds []reflect.Kind) bool {
-	if gotLen != len(expKinds) {
-		return false
-	}
-	for i := 0; i < gotLen; i++ {
-		if gotk, expk := getIthVal(i).Kind(), expKinds[i]; expk != reflect.Invalid && gotk != expk {
-			return false
-		}
-	}
-	return true
+	return signatureExpl.match(v)
 }
