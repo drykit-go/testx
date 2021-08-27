@@ -23,7 +23,7 @@ func (r *valueRunner) DryRun() Resulter {
 	return r.baseResults()
 }
 
-func (r *valueRunner) MustBe(exp interface{}) ValueRunner {
+func (r *valueRunner) Exp(exp interface{}) ValueRunner {
 	pass := func(got interface{}) bool { return deq(got, exp) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf("%s: expect %v, got %v", label, exp, got)
@@ -36,7 +36,7 @@ func (r *valueRunner) MustBe(exp interface{}) ValueRunner {
 	return r
 }
 
-func (r *valueRunner) MustNotBe(values ...interface{}) ValueRunner {
+func (r *valueRunner) ExpNot(values ...interface{}) ValueRunner {
 	for _, nexp := range values {
 		nexp := nexp
 		pass := func(got interface{}) bool { return !deq(got, nexp) }
@@ -52,7 +52,7 @@ func (r *valueRunner) MustNotBe(values ...interface{}) ValueRunner {
 	return r
 }
 
-func (r *valueRunner) MustPass(checkers ...interface{}) ValueRunner {
+func (r *valueRunner) Pass(checkers ...interface{}) ValueRunner {
 	r.addChecks("value", func() gottype { return r.value }, checkers, false)
 	return r
 }

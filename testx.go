@@ -22,12 +22,12 @@ type (
 		// DryRun returns a Resulter to access test results
 		// without running it.
 		DryRun() Resulter
-		// MustBe adds an equality check on the tested value.
-		MustBe(v interface{}) ValueRunner
-		// MustNotBe adds inequality checks on the tested value.
-		MustNotBe(v ...interface{}) ValueRunner
-		// MustOass adds checkers on the tested value.
-		MustPass(checkers ...interface{}) ValueRunner
+		// Exp adds an equality check on the tested value.
+		Exp(value interface{}) ValueRunner
+		// ExpNot adds inequality checks on the tested value.
+		ExpNot(values ...interface{}) ValueRunner
+		// Pass adds checkers on the tested value.
+		Pass(checkers ...interface{}) ValueRunner
 	}
 
 	// TableRunner provides methods to perform tests on a given func

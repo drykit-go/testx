@@ -12,9 +12,9 @@ import (
 
 func ExampleValueRunner() {
 	results := testx.Value(42).
-		MustBe(42).
-		MustNotBe(3, "hello").
-		MustPass(check.Int.InRange(41, 43)).
+		Exp(42).
+		ExpNot(3, "hello").
+		Pass(check.Int.InRange(41, 43)).
 		// Run(t) // can be used in a test func
 		DryRun()
 
@@ -27,9 +27,9 @@ func ExampleValueRunner() {
 func TestValueRunner(t *testing.T) {
 	t.Run("should pass", func(t *testing.T) {
 		res := testx.Value(42).
-			MustBe(42).
-			MustNotBe(3, "hello").
-			MustPass(check.Int.InRange(41, 43)).
+			Exp(42).
+			ExpNot(3, "hello").
+			Pass(check.Int.InRange(41, 43)).
 			DryRun()
 
 		exp := baseResults{
@@ -51,9 +51,9 @@ func TestValueRunner(t *testing.T) {
 
 	t.Run("should fail", func(t *testing.T) {
 		res := testx.Value(42).
-			MustBe(99).
-			MustNotBe(99, 42).
-			MustPass(check.Int.LT(10)).
+			Exp(99).
+			ExpNot(99, 42).
+			Pass(check.Int.LT(10)).
 			DryRun()
 
 		exp := baseResults{
