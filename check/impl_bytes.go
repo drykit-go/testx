@@ -8,10 +8,10 @@ import (
 	"reflect"
 )
 
-type bytesCheckFactory struct{}
+type bytesCheckerFactory struct{}
 
-func (bytesCheckFactory) Is(tar []byte) BytesChecker {
-	return bytesCheck{
+func (bytesCheckerFactory) Is(tar []byte) BytesChecker {
+	return bytesChecker{
 		passFunc: func(got []byte) bool {
 			return bytes.Equal(got, tar)
 		},
@@ -24,9 +24,9 @@ func (bytesCheckFactory) Is(tar []byte) BytesChecker {
 	}
 }
 
-func (bytesCheckFactory) SameJSON(tar []byte) BytesChecker {
+func (bytesCheckerFactory) SameJSON(tar []byte) BytesChecker {
 	var decGot, decTar interface{}
-	return bytesCheck{
+	return bytesChecker{
 		passFunc: func(got []byte) bool {
 			if err := json.Unmarshal(got, &decGot); err != nil {
 				log.Fatal(err)
@@ -45,8 +45,8 @@ func (bytesCheckFactory) SameJSON(tar []byte) BytesChecker {
 	}
 }
 
-func (bytesCheckFactory) Len(c IntChecker) BytesChecker {
-	return bytesCheck{
+func (bytesCheckerFactory) Len(c IntChecker) BytesChecker {
+	return bytesChecker{
 		passFunc: func(got []byte) bool {
 			return c.Pass(len(got))
 		},

@@ -17,7 +17,7 @@ func TestUntypedChecker(t *testing.T) {
 				expExpl: "",
 			},
 			{
-				checker: check.NewIntCheck(isEven, isEvenExpl),
+				checker: check.NewIntChecker(isEven, isEvenExpl),
 				in:      -1,
 				expPass: false,
 				expExpl: "expect value to be even, got -1",

@@ -46,13 +46,13 @@ func TestAssert(t *testing.T) {
 	t.Run("custom checker", func(t *testing.T) {
 		cases := []checkerTestcase{
 			{
-				checker: check.NewIntCheck(isEven, isEvenExpl),
+				checker: check.NewIntChecker(isEven, isEvenExpl),
 				in:      0,
 				expPass: true,
 				expExpl: "",
 			},
 			{
-				checker: check.NewIntCheck(isEven, isEvenExpl),
+				checker: check.NewIntChecker(isEven, isEvenExpl),
 				in:      1,
 				expPass: false,
 				expExpl: "expect value to be even, got 1",

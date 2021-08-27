@@ -163,7 +163,7 @@ func (r *tableRunner) makeChecker(c Case) check.UntypedChecker {
 			c.Lab, r.label, c.In, condString("not ", "", c.Not), c.Exp, got,
 		)
 	}
-	return check.NewUntypedCheck(pass, expl)
+	return check.NewUntypedChecker(pass, expl)
 }
 
 func (r *tableRunner) makeFuncReflection(in interface{}) (funcReflection, error) {

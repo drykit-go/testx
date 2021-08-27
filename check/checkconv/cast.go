@@ -16,7 +16,7 @@ import (
 // FromBytes returns a new check.UntypedChecker from the given Bytes checker.
 // It can be used to facilitate checkers usage by test runners.
 func FromBytes(c check.BytesChecker) check.UntypedChecker {
-	return check.NewUntypedCheck(
+	return check.NewUntypedChecker(
 		func(got interface{}) bool { return c.Pass(got.([]byte)) },
 		c.Explain,
 	)
@@ -25,7 +25,7 @@ func FromBytes(c check.BytesChecker) check.UntypedChecker {
 // FromString returns a new check.UntypedChecker from the given String checker.
 // It can be used to facilitate checkers usage by test runners.
 func FromString(c check.StringChecker) check.UntypedChecker {
-	return check.NewUntypedCheck(
+	return check.NewUntypedChecker(
 		func(got interface{}) bool { return c.Pass(got.(string)) },
 		c.Explain,
 	)
@@ -34,7 +34,7 @@ func FromString(c check.StringChecker) check.UntypedChecker {
 // FromInt returns a new check.UntypedChecker from the given Int checker.
 // It can be used to facilitate checkers usage by test runners.
 func FromInt(c check.IntChecker) check.UntypedChecker {
-	return check.NewUntypedCheck(
+	return check.NewUntypedChecker(
 		func(got interface{}) bool { return c.Pass(got.(int)) },
 		c.Explain,
 	)
@@ -43,7 +43,7 @@ func FromInt(c check.IntChecker) check.UntypedChecker {
 // FromDuration returns a new check.UntypedChecker from the given Duration checker.
 // It can be used to facilitate checkers usage by test runners.
 func FromDuration(c check.DurationChecker) check.UntypedChecker {
-	return check.NewUntypedCheck(
+	return check.NewUntypedChecker(
 		func(got interface{}) bool { return c.Pass(got.(time.Duration)) },
 		c.Explain,
 	)
@@ -52,7 +52,7 @@ func FromDuration(c check.DurationChecker) check.UntypedChecker {
 // FromHTTPHeader returns a new check.UntypedChecker from the given HTTPHeader checker.
 // It can be used to facilitate checkers usage by test runners.
 func FromHTTPHeader(c check.HTTPHeaderChecker) check.UntypedChecker {
-	return check.NewUntypedCheck(
+	return check.NewUntypedChecker(
 		func(got interface{}) bool { return c.Pass(got.(http.Header)) },
 		c.Explain,
 	)

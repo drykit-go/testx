@@ -6,8 +6,8 @@ import (
 )
 
 type (
-	// BytesNativeChecks provides checks on type []byte.
-	BytesNativeChecks interface {
+	// BytesCheckerProvider provides checks on type []byte.
+	BytesCheckerProvider interface {
 		// Is checks the gotten []byte is equal to the target.
 		Is(tar []byte) BytesChecker
 		// SameJSON checks the gotten []byte and the target returns
@@ -18,8 +18,8 @@ type (
 		Len(c IntChecker) BytesChecker
 	}
 
-	// StringNativeChecks provides checks on type string.
-	StringNativeChecks interface {
+	// StringCheckerProvider provides checks on type string.
+	StringCheckerProvider interface {
 		// Is checks the gotten string is equal to the target.
 		Is(tar string) StringChecker
 		// Contains checks the gotten string contains the target substring.
@@ -35,8 +35,8 @@ type (
 		Len(c IntChecker) StringChecker
 	}
 
-	// IntNativeChecks provides checks on type int.
-	IntNativeChecks interface {
+	// IntCheckerProvider provides checks on type int.
+	IntCheckerProvider interface {
 		// InRange checks the gotten int is in the closed interval [lo:hi].
 		InRange(lo, hi int) IntChecker
 		// OutRange checks the gotten int is not in the closed interval [lo:hi].
@@ -55,16 +55,16 @@ type (
 		LTE(tar int) IntChecker
 	}
 
-	// DurationNativeChecks provides checks on type time.Duration.
-	DurationNativeChecks interface {
+	// DurationCheckerProvider provides checks on type time.Duration.
+	DurationCheckerProvider interface {
 		// Over checks the gotten time.Duration is over the target duration.
 		Over(tar time.Duration) DurationChecker
 		// Under checks the gotten time.Duration is under the target duration.
 		Under(tar time.Duration) DurationChecker
 	}
 
-	// HTTPHeaderNativeChecks provides checks on type http.Header.
-	HTTPHeaderNativeChecks interface {
+	// HTTPHeaderCheckerProvider provides checks on type http.Header.
+	HTTPHeaderCheckerProvider interface {
 		// KeySet checks the gotten http.Header has a spcific key set.
 		// The corresponding value is ignored, meaning an empty value
 		// for that key passes the check.
@@ -83,8 +83,8 @@ type (
 		ValueOf(key string, c StringChecker) HTTPHeaderChecker
 	}
 
-	// UntypedNativeChecks provides checks on type interface{}.
-	UntypedNativeChecks interface {
+	// UntypedCheckerProvider provides checks on type interface{}.
+	UntypedCheckerProvider interface {
 		// Custom checks the gotten value passes the given UntypedPassFunc.
 		// The description should typically begin with keywords like "expect"
 		// or "should" for intelligible output.
@@ -95,16 +95,16 @@ type (
 )
 
 var (
-	// Bytes implements BytesNativeChecks.
-	Bytes BytesNativeChecks = bytesCheckFactory{}
-	// String implements StringNativeChecks.
-	String StringNativeChecks = stringCheckFactory{}
-	// Int implements IntNativeChecks.
-	Int IntNativeChecks = intCheckFactory{}
-	// Duration implements DurationNativeChecks.
-	Duration DurationNativeChecks = durationCheckFactory{}
-	// HTTPHeader implements HTTPHeaderNativeChecks.
-	HTTPHeader HTTPHeaderNativeChecks = httpHeaderCheckFactory{}
-	// Untyped implements UntypedNativeChecks.
-	Untyped UntypedNativeChecks = untypedCheckFactory{}
+	// Bytes implements BytesCheckerProvider.
+	Bytes BytesCheckerProvider = bytesCheckerFactory{}
+	// String implements StringCheckerProvider.
+	String StringCheckerProvider = stringCheckerFactory{}
+	// Int implements IntCheckerProvider.
+	Int IntCheckerProvider = intCheckerFactory{}
+	// Duration implements DurationCheckerProvider.
+	Duration DurationCheckerProvider = durationCheckerFactory{}
+	// HTTPHeader implements HTTPHeaderCheckerProvider.
+	HTTPHeader HTTPHeaderCheckerProvider = httpHeaderCheckerFactory{}
+	// Untyped implements UntypedCheckerProvider.
+	Untyped UntypedCheckerProvider = untypedCheckerFactory{}
 )

@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-type durationCheckFactory struct{}
+type durationCheckerFactory struct{}
 
-func (durationCheckFactory) Over(tar time.Duration) DurationChecker {
-	return durationCheck{
+func (durationCheckerFactory) Over(tar time.Duration) DurationChecker {
+	return durationChecker{
 		passFunc: func(got time.Duration) bool {
 			return ms(got) > ms(tar)
 		},
@@ -21,8 +21,8 @@ func (durationCheckFactory) Over(tar time.Duration) DurationChecker {
 	}
 }
 
-func (durationCheckFactory) Under(tar time.Duration) DurationChecker {
-	return durationCheck{
+func (durationCheckerFactory) Under(tar time.Duration) DurationChecker {
+	return durationChecker{
 		passFunc: func(got time.Duration) bool {
 			return ms(got) < ms(tar)
 		},

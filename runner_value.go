@@ -30,7 +30,7 @@ func (r *valueRunner) MustBe(exp interface{}) ValueRunner {
 	r.addCheck(baseCheck{
 		"value",
 		func() gottype { return r.value },
-		check.NewUntypedCheck(pass, expl),
+		check.NewUntypedChecker(pass, expl),
 	})
 	return r
 }
@@ -45,7 +45,7 @@ func (r *valueRunner) MustNotBe(values ...interface{}) ValueRunner {
 		r.addCheck(baseCheck{
 			"value",
 			func() gottype { return r.value },
-			check.NewUntypedCheck(pass, expl),
+			check.NewUntypedChecker(pass, expl),
 		})
 	}
 	return r

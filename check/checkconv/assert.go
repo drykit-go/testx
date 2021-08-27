@@ -21,7 +21,7 @@ func Assert(anyChecker interface{}) (c check.UntypedChecker, ok bool) {
 	}
 
 	v := reflect.ValueOf(anyChecker)
-	c = check.NewUntypedCheck(
+	c = check.NewUntypedChecker(
 		func(got interface{}) bool {
 			gotv := reflect.ValueOf(got)
 			return v.MethodByName(signaturePass.name).
