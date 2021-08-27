@@ -43,23 +43,23 @@ type TableRunner interface {
 	Cases(cases []Case) TableRunner
 }
 
-// HandlerRunner provides methods to perform tests on a http.Handler
+// HTTPHandlerRunner provides methods to perform tests on a http.Handler
 // or http.HandlerFunc.
-type HandlerRunner interface {
+type HTTPHandlerRunner interface {
 	Runner
 	// DryRun returns a HandlerResulter to access test results
 	// without running it.
 	DryRun() HandlerResulter
 	// ResponseHeader adds checkers on the response header.
-	ResponseHeader(...check.HTTPHeaderChecker) HandlerRunner
+	ResponseHeader(...check.HTTPHeaderChecker) HTTPHandlerRunner
 	// ResponseHeader adds checkers on the response status.
-	ResponseStatus(...check.StringChecker) HandlerRunner
+	ResponseStatus(...check.StringChecker) HTTPHandlerRunner
 	// ResponseHeader adds checkers on the response code.
-	ResponseCode(...check.IntChecker) HandlerRunner
+	ResponseCode(...check.IntChecker) HTTPHandlerRunner
 	// ResponseHeader adds checkers on the response body.
-	ResponseBody(...check.BytesChecker) HandlerRunner
+	ResponseBody(...check.BytesChecker) HTTPHandlerRunner
 	// ResponseHeader adds checkers on the handling duration.
-	Duration(...check.DurationChecker) HandlerRunner
+	Duration(...check.DurationChecker) HTTPHandlerRunner
 }
 
 //
@@ -135,15 +135,15 @@ func Value(v interface{}) ValueRunner {
 	return newValueRunner(v)
 }
 
-// Handler returns a HandlerRunner to run tests on a http.Handler
+// HTTPHandler returns a HandlerRunner to run tests on a http.HTTPHandler
 // response to given request.
-func Handler(h http.Handler, r *http.Request) HandlerRunner {
+func HTTPHandler(h http.Handler, r *http.Request) HTTPHandlerRunner {
 	return newHandlerRunner(h.ServeHTTP, r)
 }
 
-// HandlerFunc returns a HandlerRunner to run tests on a http.HandlerFunc
+// HTTPHandlerFunc returns a HandlerRunner to run tests on a http.HTTPHandlerFunc
 // response to a given request.
-func HandlerFunc(hf http.HandlerFunc, r *http.Request) HandlerRunner {
+func HTTPHandlerFunc(hf http.HandlerFunc, r *http.Request) HTTPHandlerRunner {
 	return newHandlerRunner(hf, r)
 }
 

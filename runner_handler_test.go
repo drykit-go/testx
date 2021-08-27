@@ -13,7 +13,7 @@ import (
 
 // Example
 
-func ExampleHandlerRunner() {
+func ExampleHTTPHandlerRunner() {
 	// dummy handler to be tested
 	h := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusTeapot)
@@ -24,7 +24,7 @@ func ExampleHandlerRunner() {
 	// request to the tested handler
 	r, _ := http.NewRequest(http.MethodGet, "/", nil)
 
-	results := testx.HandlerFunc(h, r).
+	results := testx.HTTPHandlerFunc(h, r).
 		ResponseStatus(check.String.Contains("teapot")).
 		ResponseCode(
 			check.Int.OutRange(200, 299),
@@ -59,7 +59,7 @@ func TestHandlerRunner(t *testing.T) {
 	expBody := []byte(`{"message":"Hello, World!"}`)
 
 	t.Run("should pass", func(t *testing.T) {
-		res := testx.HandlerFunc(hf, r).
+		res := testx.HTTPHandlerFunc(hf, r).
 			ResponseCode(check.Int.Is(200)).
 			ResponseBody(check.Bytes.SameJSON(expBody)).
 			DryRun()
@@ -86,7 +86,7 @@ func TestHandlerRunner(t *testing.T) {
 	})
 
 	t.Run("should fail", func(t *testing.T) {
-		res := testx.HandlerFunc(hf, r).
+		res := testx.HTTPHandlerFunc(hf, r).
 			ResponseCode(check.Int.Is(-1)).
 			ResponseBody(check.Bytes.SameJSON(expBody)).
 			DryRun()
