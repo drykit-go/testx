@@ -31,7 +31,7 @@ func TestAssert(t *testing.T) {
 				expExpl: "expect value in range [41:43], got -1",
 			},
 			{
-				checker: check.Untyped.Custom("", func(got interface{}) bool { return true }),
+				checker: check.Value.Custom("", func(got interface{}) bool { return true }),
 				in:      "",
 				expPass: true,
 				expExpl: "",
@@ -100,7 +100,7 @@ func assertRetrieved(t *testing.T, tc checkerTestcase) {
 	assertValidUntypedChecker(t, c, tc)
 }
 
-func assertValidUntypedChecker(t *testing.T, c check.UntypedChecker, tc checkerTestcase) {
+func assertValidUntypedChecker(t *testing.T, c check.ValueChecker, tc checkerTestcase) {
 	if pass := c.Pass(tc.in); pass != tc.expPass {
 		t.Errorf(
 			"unexpected Pass return value with checker %#v: exp %v, got %v",

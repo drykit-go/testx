@@ -83,14 +83,14 @@ type (
 		ValueOf(key string, c StringChecker) HTTPHeaderChecker
 	}
 
-	// UntypedCheckerProvider provides checks on type interface{}.
-	UntypedCheckerProvider interface {
+	// ValueCheckerProvider provides checks on type interface{}.
+	ValueCheckerProvider interface {
 		// Custom checks the gotten value passes the given UntypedPassFunc.
 		// The description should typically begin with keywords like "expect"
 		// or "should" for intelligible output.
 		// For instance, "expect odd number" would output:
 		// 	> "expect odd number, got 42"
-		Custom(desc string, f UntypedPassFunc) UntypedChecker
+		Custom(desc string, f ValuePassFunc) ValueChecker
 	}
 )
 
@@ -105,6 +105,6 @@ var (
 	Duration DurationCheckerProvider = durationCheckerFactory{}
 	// HTTPHeader implements HTTPHeaderCheckerProvider.
 	HTTPHeader HTTPHeaderCheckerProvider = httpHeaderCheckerFactory{}
-	// Untyped implements UntypedCheckerProvider.
-	Untyped UntypedCheckerProvider = untypedCheckerFactory{}
+	// Value implements UntypedCheckerProvider.
+	Value ValueCheckerProvider = valueCheckerFactory{}
 )

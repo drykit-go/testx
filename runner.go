@@ -15,7 +15,7 @@ type (
 	baseCheck struct {
 		label   string
 		get     getfunc
-		checker check.UntypedChecker
+		checker check.ValueChecker
 	}
 )
 
@@ -66,7 +66,7 @@ func (r *baseRunner) addHTTPHeaderChecks(label string, get getfunc, checks []che
 	}
 }
 
-func (r *baseRunner) addUntypedChecks(label string, get getfunc, checks []check.UntypedChecker) {
+func (r *baseRunner) addUntypedChecks(label string, get getfunc, checks []check.ValueChecker) {
 	for _, c := range checks {
 		r.addCheck(baseCheck{label: label, get: get, checker: c})
 	}

@@ -150,7 +150,7 @@ func (r *tableRunner) validateConfig(f funcReflection) error {
 	return nil
 }
 
-func (r *tableRunner) makeChecker(c Case) check.UntypedChecker {
+func (r *tableRunner) makeChecker(c Case) check.ValueChecker {
 	checker, ok := checkconv.Assert(c.Exp)
 	if ok {
 		return checker
@@ -163,7 +163,7 @@ func (r *tableRunner) makeChecker(c Case) check.UntypedChecker {
 			c.Lab, r.label, c.In, condString("not ", "", c.Not), c.Exp, got,
 		)
 	}
-	return check.NewUntypedChecker(pass, expl)
+	return check.NewValueChecker(pass, expl)
 }
 
 func (r *tableRunner) makeFuncReflection(in interface{}) (funcReflection, error) {

@@ -15,13 +15,13 @@ import (
 //
 // However, Cast should be the first choice for a known checker type
 // as Assert is about 10 times slower.
-func Assert(anyChecker interface{}) (c check.UntypedChecker, ok bool) {
+func Assert(anyChecker interface{}) (c check.ValueChecker, ok bool) {
 	if !IsChecker(anyChecker) {
 		return
 	}
 
 	v := reflect.ValueOf(anyChecker)
-	c = check.NewUntypedChecker(
+	c = check.NewValueChecker(
 		func(got interface{}) bool {
 			gotv := reflect.ValueOf(got)
 			return v.MethodByName(signaturePass.name).
