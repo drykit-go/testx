@@ -1,7 +1,6 @@
 package checkconv_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/drykit-go/testx/check"
@@ -100,21 +99,6 @@ func assertCasted(t *testing.T, tc checkerTestcase) {
 	assertValidValueChecker(t, c, tc)
 }
 
-func assertValidValueChecker(t *testing.T, c check.ValueChecker, tc checkerTestcase) {
-	if pass := c.Pass(tc.in); pass != tc.expPass {
-		t.Errorf(
-			"unexpected Pass return value with checker %#v: exp %v, got %v",
-			tc.checker, tc.expPass, pass,
-		)
-	}
-	if expl := c.Explain("value", tc.in); tc.expExpl != "" && expl != tc.expExpl {
-		t.Errorf(
-			"unexpected Explain return value with checker %#v: exp %v, got %v",
-			tc.checker, tc.expPass, expl,
-		)
-	}
-}
-
 func assertNotCasted(t *testing.T, badChecker interface{}) {
 	got, ok := checkconv.Cast(badChecker)
 	if ok {
@@ -123,11 +107,4 @@ func assertNotCasted(t *testing.T, badChecker interface{}) {
 	if got != nil {
 		t.Errorf("returned a non-nil checker from bad input: %#v", badChecker)
 	}
-}
-
-// isEven is a dummy func for custom checkers
-func isEven(n int) bool { return n&1 == 0 }
-
-func isEvenExpl(_ string, got interface{}) string {
-	return fmt.Sprintf("expect value to be even, got %v", got)
 }
