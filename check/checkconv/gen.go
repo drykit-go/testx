@@ -1,6 +1,6 @@
 package checkconv
 
-//go:generate go run ../../cmd/gen/main.go -t checkconv.gotmpl -o checkconv.go
+//go:generate go run ../../cmd/gen/main.go -t cast.gotmpl -o cast.go
 
 // For every type {N,T} defined in ../gen/types.go, running go generate
 // will create the following definitions:
@@ -12,7 +12,7 @@ package checkconv
 //		)
 //	}
 //
-// It will also add a new case in the switch statement of func UntypedChecked:
+// It will also add a new case in the switch statement of func Cast:
 //
 //	case check.NChecker:
 //		return FromN(c)

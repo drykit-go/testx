@@ -32,7 +32,7 @@ func (r *baseRunner) addChecks(label string, get getFunc, checks []interface{}) 
 		if !checkconv.IsChecker(c) {
 			panic("invalid checker provided to MustPass")
 		}
-		r.addCheck(testCheck{label: label, get: get, check: checkconv.UntypedChecker(c)})
+		r.addCheck(testCheck{label: label, get: get, check: checkconv.Cast(c)})
 	}
 }
 

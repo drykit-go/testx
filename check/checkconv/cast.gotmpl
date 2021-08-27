@@ -15,16 +15,16 @@ func From{{.N}}(c check.{{.N}}Checker) check.UntypedChecker {
 {{end}}
 {{end}}
 
-// UntypedChecker takes a typed checker parameter (such as check.IntChecker)
-// and returns its untyped version.
+// Cast takes a known typed checker (such as check.IntChecker)
+// and returns its as a check.UntypedChecker.
 // It can be used to facilitate checkers usage by test runners.
-// It panics if checker is not a known checker type, e.g. a custom checker
-// that implements check.IntChecker will be successfully converted, while
-// a valid implementation of an unknown interface, such as Float64Checker,
-// will panic.
-// For that matter, Retrieve can be used instead.
-func UntypedChecker(checker interface{}) check.UntypedChecker {
-	switch c := checker.(type) {
+// It panics if checker is not a known checker type. For instance,
+// a custom checker that implements check.IntChecker will be successfully
+// converted, while a valid implementation of an unknown interface,
+// such as Float64Checker, will panic.
+// For that matter, Assert can be used instead.
+func Cast(knownChecker interface{}) check.UntypedChecker {
+	switch c := knownChecker.(type) {
 	{{range . -}}
 	{{if ne .N "Untyped" -}}
 	case check.{{.N}}Checker:

@@ -31,21 +31,21 @@ func TestUntypedChecker(t *testing.T) {
 		}
 
 		for _, tc := range cases {
-			c := checkconv.UntypedChecker(tc.checker)
+			c := checkconv.Cast(tc.checker)
 			assertValidUntypedChecker(t, c, tc)
 		}
 	})
 
 	t.Run("unknown checker type", func(t *testing.T) {
 		defer assertPanic(t, "attempt to convert unknown checker type")
-		checkconv.UntypedChecker(validCheckerFloat64{})
+		checkconv.Cast(validCheckerFloat64{})
 	})
 
 	t.Run("invalid checkers", func(t *testing.T) {
 		for _, badChecker := range badCheckers {
 			func() {
 				defer assertPanic(t, "attempt to convert unknown checker type")
-				checkconv.UntypedChecker(badChecker)
+				checkconv.Cast(badChecker)
 			}()
 		}
 	})

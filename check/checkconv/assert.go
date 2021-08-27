@@ -9,7 +9,7 @@ import (
 // Assert returns a check.UntypedChecker built upon the given checker
 // and a bool indicating whether it was successful.
 //
-// Contrary to UntypedChecker, it can perform conversions from checker types
+// Contrary to Cast, it can perform conversions from checker types
 // unknown by package check. That means it can work with any custom
 // implementation provided it is valid (see IsChecker for details).
 func Assert(anyChecker interface{}) (c check.UntypedChecker, ok bool) {
