@@ -1,8 +1,8 @@
-# Default make
+# Default command
 
 .PHONY: default
 default:
-	@make tests
+	@make check
 
 # Generate files
 
@@ -10,13 +10,20 @@ default:
 gen:
 	@go generate ./...
 
-# Lint
+# Check code
+
+.PHONY: check
+check:
+	@make lint
+	@make tests
 
 .PHONY: lint
 lint:
 	@golangci-lint run
 
-# Test
+.PHONY: tests
+tests:
+	@go test ./...
 
 TEST_FUNC=^.*$$
 ifdef t
@@ -30,10 +37,6 @@ endif
 .PHONY: test
 test:
 	@go test -v -timeout 30s -run $(TEST_FUNC) $(TEST_PKG)
-
-.PHONY: tests
-tests:
-	@go test ./...
 
 # Docs
 

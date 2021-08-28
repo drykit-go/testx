@@ -57,10 +57,11 @@ type tableRunner struct {
 
 	label  string
 	config TableConfig
-	get    func(in interface{}) gotType
+	get    func(in interface{}) gottype
 }
 
 func (r *tableRunner) Run(t *testing.T) {
+	t.Helper()
 	r.run(t)
 }
 
@@ -71,10 +72,10 @@ func (r *tableRunner) DryRun() TableResulter {
 func (r *tableRunner) Cases(cases []Case) TableRunner {
 	for _, c := range cases {
 		c := c
-		r.addCheck(testCheck{
-			label: c.Lab,
-			get:   func() gotType { return r.get(c.In) },
-			check: r.makeChecker(c),
+		r.addCheck(baseCheck{
+			label:   c.Lab,
+			get:     func() gottype { return r.get(c.In) },
+			checker: r.makeChecker(c),
 		})
 	}
 	return r
@@ -114,7 +115,7 @@ func (r *tableRunner) setConfig(cfg *TableConfig) {
 }
 
 func (r *tableRunner) setGetFunc(f funcReflection, args []reflect.Value) {
-	r.get = func(in interface{}) gotType {
+	r.get = func(in interface{}) gottype {
 		args[r.config.InPos] = reflect.ValueOf(in)
 		out := f.rval.Call(args)
 		got := out[r.config.OutPos]
@@ -150,9 +151,9 @@ func (r *tableRunner) validateConfig(f funcReflection) error {
 	return nil
 }
 
-func (r *tableRunner) makeChecker(c Case) check.UntypedChecker {
-	if checkconv.IsChecker(c.Exp) {
-		checker, _ := checkconv.Retrieve(c.Exp)
+func (r *tableRunner) makeChecker(c Case) check.ValueChecker {
+	checker, ok := checkconv.Cast(c.Exp)
+	if ok {
 		return checker
 	}
 
@@ -163,7 +164,7 @@ func (r *tableRunner) makeChecker(c Case) check.UntypedChecker {
 			c.Lab, r.label, c.In, condString("not ", "", c.Not), c.Exp, got,
 		)
 	}
-	return check.NewUntypedCheck(pass, expl)
+	return check.NewValueChecker(pass, expl)
 }
 
 func (r *tableRunner) makeFuncReflection(in interface{}) (funcReflection, error) {
@@ -200,9 +201,9 @@ func (r *tableRunner) makeFuncReflection(in interface{}) (funcReflection, error)
 	}, nil
 }
 
-func (r *tableRunner) makeArgs(f funcReflection, cfg TableConfig) ([]reflect.Value, error) {
+func (r *tableRunner) makeFixedArgs(f funcReflection) ([]reflect.Value, error) {
 	nparams := f.rtyp.NumIn()
-	nargs := len(cfg.FixedArgs)
+	nargs := len(r.config.FixedArgs)
 	args := make([]reflect.Value, nparams)
 
 	fillskip := func(at int) []reflect.Value {
@@ -212,9 +213,9 @@ func (r *tableRunner) makeArgs(f funcReflection, cfg TableConfig) ([]reflect.Val
 			case i == at:
 				v = nil
 			case i > at:
-				v = cfg.FixedArgs[i-1]
+				v = r.config.FixedArgs[i-1]
 			default:
-				v = cfg.FixedArgs[i]
+				v = r.config.FixedArgs[i]
 			}
 			args[i] = reflect.ValueOf(v)
 		}
@@ -222,7 +223,7 @@ func (r *tableRunner) makeArgs(f funcReflection, cfg TableConfig) ([]reflect.Val
 	}
 
 	fillall := func() []reflect.Value {
-		for i, v := range cfg.FixedArgs {
+		for i, v := range r.config.FixedArgs {
 			args[i] = reflect.ValueOf(v)
 		}
 		return args
@@ -232,7 +233,7 @@ func (r *tableRunner) makeArgs(f funcReflection, cfg TableConfig) ([]reflect.Val
 	case 0:
 		return fillall(), nil
 	case 1:
-		return fillskip(cfg.InPos), nil
+		return fillskip(r.config.InPos), nil
 	default:
 		return nil, fmt.Errorf("invalid FixedArgs number: %d", nargs)
 	}
@@ -242,16 +243,14 @@ func (r *tableRunner) makeArgs(f funcReflection, cfg TableConfig) ([]reflect.Val
 // Cases() method on the given testedFunc. A TableConfig may be
 // required if the testedFunc accepts several parameters or returns
 // several values.
-func Table(testedFunc interface{}, cfg *TableConfig) TableRunner {
+func newTableRunner(testedFunc interface{}, cfg *TableConfig) TableRunner {
 	r := tableRunner{}
 	r.setConfig(cfg)
 
 	f, err := r.makeFuncReflection(testedFunc)
-	panicOnErr(err)
+	panicOnErr(err, r.validateConfig(f))
 
-	panicOnErr(r.validateConfig(f))
-
-	args, err := r.makeArgs(f, r.config)
+	args, err := r.makeFixedArgs(f)
 	panicOnErr(err)
 
 	r.label = f.name

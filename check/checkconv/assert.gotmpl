@@ -1,0 +1,39 @@
+// Package checkconv provides functions to convert typed checks
+// into generic ones.
+package checkconv
+
+{{range . -}}
+{{if ne .N "Value" }}
+// From{{.N}} returns a new check.ValueChecker from the given {{.N}} checker.
+// It can be used to facilitate checkers usage by test runners.
+func From{{.N}}(c check.{{.N}}Checker) check.ValueChecker {
+	return check.NewValueChecker(
+		func(got interface{}) bool { return c.Pass(got.({{.T}})) },
+		c.Explain,
+	)
+}
+{{end}}
+{{end}}
+
+// Assert takes a known typed checker (such as check.IntChecker)
+// and returns its as a check.ValueChecker.
+// It panics if checker is not a known checker type. For instance,
+// a custom checker that implements check.IntChecker will be successfully
+// converted, while a valid implementation of an unknown interface,
+// such as Complex128Checker, will panic.
+// For that matter, Cast should be used instead.
+func Assert(knownChecker interface{}) check.ValueChecker {
+	switch c := knownChecker.(type) {
+	{{range . -}}
+	case check.{{.N}}Checker:
+	{{if ne .N "Value" -}}
+		return From{{.N}}(c)
+	{{else -}}
+		return c
+	{{end -}}
+	{{end -}}
+	default:
+		log.Panic("attempt to convert unknown checker type")
+		return nil
+	}
+}

@@ -6,10 +6,10 @@ import (
 	"strings"
 )
 
-type stringCheckFactory struct{}
+type stringCheckerFactory struct{}
 
-func (stringCheckFactory) Equal(tar string) StringChecker {
-	return stringCheck{
+func (stringCheckerFactory) Is(tar string) StringChecker {
+	return stringChecker{
 		passFunc: func(got string) bool { return got == tar },
 		explFunc: func(label string, got interface{}) string {
 			return fmt.Sprintf(
@@ -20,8 +20,8 @@ func (stringCheckFactory) Equal(tar string) StringChecker {
 	}
 }
 
-func (stringCheckFactory) Len(c IntChecker) StringChecker {
-	return stringCheck{
+func (stringCheckerFactory) Len(c IntChecker) StringChecker {
+	return stringChecker{
 		passFunc: func(got string) bool { return c.Pass(len(got)) },
 		explFunc: func(label string, got interface{}) string {
 			return fmt.Sprintf(
@@ -32,8 +32,8 @@ func (stringCheckFactory) Len(c IntChecker) StringChecker {
 	}
 }
 
-func (stringCheckFactory) Match(rgx *regexp.Regexp) StringChecker {
-	return stringCheck{
+func (stringCheckerFactory) Match(rgx *regexp.Regexp) StringChecker {
+	return stringChecker{
 		passFunc: func(got string) bool { return rgx.MatchString(got) },
 		explFunc: func(label string, got interface{}) string {
 			return fmt.Sprintf(
@@ -44,8 +44,8 @@ func (stringCheckFactory) Match(rgx *regexp.Regexp) StringChecker {
 	}
 }
 
-func (stringCheckFactory) NotMatch(rgx *regexp.Regexp) StringChecker {
-	return stringCheck{
+func (stringCheckerFactory) NotMatch(rgx *regexp.Regexp) StringChecker {
+	return stringChecker{
 		passFunc: func(got string) bool { return !rgx.MatchString(got) },
 		explFunc: func(label string, got interface{}) string {
 			return fmt.Sprintf(
@@ -56,8 +56,8 @@ func (stringCheckFactory) NotMatch(rgx *regexp.Regexp) StringChecker {
 	}
 }
 
-func (stringCheckFactory) Contains(tar string) StringChecker {
-	return stringCheck{
+func (stringCheckerFactory) Contains(tar string) StringChecker {
+	return stringChecker{
 		passFunc: func(got string) bool { return strings.Contains(got, tar) },
 		explFunc: func(label string, got interface{}) string {
 			return fmt.Sprintf(
@@ -68,8 +68,8 @@ func (stringCheckFactory) Contains(tar string) StringChecker {
 	}
 }
 
-func (stringCheckFactory) NotContains(tar string) StringChecker {
-	return stringCheck{
+func (stringCheckerFactory) NotContains(tar string) StringChecker {
+	return stringChecker{
 		passFunc: func(got string) bool { return !strings.Contains(got, tar) },
 		explFunc: func(label string, got interface{}) string {
 			return fmt.Sprintf(

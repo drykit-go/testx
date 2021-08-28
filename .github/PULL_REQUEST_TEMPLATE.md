@@ -14,4 +14,4 @@
 
 <!-- If relevant, Link an issue ID to close it on merge -->
 
-Closes #XXX
+<!-- Closes #XXX -->

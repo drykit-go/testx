@@ -143,11 +143,12 @@ linters:
     - gosec # security checks
     - govet
     - misspell # typos in strings, comments
-    - prealloc # enfore capacity allocation when possible
+    - prealloc # enforce capacity allocation when possible
     - revive # golint enhancement
     - staticcheck # go vet enhancement
     - structcheck # unused struct fields
     - testpackage # checks on tests (*_test)
+    - thelper # enforce t.Helper()
     - varcheck # unused global var and const
     - wastedassign
   fast: false

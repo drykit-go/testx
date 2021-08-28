@@ -8,58 +8,63 @@ import (
 	"github.com/drykit-go/testx/check"
 )
 
-type (
+//
+// Runners interfaces
+//
 
-	// Runner provides a method Run to perform various tests.
-	Runner interface {
-		// Run runs a test and fails it if a check does not pass.
-		Run(t *testing.T)
-	}
+// Runner provides a method Run to perform various tests.
+type Runner interface {
+	// Run runs a test and fails it if a check does not pass.
+	Run(t *testing.T)
+}
 
-	// ValueRunner provides methods to perform tests on a single value.
-	ValueRunner interface {
-		Runner
-		// DryRun returns a Resulter to access test results
-		// without running it.
-		DryRun() Resulter
-		// MustBe adds an equality check on the tested value.
-		MustBe(v interface{}) ValueRunner
-		// MustNotBe adds inequality checks on the tested value.
-		MustNotBe(v ...interface{}) ValueRunner
-		// MustOass adds checkers on the tested value.
-		MustPass(checkers ...interface{}) ValueRunner
-	}
+// ValueRunner provides methods to perform tests on a single value.
+type ValueRunner interface {
+	Runner
+	// DryRun returns a Resulter to access test results
+	// without running it.
+	DryRun() Resulter
+	// Exp adds an equality check on the tested value.
+	Exp(value interface{}) ValueRunner
+	// ExpNot adds inequality checks on the tested value.
+	ExpNot(values ...interface{}) ValueRunner
+	// Pass adds checkers on the tested value.
+	Pass(checkers ...interface{}) ValueRunner
+}
 
-	// TableRunner provides methods to perform tests on a given func
-	// using a slice of Case.
-	TableRunner interface {
-		Runner
-		// DryRun returns a TableResulter to access test results
-		// without running it.
-		DryRun() TableResulter
-		// Cases adds test cases to be run on the tested func.
-		Cases(cases []Case) TableRunner
-	}
+// TableRunner provides methods to perform tests on a given func
+// using a slice of Case.
+type TableRunner interface {
+	Runner
+	// DryRun returns a TableResulter to access test results
+	// without running it.
+	DryRun() TableResulter
+	// Cases adds test cases to be run on the tested func.
+	Cases(cases []Case) TableRunner
+}
 
-	// HandlerRunner provides methods to perform tests on a http.Handler
-	// or http.HandlerFunc.
-	HandlerRunner interface {
-		Runner
-		// DryRun returns a HandlerResulter to access test results
-		// without running it.
-		DryRun() HandlerResulter
-		// ResponseHeader adds checkers on the response header.
-		ResponseHeader(...check.HTTPHeaderChecker) HandlerRunner
-		// ResponseHeader adds checkers on the response status.
-		ResponseStatus(...check.StringChecker) HandlerRunner
-		// ResponseHeader adds checkers on the response code.
-		ResponseCode(...check.IntChecker) HandlerRunner
-		// ResponseHeader adds checkers on the response body.
-		ResponseBody(...check.BytesChecker) HandlerRunner
-		// ResponseHeader adds checkers on the handling duration.
-		Duration(...check.DurationChecker) HandlerRunner
-	}
-)
+// HTTPHandlerRunner provides methods to perform tests on a http.Handler
+// or http.HandlerFunc.
+type HTTPHandlerRunner interface {
+	Runner
+	// DryRun returns a HandlerResulter to access test results
+	// without running it.
+	DryRun() HandlerResulter
+	// ResponseHeader adds checkers on the response header.
+	ResponseHeader(...check.HTTPHeaderChecker) HTTPHandlerRunner
+	// ResponseHeader adds checkers on the response status.
+	ResponseStatus(...check.StringChecker) HTTPHandlerRunner
+	// ResponseHeader adds checkers on the response code.
+	ResponseCode(...check.IntChecker) HTTPHandlerRunner
+	// ResponseHeader adds checkers on the response body.
+	ResponseBody(...check.BytesChecker) HTTPHandlerRunner
+	// ResponseHeader adds checkers on the handling duration.
+	Duration(...check.DurationChecker) HTTPHandlerRunner
+}
+
+//
+// Results interfaces
+//
 
 // Resulter provides methods to read test results after a dry run.
 type Resulter interface {
@@ -97,6 +102,8 @@ type HandlerResulter interface {
 	ResponseDuration() time.Duration
 }
 
+// TableResulter provides methods to read TableRunner results
+// after a dry run.
 type TableResulter interface {
 	Resulter
 	// PassedAt returns true if the ith test case passed.
@@ -117,4 +124,32 @@ type CheckResult struct {
 	// check.Explainer, typically in format "expect X, got Y".
 	Reason string
 	label  string
+}
+
+//
+// Runners
+//
+
+// Value returns a ValueRunner to run tests on a single value.
+func Value(v interface{}) ValueRunner {
+	return newValueRunner(v)
+}
+
+// HTTPHandler returns a HandlerRunner to run tests on a http.HTTPHandler
+// response to given request.
+func HTTPHandler(h http.Handler, r *http.Request) HTTPHandlerRunner {
+	return newHandlerRunner(h.ServeHTTP, r)
+}
+
+// HTTPHandlerFunc returns a HandlerRunner to run tests on a http.HTTPHandlerFunc
+// response to a given request.
+func HTTPHandlerFunc(hf http.HandlerFunc, r *http.Request) HTTPHandlerRunner {
+	return newHandlerRunner(hf, r)
+}
+
+// Table returns a TableRunner to run test cases on a func. By default,
+// it works with funcs having a single input and output value. However,
+// with an appropriate config it is compatible with any func signature.
+func Table(testedFunc interface{}, cfg *TableConfig) TableRunner {
+	return newTableRunner(testedFunc, cfg)
 }

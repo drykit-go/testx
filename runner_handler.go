@@ -9,7 +9,7 @@ import (
 	"github.com/drykit-go/testx/check"
 )
 
-var _ HandlerRunner = (*handlerRunner)(nil)
+var _ HTTPHandlerRunner = (*handlerRunner)(nil)
 
 type httpResponse struct {
 	header   http.Header
@@ -32,6 +32,7 @@ type handlerRunner struct {
 }
 
 func (r *handlerRunner) Run(t *testing.T) {
+	t.Helper()
 	r.dryRun()
 	r.run(t)
 }
@@ -60,62 +61,58 @@ func (r *handlerRunner) setResponse(rr *httptest.ResponseRecorder, d time.Durati
 	r.response.duration = d
 }
 
-func (r *handlerRunner) ResponseStatus(checks ...check.StringChecker) HandlerRunner {
+func (r *handlerRunner) ResponseStatus(checks ...check.StringChecker) HTTPHandlerRunner {
 	r.addStringChecks(
 		"response status",
-		func() gotType { return r.response.status },
+		func() gottype { return r.response.status },
 		checks,
 	)
 	return r
 }
 
-func (r *handlerRunner) ResponseCode(checks ...check.IntChecker) HandlerRunner {
+func (r *handlerRunner) ResponseCode(checks ...check.IntChecker) HTTPHandlerRunner {
 	r.addIntChecks(
 		"response code",
-		func() gotType { return r.response.code },
+		func() gottype { return r.response.code },
 		checks,
 	)
 	return r
 }
 
-func (r *handlerRunner) ResponseBody(checks ...check.BytesChecker) HandlerRunner {
+func (r *handlerRunner) ResponseBody(checks ...check.BytesChecker) HTTPHandlerRunner {
 	r.addBytesChecks(
 		"response body",
-		func() gotType { return r.response.body },
+		func() gottype { return r.response.body },
 		checks,
 	)
 	return r
 }
 
-func (r *handlerRunner) Duration(checks ...check.DurationChecker) HandlerRunner {
+func (r *handlerRunner) Duration(checks ...check.DurationChecker) HTTPHandlerRunner {
 	r.hasDurationCheck = true
 	r.addDurationChecks(
 		"handling duration",
-		func() gotType { return r.response.duration },
+		func() gottype { return r.response.duration },
 		checks,
 	)
 	return r
 }
 
-func (r *handlerRunner) ResponseHeader(checks ...check.HTTPHeaderChecker) HandlerRunner {
+func (r *handlerRunner) ResponseHeader(checks ...check.HTTPHeaderChecker) HTTPHandlerRunner {
 	r.addHTTPHeaderChecks(
 		"response header",
-		func() gotType { return r.response.header },
+		func() gottype { return r.response.header },
 		checks,
 	)
 	return r
 }
 
-func HandlerFunc(hf http.HandlerFunc, r *http.Request) HandlerRunner {
+func newHandlerRunner(hf http.HandlerFunc, r *http.Request) HTTPHandlerRunner {
 	return &handlerRunner{
 		hf: hf,
 		rr: httptest.NewRecorder(),
 		rq: r,
 	}
-}
-
-func Handler(h http.Handler, r *http.Request) HandlerRunner {
-	return HandlerFunc(h.ServeHTTP, r)
 }
 
 type handlerResults struct {

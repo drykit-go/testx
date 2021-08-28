@@ -6,22 +6,22 @@ import (
 )
 
 type (
-	// BytesNativeChecks provides checks on type []byte.
-	BytesNativeChecks interface {
-		// Equal checks the gotten []byte is equal to the target.
-		Equal(tar []byte) BytesChecker
-		// EqualJSON checks the gotten []byte and the target returns
+	// BytesCheckerProvider provides checks on type []byte.
+	BytesCheckerProvider interface {
+		// Is checks the gotten []byte is equal to the target.
+		Is(tar []byte) BytesChecker
+		// SameJSON checks the gotten []byte and the target returns
 		// the same JSON object.
-		EqualJSON(tar []byte) BytesChecker
+		SameJSON(tar []byte) BytesChecker
 		// Len checks the gotten []byte's length passes the provided
 		// IntChecker.
 		Len(c IntChecker) BytesChecker
 	}
 
-	// StringNativeChecks provides checks on type string.
-	StringNativeChecks interface {
-		// Equal checks the gotten string is equal to the target.
-		Equal(tar string) StringChecker
+	// StringCheckerProvider provides checks on type string.
+	StringCheckerProvider interface {
+		// Is checks the gotten string is equal to the target.
+		Is(tar string) StringChecker
 		// Contains checks the gotten string contains the target substring.
 		Contains(tar string) StringChecker
 		// NotContains checks the gotten string do not contain the target
@@ -35,36 +35,36 @@ type (
 		Len(c IntChecker) StringChecker
 	}
 
-	// IntNativeChecks provides checks on type int.
-	IntNativeChecks interface {
+	// IntCheckerProvider provides checks on type int.
+	IntCheckerProvider interface {
 		// InRange checks the gotten int is in the closed interval [lo:hi].
 		InRange(lo, hi int) IntChecker
-		// NotInRange checks the gotten int is not in the closed interval [lo:hi].
-		NotInRange(lo, hi int) IntChecker
-		// Equal checks the gotten int is equal to the target.
-		Equal(tar int) IntChecker
-		// NotEqual checks the gotten int is not equal to the target.
-		NotEqual(tar int) IntChecker
-		// GreaterThan checks the gotten int is greater than the target.
-		GreaterThan(tar int) IntChecker
-		// GreaterOrEqual checks the gotten int is greater or equal to the target.
-		GreaterOrEqual(tar int) IntChecker
-		// LesserThan checks the gotten int is lesser than the target.
-		LesserThan(tar int) IntChecker
-		// LesserOrEqual checks the gotten int is lesser or equal to the target.
-		LesserOrEqual(tar int) IntChecker
+		// OutRange checks the gotten int is not in the closed interval [lo:hi].
+		OutRange(lo, hi int) IntChecker
+		// Is checks the gotten int is equal to the target.
+		Is(tar int) IntChecker
+		// Not checks the gotten int is not equal to the target.
+		Not(tar int) IntChecker
+		// GT checks the gotten int is greater than the target.
+		GT(tar int) IntChecker
+		// GTE checks the gotten int is greater or equal to the target.
+		GTE(tar int) IntChecker
+		// LT checks the gotten int is lesser than the target.
+		LT(tar int) IntChecker
+		// LTE checks the gotten int is lesser or equal to the target.
+		LTE(tar int) IntChecker
 	}
 
-	// DurationNativeChecks provides checks on type time.Duration.
-	DurationNativeChecks interface {
+	// DurationCheckerProvider provides checks on type time.Duration.
+	DurationCheckerProvider interface {
 		// Over checks the gotten time.Duration is over the target duration.
 		Over(tar time.Duration) DurationChecker
 		// Under checks the gotten time.Duration is under the target duration.
 		Under(tar time.Duration) DurationChecker
 	}
 
-	// HTTPHeaderNativeChecks provides checks on type http.Header.
-	HTTPHeaderNativeChecks interface {
+	// HTTPHeaderCheckerProvider provides checks on type http.Header.
+	HTTPHeaderCheckerProvider interface {
 		// KeySet checks the gotten http.Header has a spcific key set.
 		// The corresponding value is ignored, meaning an empty value
 		// for that key passes the check.
@@ -83,28 +83,28 @@ type (
 		ValueOf(key string, c StringChecker) HTTPHeaderChecker
 	}
 
-	// UntypedNativeChecks provides checks on type interface{}.
-	UntypedNativeChecks interface {
-		// Custom checks the gotten value passes the given UntypedPassFunc.
+	// ValueCheckerProvider provides checks on type interface{}.
+	ValueCheckerProvider interface {
+		// Custom checks the gotten value passes the given ValuePassFunc.
 		// The description should typically begin with keywords like "expect"
 		// or "should" for intelligible output.
 		// For instance, "expect odd number" would output:
 		// 	> "expect odd number, got 42"
-		Custom(desc string, f UntypedPassFunc) UntypedChecker
+		Custom(desc string, f ValuePassFunc) ValueChecker
 	}
 )
 
 var (
-	// Bytes implements BytesNativeChecks.
-	Bytes BytesNativeChecks = bytesCheckFactory{}
-	// String implements StringNativeChecks.
-	String StringNativeChecks = stringCheckFactory{}
-	// Int implements IntNativeChecks.
-	Int IntNativeChecks = intCheckFactory{}
-	// Duration implements DurationNativeChecks.
-	Duration DurationNativeChecks = durationCheckFactory{}
-	// HTTPHeader implements HTTPHeaderNativeChecks.
-	HTTPHeader HTTPHeaderNativeChecks = httpHeaderCheckFactory{}
-	// Untyped implements UntypedNativeChecks.
-	Untyped UntypedNativeChecks = untypedCheckFactory{}
+	// Bytes implements BytesCheckerProvider.
+	Bytes BytesCheckerProvider = bytesCheckerFactory{}
+	// String implements StringCheckerProvider.
+	String StringCheckerProvider = stringCheckerFactory{}
+	// Int implements IntCheckerProvider.
+	Int IntCheckerProvider = intCheckerFactory{}
+	// Duration implements DurationCheckerProvider.
+	Duration DurationCheckerProvider = durationCheckerFactory{}
+	// HTTPHeader implements HTTPHeaderCheckerProvider.
+	HTTPHeader HTTPHeaderCheckerProvider = httpHeaderCheckerFactory{}
+	// Value implements ValueCheckerProvider.
+	Value ValueCheckerProvider = valueCheckerFactory{}
 )

@@ -1,7 +1,6 @@
 package checkconv_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/drykit-go/testx/check"
@@ -15,11 +14,11 @@ type checkerTestcase struct {
 	expExpl string
 }
 
-func TestRetrieve(t *testing.T) {
+func TestCast(t *testing.T) {
 	t.Run("native checker", func(t *testing.T) {
 		cases := []checkerTestcase{
 			{
-				checker: check.Bytes.Equal([]byte{42}),
+				checker: check.Bytes.Is([]byte{42}),
 				in:      []byte{42},
 				expPass: true,
 				expExpl: "",
@@ -31,7 +30,7 @@ func TestRetrieve(t *testing.T) {
 				expExpl: "expect value in range [41:43], got -1",
 			},
 			{
-				checker: check.Untyped.Custom("", func(got interface{}) bool { return true }),
+				checker: check.Value.Custom("", func(got interface{}) bool { return true }),
 				in:      "",
 				expPass: true,
 				expExpl: "",
@@ -39,20 +38,20 @@ func TestRetrieve(t *testing.T) {
 		}
 
 		for _, c := range cases {
-			assertRetrieved(t, c)
+			assertCasted(t, c)
 		}
 	})
 
 	t.Run("custom checker", func(t *testing.T) {
 		cases := []checkerTestcase{
 			{
-				checker: check.NewIntCheck(isEven, isEvenExpl),
+				checker: check.NewIntChecker(isEven, isEvenExpl),
 				in:      0,
 				expPass: true,
 				expExpl: "",
 			},
 			{
-				checker: check.NewIntCheck(isEven, isEvenExpl),
+				checker: check.NewIntChecker(isEven, isEvenExpl),
 				in:      1,
 				expPass: false,
 				expExpl: "expect value to be even, got 1",
@@ -60,7 +59,7 @@ func TestRetrieve(t *testing.T) {
 		}
 
 		for _, c := range cases {
-			assertRetrieved(t, c)
+			assertCasted(t, c)
 		}
 	})
 
@@ -81,53 +80,33 @@ func TestRetrieve(t *testing.T) {
 		}
 
 		for _, c := range cases {
-			assertRetrieved(t, c)
+			assertCasted(t, c)
 		}
 	})
 
 	t.Run("invalid checker", func(t *testing.T) {
 		for _, c := range badCheckers {
-			assertNotRetrieved(t, c)
+			assertNotCasted(t, c)
 		}
 	})
 }
 
-func assertRetrieved(t *testing.T, tc checkerTestcase) {
-	c, ok := checkconv.Retrieve(tc.checker)
+func assertCasted(t *testing.T, tc checkerTestcase) {
+	t.Helper()
+	c, ok := checkconv.Cast(tc.checker)
 	if !ok {
-		t.Errorf("failed to retrieve checker: %#v", tc.checker)
+		t.Errorf("failed to cast checker: %#v", tc.checker)
 	}
-	assertValidUntypedChecker(t, c, tc)
+	assertValidValueChecker(t, c, tc)
 }
 
-func assertValidUntypedChecker(t *testing.T, c check.UntypedChecker, tc checkerTestcase) {
-	if pass := c.Pass(tc.in); pass != tc.expPass {
-		t.Errorf(
-			"unexpected Pass return value with checker %#v: exp %v, got %v",
-			tc.checker, tc.expPass, pass,
-		)
-	}
-	if expl := c.Explain("value", tc.in); tc.expExpl != "" && expl != tc.expExpl {
-		t.Errorf(
-			"unexpected Explain return value with checker %#v: exp %v, got %v",
-			tc.checker, tc.expPass, expl,
-		)
-	}
-}
-
-func assertNotRetrieved(t *testing.T, badChecker interface{}) {
-	got, ok := checkconv.Retrieve(badChecker)
+func assertNotCasted(t *testing.T, badChecker interface{}) {
+	t.Helper()
+	got, ok := checkconv.Cast(badChecker)
 	if ok {
 		t.Errorf("returned ok from bad input: %#v", badChecker)
 	}
 	if got != nil {
 		t.Errorf("returned a non-nil checker from bad input: %#v", badChecker)
 	}
-}
-
-// isEven is a dummy func for custom checkers
-func isEven(n int) bool { return n&1 == 0 }
-
-func isEvenExpl(_ string, got interface{}) string {
-	return fmt.Sprintf("expect value to be even, got %v", got)
 }

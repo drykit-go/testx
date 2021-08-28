@@ -15,6 +15,7 @@ type valueRunner struct {
 }
 
 func (r *valueRunner) Run(t *testing.T) {
+	t.Helper()
 	r.run(t)
 }
 
@@ -22,40 +23,40 @@ func (r *valueRunner) DryRun() Resulter {
 	return r.baseResults()
 }
 
-func (r *valueRunner) MustBe(exp interface{}) ValueRunner {
+func (r *valueRunner) Exp(exp interface{}) ValueRunner {
 	pass := func(got interface{}) bool { return deq(got, exp) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf("%s: expect %v, got %v", label, exp, got)
 	}
-	r.addCheck(testCheck{
+	r.addCheck(baseCheck{
 		"value",
-		func() gotType { return r.value },
-		check.NewUntypedCheck(pass, expl),
+		func() gottype { return r.value },
+		check.NewValueChecker(pass, expl),
 	})
 	return r
 }
 
-func (r *valueRunner) MustNotBe(values ...interface{}) ValueRunner {
+func (r *valueRunner) ExpNot(values ...interface{}) ValueRunner {
 	for _, nexp := range values {
 		nexp := nexp
 		pass := func(got interface{}) bool { return !deq(got, nexp) }
 		expl := func(label string, got interface{}) string {
 			return fmt.Sprintf("%s: expect not %v, got %v", label, nexp, got)
 		}
-		r.addCheck(testCheck{
+		r.addCheck(baseCheck{
 			"value",
-			func() gotType { return r.value },
-			check.NewUntypedCheck(pass, expl),
+			func() gottype { return r.value },
+			check.NewValueChecker(pass, expl),
 		})
 	}
 	return r
 }
 
-func (r *valueRunner) MustPass(checkers ...interface{}) ValueRunner {
-	r.addChecks("value", func() gotType { return r.value }, checkers)
+func (r *valueRunner) Pass(checkers ...interface{}) ValueRunner {
+	r.addChecks("value", func() gottype { return r.value }, checkers, false)
 	return r
 }
 
-func Value(v interface{}) ValueRunner {
+func newValueRunner(v interface{}) ValueRunner {
 	return &valueRunner{value: v}
 }

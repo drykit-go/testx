@@ -2,10 +2,10 @@ package check
 
 import "fmt"
 
-type intCheckFactory struct{}
+type intCheckerFactory struct{}
 
-func (intCheckFactory) InRange(lo, hi int) IntChecker {
-	return intCheck{
+func (intCheckerFactory) InRange(lo, hi int) IntChecker {
+	return intChecker{
 		passFunc: func(got int) bool {
 			return got >= lo && got <= hi
 		},
@@ -18,8 +18,8 @@ func (intCheckFactory) InRange(lo, hi int) IntChecker {
 	}
 }
 
-func (intCheckFactory) NotInRange(lo, hi int) IntChecker {
-	return intCheck{
+func (intCheckerFactory) OutRange(lo, hi int) IntChecker {
+	return intChecker{
 		passFunc: func(got int) bool {
 			return got < lo || got > hi
 		},
@@ -32,8 +32,8 @@ func (intCheckFactory) NotInRange(lo, hi int) IntChecker {
 	}
 }
 
-func (intCheckFactory) Equal(tar int) IntChecker {
-	return intCheck{
+func (intCheckerFactory) Is(tar int) IntChecker {
+	return intChecker{
 		passFunc: func(got int) bool {
 			return got == tar
 		},
@@ -46,8 +46,8 @@ func (intCheckFactory) Equal(tar int) IntChecker {
 	}
 }
 
-func (intCheckFactory) NotEqual(tar int) IntChecker {
-	return intCheck{
+func (intCheckerFactory) Not(tar int) IntChecker {
+	return intChecker{
 		passFunc: func(got int) bool {
 			return got != tar
 		},
@@ -60,8 +60,8 @@ func (intCheckFactory) NotEqual(tar int) IntChecker {
 	}
 }
 
-func (intCheckFactory) GreaterThan(tar int) IntChecker {
-	return intCheck{
+func (intCheckerFactory) GT(tar int) IntChecker {
+	return intChecker{
 		passFunc: func(got int) bool {
 			return got > tar
 		},
@@ -74,8 +74,8 @@ func (intCheckFactory) GreaterThan(tar int) IntChecker {
 	}
 }
 
-func (intCheckFactory) GreaterOrEqual(tar int) IntChecker {
-	return intCheck{
+func (intCheckerFactory) GTE(tar int) IntChecker {
+	return intChecker{
 		passFunc: func(got int) bool {
 			return got >= tar
 		},
@@ -88,8 +88,8 @@ func (intCheckFactory) GreaterOrEqual(tar int) IntChecker {
 	}
 }
 
-func (intCheckFactory) LesserThan(tar int) IntChecker {
-	return intCheck{
+func (intCheckerFactory) LT(tar int) IntChecker {
+	return intChecker{
 		passFunc: func(got int) bool {
 			return got < tar
 		},
@@ -102,8 +102,8 @@ func (intCheckFactory) LesserThan(tar int) IntChecker {
 	}
 }
 
-func (intCheckFactory) LesserOrEqual(tar int) IntChecker {
-	return intCheck{
+func (intCheckerFactory) LTE(tar int) IntChecker {
+	return intChecker{
 		passFunc: func(got int) bool {
 			return got <= tar
 		},
