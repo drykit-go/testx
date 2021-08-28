@@ -5,8 +5,8 @@ package checkconv
 // For every type {N,T} defined in ../gen/types.go, running go generate
 // will create the following definitions:
 //
-//	func FromN(c check.NChecker) check.UntypedChecker {
-//		return check.NewUntypedCheck(
+//	func FromN(c check.NChecker) check.ValueChecker {
+//		return check.NewValueCheck(
 //			func(got interface{}) bool { return c.Pass(got.(T) },
 //			c.Explain,
 //		)

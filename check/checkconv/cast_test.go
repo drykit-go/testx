@@ -95,7 +95,7 @@ func assertCasted(t *testing.T, tc checkerTestcase) {
 	t.Helper()
 	c, ok := checkconv.Cast(tc.checker)
 	if !ok {
-		t.Errorf("failed to retrieve checker: %#v", tc.checker)
+		t.Errorf("failed to cast checker: %#v", tc.checker)
 	}
 	assertValidValueChecker(t, c, tc)
 }

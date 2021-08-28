@@ -6,7 +6,7 @@ import (
 	"github.com/drykit-go/testx/check"
 )
 
-// Cast returns a check.UntypedChecker built upon the given checker
+// Cast returns a check.ValueChecker built upon the given checker
 // and a bool indicating whether it was successful.
 //
 // Contrary to Assert, it can perform conversions from checker types

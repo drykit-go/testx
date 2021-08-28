@@ -85,7 +85,7 @@ type (
 
 	// ValueCheckerProvider provides checks on type interface{}.
 	ValueCheckerProvider interface {
-		// Custom checks the gotten value passes the given UntypedPassFunc.
+		// Custom checks the gotten value passes the given ValuePassFunc.
 		// The description should typically begin with keywords like "expect"
 		// or "should" for intelligible output.
 		// For instance, "expect odd number" would output:
@@ -105,6 +105,6 @@ var (
 	Duration DurationCheckerProvider = durationCheckerFactory{}
 	// HTTPHeader implements HTTPHeaderCheckerProvider.
 	HTTPHeader HTTPHeaderCheckerProvider = httpHeaderCheckerFactory{}
-	// Value implements UntypedCheckerProvider.
+	// Value implements ValueCheckerProvider.
 	Value ValueCheckerProvider = valueCheckerFactory{}
 )
