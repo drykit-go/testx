@@ -36,24 +36,3 @@ type (
 	}
 	{{end}}
 )
-
-{{range . -}}
-// {{camelcase .N}}Checker is an implementation of {{.N}}Checker interface
-type {{camelcase .N}}Checker struct {
-	passFunc {{.N}}PassFunc
-	explFunc ExplainFunc
-}
-
-// Pass returns a boolean that indicates whether the gotten {{.T}} value
-// passes the current check.
-func (c {{camelcase .N}}Checker) Pass(got {{.T}}) bool { return c.passFunc(got) }
-
-// Explain explains the reason of a failed check for the gotten value.
-func (c {{camelcase .N}}Checker) Explain(label string, got interface{}) string { return c.explFunc(label, got) }
-
-// New{{.N}}Checker returns a custom {{.N}}Checker with the provided {{.N}}PassFunc
-// and ExplainFunc.
-func New{{.N}}Checker(passFunc {{.N}}PassFunc, explainFunc ExplainFunc) {{.N}}Checker {
-	return {{camelcase .N}}Checker{passFunc: passFunc, explFunc: explainFunc}
-}
-{{end}}
