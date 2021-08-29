@@ -1,0 +1,35 @@
+package check
+
+// baseChecker is a base checker for all checkers. It implements Explainer.
+type baseChecker struct {
+	explFunc ExplainFunc
+}
+
+// Explain returns a string explaining the reason of a failed check
+// for the gotten value.
+func (c baseChecker) Explain(label string, got interface{}) string {
+	return c.explFunc(label, got)
+}
+
+func newBaseChecker(explFunc ExplainFunc) baseChecker {
+	return baseChecker{explFunc: explFunc}
+}
+
+{{range . -}}
+// {{camelcase .N}}Checker is an implementation of {{.N}}Checker interface
+type {{camelcase .N}}Checker struct {
+	baseChecker
+	passFunc {{.N}}PassFunc
+}
+
+// Pass returns a boolean that indicates whether the gotten {{.T}} value
+// passes the current check.
+func (c {{camelcase .N}}Checker) Pass(got {{.T}}) bool { return c.passFunc(got) }
+
+
+// New{{.N}}Checker returns a custom {{.N}}Checker with the provided
+// {{.N}}PassFunc and ExplainFunc.
+func New{{.N}}Checker(passFunc {{.N}}PassFunc, explainFunc ExplainFunc) {{.N}}Checker {
+	return {{camelcase .N}}Checker{baseChecker: newBaseChecker(explainFunc), passFunc: passFunc}
+}
+{{end}}

@@ -163,7 +163,7 @@ func double(n int) int {
 func panicOnUnexpectedArgs(a0 []byte, a2 map[rune][][]float64) {
 	deq := reflect.DeepEqual
 	if !deq(a0, expFixedArgs["a0"]) || !deq(a2, expFixedArgs["a2"]) {
-		log.Fatalf(
+		log.Panicf(
 			"received unexpected args:\na0: %#v\nexp0: %#v\na2: %#v\nexp2: %#v",
 			a0, expFixedArgs["a0"], a2, expFixedArgs["a2"],
 		)
