@@ -7,8 +7,8 @@ import (
 
 type httpHeaderCheckerFactory struct{}
 
-func (httpHeaderCheckerFactory) KeySet(key string) HTTPHeaderChecker {
-	pass := func(got http.Header) bool { return keySet(key, got) }
+func (f httpHeaderCheckerFactory) KeySet(key string) HTTPHeaderChecker {
+	pass := func(got http.Header) bool { return f.keySet(key, got) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
 			"expect %s to have key \"%s\" set, got %+v",
@@ -18,8 +18,8 @@ func (httpHeaderCheckerFactory) KeySet(key string) HTTPHeaderChecker {
 	return NewHTTPHeaderChecker(pass, expl)
 }
 
-func (httpHeaderCheckerFactory) KeyNotSet(key string) HTTPHeaderChecker {
-	pass := func(got http.Header) bool { return !keySet(key, got) }
+func (f httpHeaderCheckerFactory) KeyNotSet(key string) HTTPHeaderChecker {
+	pass := func(got http.Header) bool { return !f.keySet(key, got) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
 			"expect %s not to have key \"%s\" set, got %+v",
@@ -29,8 +29,8 @@ func (httpHeaderCheckerFactory) KeyNotSet(key string) HTTPHeaderChecker {
 	return NewHTTPHeaderChecker(pass, expl)
 }
 
-func (httpHeaderCheckerFactory) ValueSet(val string) HTTPHeaderChecker {
-	pass := func(got http.Header) bool { return valueSet(val, got) }
+func (f httpHeaderCheckerFactory) ValueSet(val string) HTTPHeaderChecker {
+	pass := func(got http.Header) bool { return f.valueSet(val, got) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
 			"expect %s to have value \"%s\" set, got %+v",
@@ -40,8 +40,8 @@ func (httpHeaderCheckerFactory) ValueSet(val string) HTTPHeaderChecker {
 	return NewHTTPHeaderChecker(pass, expl)
 }
 
-func (httpHeaderCheckerFactory) ValueNotSet(val string) HTTPHeaderChecker {
-	pass := func(got http.Header) bool { return !valueSet(val, got) }
+func (f httpHeaderCheckerFactory) ValueNotSet(val string) HTTPHeaderChecker {
+	pass := func(got http.Header) bool { return !f.valueSet(val, got) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
 			"expect %s not to have value \"%s\" set, got %+v",
@@ -63,12 +63,14 @@ func (httpHeaderCheckerFactory) ValueOf(key string, c StringChecker) HTTPHeaderC
 	return NewHTTPHeaderChecker(pass, expl)
 }
 
-func keySet(key string, header http.Header) bool {
+// Helpers
+
+func (f httpHeaderCheckerFactory) keySet(key string, header http.Header) bool {
 	_, ok := header[key]
 	return ok
 }
 
-func valueSet(val string, header http.Header) bool {
+func (f httpHeaderCheckerFactory) valueSet(val string, header http.Header) bool {
 	for _, v := range header {
 		if len(v) == 0 {
 			continue

@@ -52,23 +52,23 @@ func (stringCheckerFactory) NotMatch(rgx *regexp.Regexp) StringChecker {
 	return NewStringChecker(pass, expl)
 }
 
-func (stringCheckerFactory) Contains(tar string) StringChecker {
-	pass := func(got string) bool { return strings.Contains(got, tar) }
+func (stringCheckerFactory) Contains(sub string) StringChecker {
+	pass := func(got string) bool { return strings.Contains(got, sub) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
 			"expect %s to contain substring %s, got %s",
-			label, tar, got,
+			label, sub, got,
 		)
 	}
 	return NewStringChecker(pass, expl)
 }
 
-func (stringCheckerFactory) NotContains(tar string) StringChecker {
-	pass := func(got string) bool { return !strings.Contains(got, tar) }
+func (stringCheckerFactory) NotContains(sub string) StringChecker {
+	pass := func(got string) bool { return !strings.Contains(got, sub) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
 			"expect %s not to contain substring %s, got %s",
-			label, tar, got,
+			label, sub, got,
 		)
 	}
 	return NewStringChecker(pass, expl)
