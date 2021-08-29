@@ -25,10 +25,10 @@ func (bytesCheckerFactory) SameJSON(tar []byte) BytesChecker {
 	var decGot, decTar interface{}
 	pass := func(got []byte) bool {
 		if err := json.Unmarshal(got, &decGot); err != nil {
-			log.Fatal(err)
+			log.Panic(err)
 		}
 		if err := json.Unmarshal(tar, &decTar); err != nil {
-			log.Fatal(err)
+			log.Panic(err)
 		}
 		return reflect.DeepEqual(decGot, decTar)
 	}
