@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-type durationCheckerFactory struct{}
+type durationCheckerProvider struct{}
 
-func (f durationCheckerFactory) Over(tar time.Duration) DurationChecker {
+func (f durationCheckerProvider) Over(tar time.Duration) DurationChecker {
 	pass := func(got time.Duration) bool { return f.ms(got) > f.ms(tar) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
@@ -18,7 +18,7 @@ func (f durationCheckerFactory) Over(tar time.Duration) DurationChecker {
 	return NewDurationChecker(pass, expl)
 }
 
-func (f durationCheckerFactory) Under(tar time.Duration) DurationChecker {
+func (f durationCheckerProvider) Under(tar time.Duration) DurationChecker {
 	pass := func(got time.Duration) bool { return f.ms(got) < f.ms(tar) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
@@ -31,6 +31,6 @@ func (f durationCheckerFactory) Under(tar time.Duration) DurationChecker {
 
 // Helpers
 
-func (f durationCheckerFactory) ms(d time.Duration) int64 {
+func (f durationCheckerProvider) ms(d time.Duration) int64 {
 	return d.Milliseconds()
 }

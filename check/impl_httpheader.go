@@ -5,9 +5,9 @@ import (
 	"net/http"
 )
 
-type httpHeaderCheckerFactory struct{}
+type httpHeaderCheckerProvider struct{}
 
-func (f httpHeaderCheckerFactory) KeySet(key string) HTTPHeaderChecker {
+func (f httpHeaderCheckerProvider) KeySet(key string) HTTPHeaderChecker {
 	pass := func(got http.Header) bool { return f.keySet(key, got) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
@@ -18,7 +18,7 @@ func (f httpHeaderCheckerFactory) KeySet(key string) HTTPHeaderChecker {
 	return NewHTTPHeaderChecker(pass, expl)
 }
 
-func (f httpHeaderCheckerFactory) KeyNotSet(key string) HTTPHeaderChecker {
+func (f httpHeaderCheckerProvider) KeyNotSet(key string) HTTPHeaderChecker {
 	pass := func(got http.Header) bool { return !f.keySet(key, got) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
@@ -29,7 +29,7 @@ func (f httpHeaderCheckerFactory) KeyNotSet(key string) HTTPHeaderChecker {
 	return NewHTTPHeaderChecker(pass, expl)
 }
 
-func (f httpHeaderCheckerFactory) ValueSet(val string) HTTPHeaderChecker {
+func (f httpHeaderCheckerProvider) ValueSet(val string) HTTPHeaderChecker {
 	pass := func(got http.Header) bool { return f.valueSet(val, got) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
@@ -40,7 +40,7 @@ func (f httpHeaderCheckerFactory) ValueSet(val string) HTTPHeaderChecker {
 	return NewHTTPHeaderChecker(pass, expl)
 }
 
-func (f httpHeaderCheckerFactory) ValueNotSet(val string) HTTPHeaderChecker {
+func (f httpHeaderCheckerProvider) ValueNotSet(val string) HTTPHeaderChecker {
 	pass := func(got http.Header) bool { return !f.valueSet(val, got) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
@@ -51,7 +51,7 @@ func (f httpHeaderCheckerFactory) ValueNotSet(val string) HTTPHeaderChecker {
 	return NewHTTPHeaderChecker(pass, expl)
 }
 
-func (httpHeaderCheckerFactory) ValueOf(key string, c StringChecker) HTTPHeaderChecker {
+func (httpHeaderCheckerProvider) ValueOf(key string, c StringChecker) HTTPHeaderChecker {
 	var val string
 	pass := func(got http.Header) bool { val = got.Get(key); return c.Pass(val) }
 	expl := func(label string, got interface{}) string {
@@ -65,12 +65,12 @@ func (httpHeaderCheckerFactory) ValueOf(key string, c StringChecker) HTTPHeaderC
 
 // Helpers
 
-func (f httpHeaderCheckerFactory) keySet(key string, header http.Header) bool {
+func (f httpHeaderCheckerProvider) keySet(key string, header http.Header) bool {
 	_, ok := header[key]
 	return ok
 }
 
-func (f httpHeaderCheckerFactory) valueSet(val string, header http.Header) bool {
+func (f httpHeaderCheckerProvider) valueSet(val string, header http.Header) bool {
 	for _, v := range header {
 		if len(v) == 0 {
 			continue

@@ -6,9 +6,9 @@ import (
 	"strings"
 )
 
-type stringCheckerFactory struct{}
+type stringCheckerProvider struct{}
 
-func (stringCheckerFactory) Is(tar string) StringChecker {
+func (stringCheckerProvider) Is(tar string) StringChecker {
 	pass := func(got string) bool { return got == tar }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
@@ -19,7 +19,7 @@ func (stringCheckerFactory) Is(tar string) StringChecker {
 	return NewStringChecker(pass, expl)
 }
 
-func (stringCheckerFactory) Len(c IntChecker) StringChecker {
+func (stringCheckerProvider) Len(c IntChecker) StringChecker {
 	pass := func(got string) bool { return c.Pass(len(got)) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
@@ -30,7 +30,7 @@ func (stringCheckerFactory) Len(c IntChecker) StringChecker {
 	return NewStringChecker(pass, expl)
 }
 
-func (stringCheckerFactory) Match(rgx *regexp.Regexp) StringChecker {
+func (stringCheckerProvider) Match(rgx *regexp.Regexp) StringChecker {
 	pass := func(got string) bool { return rgx.MatchString(got) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
@@ -41,7 +41,7 @@ func (stringCheckerFactory) Match(rgx *regexp.Regexp) StringChecker {
 	return NewStringChecker(pass, expl)
 }
 
-func (stringCheckerFactory) NotMatch(rgx *regexp.Regexp) StringChecker {
+func (stringCheckerProvider) NotMatch(rgx *regexp.Regexp) StringChecker {
 	pass := func(got string) bool { return !rgx.MatchString(got) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
@@ -52,7 +52,7 @@ func (stringCheckerFactory) NotMatch(rgx *regexp.Regexp) StringChecker {
 	return NewStringChecker(pass, expl)
 }
 
-func (stringCheckerFactory) Contains(sub string) StringChecker {
+func (stringCheckerProvider) Contains(sub string) StringChecker {
 	pass := func(got string) bool { return strings.Contains(got, sub) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
@@ -63,7 +63,7 @@ func (stringCheckerFactory) Contains(sub string) StringChecker {
 	return NewStringChecker(pass, expl)
 }
 
-func (stringCheckerFactory) NotContains(sub string) StringChecker {
+func (stringCheckerProvider) NotContains(sub string) StringChecker {
 	pass := func(got string) bool { return !strings.Contains(got, sub) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(

@@ -96,15 +96,15 @@ type (
 
 var (
 	// Bytes implements BytesCheckerProvider.
-	Bytes BytesCheckerProvider = bytesCheckerFactory{}
+	Bytes BytesCheckerProvider = bytesCheckerProvider{}
 	// String implements StringCheckerProvider.
-	String StringCheckerProvider = stringCheckerFactory{}
+	String StringCheckerProvider = stringCheckerProvider{}
 	// Int implements IntCheckerProvider.
-	Int IntCheckerProvider = intCheckerFactory{}
+	Int IntCheckerProvider = intCheckerProvider{}
 	// Duration implements DurationCheckerProvider.
-	Duration DurationCheckerProvider = durationCheckerFactory{}
+	Duration DurationCheckerProvider = durationCheckerProvider{}
 	// HTTPHeader implements HTTPHeaderCheckerProvider.
-	HTTPHeader HTTPHeaderCheckerProvider = httpHeaderCheckerFactory{}
+	HTTPHeader HTTPHeaderCheckerProvider = httpHeaderCheckerProvider{}
 	// Value implements ValueCheckerProvider.
-	Value ValueCheckerProvider = valueCheckerFactory{}
+	Value ValueCheckerProvider = valueCheckerProvider{}
 )
