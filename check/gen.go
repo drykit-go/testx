@@ -2,7 +2,7 @@ package check
 
 //go:generate go run ../cmd/gen/main.go -k types -t check.gotmpl -o check.go
 //go:generate go run ../cmd/gen/main.go -k types -t checkers.gotmpl -o checkers.go
-//go:generate go run ../cmd/gen/main.go -k interfaces -t impl.gotmpl -o tmp.go
+//go:generate go run ../cmd/gen/main.go -k interfaces -t providers.gotmpl -o providers.go
 
 // For every type {N,T} defined in ./gen/types.go, running go generate
 // will create the following definitions:

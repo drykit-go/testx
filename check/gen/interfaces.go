@@ -44,7 +44,7 @@ func computeInterfaces() ([]InterfaceData, error) {
 	seri := serializer{}
 	fset := token.NewFileSet()
 
-	dir, err := parser.ParseDir(fset, "./", implFilesOnly, parser.ParseComments)
+	dir, err := parser.ParseDir(fset, "./", providersFilesOnly, parser.ParseComments)
 	if err != nil {
 		return nil, err
 	}
@@ -77,8 +77,8 @@ func computeInterfaces() ([]InterfaceData, error) {
 	return interfaces, nil
 }
 
-func implFilesOnly(file fs.FileInfo) bool {
-	return strings.HasPrefix(file.Name(), "impl_") && excludeTestFiles(file)
+func providersFilesOnly(file fs.FileInfo) bool {
+	return strings.HasPrefix(file.Name(), "providers_") && excludeTestFiles(file)
 }
 
 func excludeTestFiles(file fs.FileInfo) bool {
