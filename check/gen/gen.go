@@ -37,7 +37,7 @@ func Types(tpl, out string) error {
 }
 
 func Interfaces(tpl, out string) error {
-	t, err := template.New("interfaces").ParseFiles(tpl)
+	t, err := template.New(tpl).ParseFiles(tpl)
 	if err != nil {
 		return err
 	}

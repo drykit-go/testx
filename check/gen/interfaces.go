@@ -20,45 +20,62 @@ var caseMapping = map[string]string{
 	"value":      "Value",
 }
 
-func interfaceName(factoryName string) string {
-	typ := strings.TrimSuffix(factoryName, interfaceSuffix)
-	upper, ok := caseMapping[typ]
+func typeName(structName string) string {
+	return strings.TrimSuffix(structName, interfaceSuffix)
+}
+
+func interfaceName(structName string) string {
+	upper, ok := caseMapping[typeName(structName)]
 	if !ok {
-		log.Panicf("missing gen.CaseMapping type key for %s", factoryName)
+		log.Panicf("missing gen.CaseMapping type key for %s", structName)
 	}
 	return upper + interfaceSuffix
 }
 
-type InterfaceData struct {
-	Docs    []string
-	Name    string
-	Methods []MethodData
+type ProvidersTemplateData struct {
+	Interfaces []MetaInterface
+	Vars       []MetaVar
 }
 
-type MethodData struct {
+type MetaInterface struct {
+	Docs    []string
+	Name    string
+	Methods []MetaMethod
+}
+
+type MetaMethod struct {
 	Sign string
 	Docs []string
 }
 
-func computeInterfaces() ([]InterfaceData, error) {
+type MetaVar struct {
+	Name, Type, Value string
+}
+
+func computeInterfaces() (ProvidersTemplateData, error) {
 	seri := serializer{}
 	fset := token.NewFileSet()
 
 	dir, err := parser.ParseDir(fset, "./", providersFilesOnly, parser.ParseComments)
 	if err != nil {
-		return nil, err
+		return ProvidersTemplateData{}, err
 	}
 	astp := dir["check"]
 	docp := doc.New(astp, "./", doc.AllDecls)
 
-	interfaces := []InterfaceData{}
-
+	data := ProvidersTemplateData{}
 	for _, t := range docp.Types {
-		itf := InterfaceData{
+		itf := MetaInterface{
 			Name: interfaceName(t.Name),
 			Docs: seri.computeDocLines(t.Doc, map[string]string{
 				t.Name: interfaceName(t.Name),
 			}),
+		}
+
+		vvar := MetaVar{
+			Name:  caseMapping[typeName(t.Name)],
+			Type:  itf.Name,
+			Value: t.Name + "{}",
 		}
 
 		for _, m := range t.Methods {
@@ -66,15 +83,16 @@ func computeInterfaces() ([]InterfaceData, error) {
 			if !m.Decl.Name.IsExported() {
 				continue
 			}
-			itf.Methods = append(itf.Methods, MethodData{
+			itf.Methods = append(itf.Methods, MetaMethod{
 				Sign: seri.buildSignature(m),
 				Docs: seri.computeDocLines(m.Doc, nil),
 			})
 		}
-		interfaces = append(interfaces, itf)
+		data.Interfaces = append(data.Interfaces, itf)
+		data.Vars = append(data.Vars, vvar)
 	}
 
-	return interfaces, nil
+	return data, nil
 }
 
 func providersFilesOnly(file fs.FileInfo) bool {

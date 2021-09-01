@@ -1,7 +1,7 @@
-package checker
+package check
 
 type (
-	{{- range . -}}
+	{{- range .Interfaces -}}
 	{{range .Docs}}
 	// {{.}}
 	{{- end}}
@@ -13,5 +13,12 @@ type (
 		{{.Sign}}
 		{{end}}
 	}
+	{{end}}
+)
+
+var (
+	{{range .Vars -}}
+	// {{.Name}} implements {{.Type}}.
+	{{.Name}} {{.Type}} = {{.Value}}
 	{{end}}
 )
