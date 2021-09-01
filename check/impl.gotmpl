@@ -1,0 +1,17 @@
+package checker
+
+type (
+	{{- range . -}}
+	{{range .Docs}}
+	// {{.}}
+	{{- end}}
+	{{.Name}} interface {
+		{{range .Methods -}}
+		{{range .Docs -}}
+		// {{.}}
+		{{end -}}
+		{{.Sign}}
+		{{end}}
+	}
+	{{end}}
+)
