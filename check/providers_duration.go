@@ -5,8 +5,10 @@ import (
 	"time"
 )
 
+// durationCheckerProvider provides checks on type time.Duration.
 type durationCheckerProvider struct{}
 
+// Over checks the gotten time.Duration is over the target duration.
 func (f durationCheckerProvider) Over(tar time.Duration) DurationChecker {
 	pass := func(got time.Duration) bool { return f.ms(got) > f.ms(tar) }
 	expl := func(label string, got interface{}) string {
@@ -18,6 +20,7 @@ func (f durationCheckerProvider) Over(tar time.Duration) DurationChecker {
 	return NewDurationChecker(pass, expl)
 }
 
+// Under checks the gotten time.Duration is under the target duration.
 func (f durationCheckerProvider) Under(tar time.Duration) DurationChecker {
 	pass := func(got time.Duration) bool { return f.ms(got) < f.ms(tar) }
 	expl := func(label string, got interface{}) string {

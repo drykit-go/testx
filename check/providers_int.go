@@ -2,8 +2,10 @@ package check
 
 import "fmt"
 
+// intCheckerProvider provides checks on type int.
 type intCheckerProvider struct{}
 
+// Is checks the gotten int is equal to the target.
 func (intCheckerProvider) Is(tar int) IntChecker {
 	pass := func(got int) bool { return got == tar }
 	expl := func(label string, got interface{}) string {
@@ -15,6 +17,7 @@ func (intCheckerProvider) Is(tar int) IntChecker {
 	return NewIntChecker(pass, expl)
 }
 
+// Not checks the gotten int is not equal to the target.
 func (intCheckerProvider) Not(tar int) IntChecker {
 	pass := func(got int) bool { return got != tar }
 	expl := func(label string, got interface{}) string {
@@ -26,6 +29,7 @@ func (intCheckerProvider) Not(tar int) IntChecker {
 	return NewIntChecker(pass, expl)
 }
 
+// InRange checks the gotten int is in the closed interval [lo:hi].
 func (f intCheckerProvider) InRange(lo, hi int) IntChecker {
 	pass := func(got int) bool { return f.inrange(got, lo, hi) }
 	expl := func(label string, got interface{}) string {
@@ -37,6 +41,7 @@ func (f intCheckerProvider) InRange(lo, hi int) IntChecker {
 	return NewIntChecker(pass, expl)
 }
 
+// OutRange checks the gotten int is not in the closed interval [lo:hi].
 func (f intCheckerProvider) OutRange(lo, hi int) IntChecker {
 	pass := func(got int) bool { return !f.inrange(got, lo, hi) }
 	expl := func(label string, got interface{}) string {
@@ -48,6 +53,7 @@ func (f intCheckerProvider) OutRange(lo, hi int) IntChecker {
 	return NewIntChecker(pass, expl)
 }
 
+// GT checks the gotten int is greater than the target.
 func (f intCheckerProvider) GT(tar int) IntChecker {
 	pass := func(got int) bool { return !f.lte(got, tar) }
 	expl := func(label string, got interface{}) string {
@@ -59,6 +65,7 @@ func (f intCheckerProvider) GT(tar int) IntChecker {
 	return NewIntChecker(pass, expl)
 }
 
+// GTE checks the gotten int is greater or equal to the target.
 func (f intCheckerProvider) GTE(tar int) IntChecker {
 	pass := func(got int) bool { return !f.lt(got, tar) }
 	expl := func(label string, got interface{}) string {
@@ -70,6 +77,7 @@ func (f intCheckerProvider) GTE(tar int) IntChecker {
 	return NewIntChecker(pass, expl)
 }
 
+// LT checks the gotten int is lesser than the target.
 func (f intCheckerProvider) LT(tar int) IntChecker {
 	pass := func(got int) bool { return f.lt(got, tar) }
 	expl := func(label string, got interface{}) string {
@@ -81,6 +89,7 @@ func (f intCheckerProvider) LT(tar int) IntChecker {
 	return NewIntChecker(pass, expl)
 }
 
+// LTE checks the gotten int is lesser or equal to the target.
 func (f intCheckerProvider) LTE(tar int) IntChecker {
 	pass := func(got int) bool { return f.lte(got, tar) }
 	expl := func(label string, got interface{}) string {

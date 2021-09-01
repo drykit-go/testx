@@ -6,8 +6,10 @@ import (
 	"strings"
 )
 
+// stringCheckerProvider provides checks on type string.
 type stringCheckerProvider struct{}
 
+// Is checks the gotten string is equal to the target.
 func (stringCheckerProvider) Is(tar string) StringChecker {
 	pass := func(got string) bool { return got == tar }
 	expl := func(label string, got interface{}) string {
@@ -19,6 +21,7 @@ func (stringCheckerProvider) Is(tar string) StringChecker {
 	return NewStringChecker(pass, expl)
 }
 
+// Len checks the gotten string's length passes the given IntChecker.
 func (stringCheckerProvider) Len(c IntChecker) StringChecker {
 	pass := func(got string) bool { return c.Pass(len(got)) }
 	expl := func(label string, got interface{}) string {
@@ -30,6 +33,7 @@ func (stringCheckerProvider) Len(c IntChecker) StringChecker {
 	return NewStringChecker(pass, expl)
 }
 
+// Match checks the gotten string matches the given regexp.
 func (stringCheckerProvider) Match(rgx *regexp.Regexp) StringChecker {
 	pass := func(got string) bool { return rgx.MatchString(got) }
 	expl := func(label string, got interface{}) string {
@@ -41,6 +45,7 @@ func (stringCheckerProvider) Match(rgx *regexp.Regexp) StringChecker {
 	return NewStringChecker(pass, expl)
 }
 
+// NotMatch checks the gotten string do not match the given regexp.
 func (stringCheckerProvider) NotMatch(rgx *regexp.Regexp) StringChecker {
 	pass := func(got string) bool { return !rgx.MatchString(got) }
 	expl := func(label string, got interface{}) string {
@@ -52,6 +57,7 @@ func (stringCheckerProvider) NotMatch(rgx *regexp.Regexp) StringChecker {
 	return NewStringChecker(pass, expl)
 }
 
+// Contains checks the gotten string contains the target substring.
 func (stringCheckerProvider) Contains(sub string) StringChecker {
 	pass := func(got string) bool { return strings.Contains(got, sub) }
 	expl := func(label string, got interface{}) string {
@@ -63,6 +69,8 @@ func (stringCheckerProvider) Contains(sub string) StringChecker {
 	return NewStringChecker(pass, expl)
 }
 
+// NotContains checks the gotten string do not contain the target
+// substring.
 func (stringCheckerProvider) NotContains(sub string) StringChecker {
 	pass := func(got string) bool { return !strings.Contains(got, sub) }
 	expl := func(label string, got interface{}) string {
