@@ -8,6 +8,12 @@ import (
 	"github.com/drykit-go/testx/check/gen"
 )
 
+var (
+	tpl  = flag.String("t", "", "go template source file")
+	out  = flag.String("o", "", "output path")
+	kind = flag.String("k", "", "data to be generated (types or interfaces)")
+)
+
 func main() {
 	if err := run(); err != nil {
 		log.Fatal(err)
@@ -15,22 +21,32 @@ func main() {
 }
 
 func run() error {
-	tpl, out, err := readFlags()
-	if err != nil {
+	if err := parseFlags(); err != nil {
 		return err
 	}
 
-	return gen.File(tpl, out)
+	var generate func(string, string) error
+	switch *kind {
+	case "interfaces":
+		generate = gen.Interfaces
+	case "types":
+		generate = gen.Types
+	default:
+		return errors.New("invalid value for -k: expect 'types' or 'interfaces'")
+	}
+	return generate(*tpl, *out)
 }
 
-func readFlags() (tpl, out string, err error) {
-	flag.StringVar(&tpl, "t", "", "go template source file")
-	flag.StringVar(&out, "o", "", "output filename")
+func parseFlags() error {
 	flag.Parse()
-
-	if tpl == "" || out == "" {
-		err = errors.New("need template file (-t) and output path (-o)")
+	if *kind == "" {
+		return errors.New("missing data kind (-k)")
 	}
-
-	return
+	if *tpl == "" {
+		return errors.New("missing template source file (-t)")
+	}
+	if *out == "" {
+		return errors.New("missing output path (-o)")
+	}
+	return nil
 }
