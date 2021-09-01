@@ -33,7 +33,7 @@ func Assert(knownChecker interface{}) check.ValueChecker {
 	{{end -}}
 	{{end -}}
 	default:
-		log.Panic("attempt to convert unknown checker type")
+		log.Panic("assert from unknown checker type")
 		return nil
 	}
 }
