@@ -3,16 +3,35 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"log"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/drykit-go/testx/internal/gen"
 )
 
-var (
-	tpl  = flag.String("t", "", "go template source file")
-	out  = flag.String("o", "", "output path")
-	kind = flag.String("k", "", "data to be generated (types or interfaces)")
+const (
+	// binDirPath is the path from testx root to bin directory.
+	binDirPath = "/testx/bin"
+	// tplDirPath is the relative path from bin/gen to internal/gen/templates.
+	tplDirPath = "../internal/gen/templates"
+	// tplExt is the extension for all template files
+	tplExt = "gotmpl"
+	// outExt is the output file extension
+	outExt = "go"
 )
+
+var (
+	name = flag.String("name", "", "template name in internal/gen (without extension)")
+	kind = flag.String("kind", "", "data to be generated (types or interfaces)")
+)
+
+var kindsFuncs = map[string]func(tpl, out string) error{
+	"interfaces": gen.Interfaces,
+	"types":      gen.Types,
+}
 
 func main() {
 	if err := run(); err != nil {
@@ -25,28 +44,51 @@ func run() error {
 		return err
 	}
 
-	var generate func(string, string) error
-	switch *kind {
-	case "interfaces":
-		generate = gen.Interfaces
-	case "types":
-		generate = gen.Types
-	default:
-		return errors.New("invalid value for -k: expect 'types' or 'interfaces'")
+	tpl, out, err := getFilesPaths()
+	if err != nil {
+		return err
 	}
-	return generate(*tpl, *out)
+
+	generate, ok := kindsFuncs[*kind]
+	if !ok {
+		return fmt.Errorf("unknown gen kind: %s", *kind)
+	}
+
+	return generate(tpl, out)
 }
 
 func parseFlags() error {
 	flag.Parse()
 	if *kind == "" {
-		return errors.New("missing data kind (-k)")
+		return errors.New("missing generation kind (-kind)")
 	}
-	if *tpl == "" {
-		return errors.New("missing template source file (-t)")
-	}
-	if *out == "" {
-		return errors.New("missing output path (-o)")
+	if *name == "" {
+		return errors.New("missing template name (-name)")
 	}
 	return nil
+}
+
+func getFilesPaths() (tplPath, outPath string, err error) {
+	workDir, err := os.Getwd()
+	if err != nil {
+		return
+	}
+	currExe, err := os.Executable()
+	if err != nil {
+		return
+	}
+	currDir := filepath.Dir(currExe)
+	if !strings.HasSuffix(currDir, binDirPath) {
+		// when run with go run, currDir is an unexploitable temp dir,
+		// for that reason we ensure it is run from the executable.
+		return "", "", errors.New("must be run from executable testx/bin/gen")
+	}
+
+	tplPath = filepath.Join(currDir, tplDirPath, filename(*name, tplExt))
+	outPath = filepath.Join(workDir, filename(*name, outExt))
+	return
+}
+
+func filename(name, ext string) string {
+	return fmt.Sprintf("%s.%s", name, ext)
 }
