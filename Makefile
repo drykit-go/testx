@@ -8,6 +8,7 @@ default:
 
 .PHONY: gen
 gen:
+	@go build -o ./bin/gen ./cmd/gen/main.go
 	@go generate ./...
 
 # Check code
