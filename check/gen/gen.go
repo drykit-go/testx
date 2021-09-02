@@ -2,10 +2,10 @@ package gen
 
 import (
 	"fmt"
-	"html/template"
 	"os"
 	"os/exec"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/drykit-go/strcase"
@@ -15,7 +15,7 @@ var tplFuncs = template.FuncMap{
 	"camelcase": strcase.Camel,
 }
 
-func File(tpl, out string) error {
+func Types(tpl, out string) error {
 	t, err := template.
 		New(tpl).
 		Funcs(tplFuncs).
@@ -30,6 +30,29 @@ func File(tpl, out string) error {
 	}
 
 	if err := t.Execute(f, types); err != nil {
+		return err
+	}
+
+	return runFormatter(out)
+}
+
+func Interfaces(tpl, out string) error {
+	t, err := template.New(tpl).ParseFiles(tpl)
+	if err != nil {
+		return err
+	}
+
+	data, err := computeInterfaces()
+	if err != nil {
+		return err
+	}
+
+	f, err := createGenFile(out)
+	if err != nil {
+		return err
+	}
+
+	if err := t.Execute(f, data); err != nil {
 		return err
 	}
 

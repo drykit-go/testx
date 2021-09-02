@@ -8,9 +8,11 @@ import (
 	"reflect"
 )
 
-type bytesCheckerFactory struct{}
+// bytesCheckerProvider provides checks on type []byte.
+type bytesCheckerProvider struct{}
 
-func (bytesCheckerFactory) Is(tar []byte) BytesChecker {
+// Is checks the gotten []byte is equal to the target.
+func (bytesCheckerProvider) Is(tar []byte) BytesChecker {
 	pass := func(got []byte) bool { return bytes.Equal(got, tar) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
@@ -21,7 +23,9 @@ func (bytesCheckerFactory) Is(tar []byte) BytesChecker {
 	return NewBytesChecker(pass, expl)
 }
 
-func (bytesCheckerFactory) SameJSON(tar []byte) BytesChecker {
+// SameJSON checks the gotten []byte and the target returns
+// the same JSON object.
+func (bytesCheckerProvider) SameJSON(tar []byte) BytesChecker {
 	var decGot, decTar interface{}
 	pass := func(got []byte) bool {
 		if err := json.Unmarshal(got, &decGot); err != nil {
@@ -41,7 +45,9 @@ func (bytesCheckerFactory) SameJSON(tar []byte) BytesChecker {
 	return NewBytesChecker(pass, expl)
 }
 
-func (bytesCheckerFactory) Len(c IntChecker) BytesChecker {
+// Len checks the gotten []byte's length passes the provided
+// IntChecker.
+func (bytesCheckerProvider) Len(c IntChecker) BytesChecker {
 	pass := func(got []byte) bool { return c.Pass(len(got)) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(

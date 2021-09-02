@@ -1,0 +1,24 @@
+package check
+
+type (
+	{{- range .Interfaces -}}
+	{{range .Docs}}
+	// {{.}}
+	{{- end}}
+	{{.Name}} interface {
+		{{range .Methods -}}
+		{{range .Docs -}}
+		// {{.}}
+		{{end -}}
+		{{.Sign}}
+		{{end}}
+	}
+	{{end}}
+)
+
+var (
+	{{range .Vars -}}
+	// {{.Name}} implements {{.Type}}.
+	{{.Name}} {{.Type}} = {{.Value}}
+	{{end}}
+)
