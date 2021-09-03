@@ -1,7 +1,6 @@
 package check
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -16,25 +15,31 @@ type structCheckerProvider struct{}
 // result in the same JSON.
 // It panics if any error occurs in the marshaling process.
 func (structCheckerProvider) SameJSON(tar interface{}) ValueChecker {
-	var gotjson, tarjson []byte
+	var gotDec, tarDec interface{}
 	pass := func(got interface{}) bool {
-		gotjson, err := json.MarshalIndent(got, "", "  ")
+		gotJSON, err := json.MarshalIndent(got, "", "  ")
 		if err != nil {
-			log.Panic("cannot convert struct to json:", err)
+			log.Panic("failed to marshal struct to json:", err)
 		}
-		tarjson, err := json.MarshalIndent(tar, "", "  ")
+		tarJSON, err := json.MarshalIndent(tar, "", "  ")
 		if err != nil {
-			log.Panic("cannot convert target to json:", err)
+			log.Panic("failed to marshal target to json:", err)
 		}
-		return bytes.Equal(gotjson, tarjson)
+		if err := json.Unmarshal(gotJSON, &gotDec); err != nil {
+			log.Panic(err)
+		}
+		if err := json.Unmarshal(tarJSON, &tarDec); err != nil {
+			log.Panic(err)
+		}
+		return reflect.DeepEqual(gotDec, tarDec)
 	}
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
 			"exp %s to match JSON:\n"+
-				"%s\n"+
+				"%#v\n"+
 				"got:\n"+
-				"%s",
-			label, string(tarjson), string(gotjson),
+				"%#v",
+			label, tarDec, gotDec,
 		)
 	}
 	return NewValueChecker(pass, expl)
@@ -72,7 +77,7 @@ func (p structCheckerProvider) NotZero() ValueChecker {
 // FieldsEqual checks all given fields equal the exp value.
 // It panics if the fields do not exist or are not exported,
 // or if the tested value is not a struct.
-func (p structCheckerProvider) FieldsEqual(exp interface{}, fields ...string) ValueChecker {
+func (p structCheckerProvider) FieldsEqual(exp interface{}, fields []string) ValueChecker {
 	var badFields []string
 	pass := func(got interface{}) bool {
 		gotv := reflect.ValueOf(got)
@@ -99,7 +104,7 @@ func (p structCheckerProvider) FieldsEqual(exp interface{}, fields ...string) Va
 // FieldsEqual checks all given fields pass the ValueChecker.
 // It panics if the fields do not exist or are not exported,
 // or if the tested value is not a struct.
-func (structCheckerProvider) CheckFields(c ValueChecker, fields ...string) ValueChecker {
+func (structCheckerProvider) CheckFields(c ValueChecker, fields []string) ValueChecker {
 	var badFields []string
 	pass := func(got interface{}) bool {
 		gotv := reflect.ValueOf(got)
