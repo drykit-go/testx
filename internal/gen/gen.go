@@ -16,15 +16,17 @@ var tplFuncs = template.FuncMap{
 }
 
 func Types(tpl, out string) error {
-	t, err := template.
-		New(tpl).
-		Funcs(tplFuncs).
-		ParseFiles(tpl)
+	s, err := readTplFile(tpl)
 	if err != nil {
 		return err
 	}
 
-	f, err := createGenFile(out)
+	t, err := template.New("types").Funcs(tplFuncs).Parse(s)
+	if err != nil {
+		return err
+	}
+
+	f, err := createOutFile(out)
 	if err != nil {
 		return err
 	}
@@ -37,17 +39,22 @@ func Types(tpl, out string) error {
 }
 
 func Interfaces(tpl, out string) error {
-	t, err := template.New(tpl).ParseFiles(tpl)
+	s, err := readTplFile(tpl)
+	if err != nil {
+		return err
+	}
+
+	t, err := template.New(tpl).Parse(s)
+	if err != nil {
+		return err
+	}
+
+	f, err := createOutFile(out)
 	if err != nil {
 		return err
 	}
 
 	data, err := computeInterfaces()
-	if err != nil {
-		return err
-	}
-
-	f, err := createGenFile(out)
 	if err != nil {
 		return err
 	}
@@ -59,7 +66,15 @@ func Interfaces(tpl, out string) error {
 	return runFormatter(out)
 }
 
-func createGenFile(filepath string) (*os.File, error) {
+func readTplFile(filepath string) (string, error) {
+	b, err := os.ReadFile(filepath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read template file %s: %w", filepath, err)
+	}
+	return string(b), nil
+}
+
+func createOutFile(filepath string) (*os.File, error) {
 	f, err := os.Create(filepath)
 	if err != nil {
 		return nil, err
