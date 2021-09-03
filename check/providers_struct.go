@@ -19,30 +19,13 @@ func (structCheckerProvider) SameJSON(tar interface{}) ValueChecker {
 // IsZero checks the gotten struct only contains zero values,
 // meaning it has not been initialized.
 func (structCheckerProvider) IsZero() ValueChecker {
-	pass := func(got interface{}) bool {
-		gotv := reflect.ValueOf(got)
-		return gotv.IsZero()
-	}
-	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"exp %s to contain only zero values\n"+
-				"got %#v",
-			label, got,
-		)
-	}
-	return NewValueChecker(pass, expl)
+	return Value.IsZero()
 }
 
 // NotZero checks the gotten struct contains at least 1 non-zero value,
 // meaning it has been initialized.
 func (p structCheckerProvider) NotZero() ValueChecker {
-	pass := func(got interface{}) bool {
-		return !p.IsZero().Pass(got)
-	}
-	expl := func(label string, got interface{}) string {
-		return p.IsZero().Explain(label+" not", got)
-	}
-	return NewValueChecker(pass, expl)
+	return Value.NotZero()
 }
 
 // FieldsEqual checks all given fields equal the exp value.

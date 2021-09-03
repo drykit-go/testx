@@ -56,6 +56,34 @@ func (p valueCheckerProvider) Not(values ...interface{}) ValueChecker {
 	return NewValueChecker(pass, expl)
 }
 
+// IsZero checks the gotten value is or only contains zero values,
+// meaning it has not been initialized.
+func (valueCheckerProvider) IsZero() ValueChecker {
+	pass := func(got interface{}) bool {
+		return reflect.ValueOf(got).IsZero()
+	}
+	expl := func(label string, got interface{}) string {
+		return fmt.Sprintf(
+			"exp %s to be or contain only zero values\n"+
+				"got %#v",
+			label, got,
+		)
+	}
+	return NewValueChecker(pass, expl)
+}
+
+// NotZero checks the gotten struct contains at least 1 non-zero value,
+// meaning it has been initialized.
+func (p valueCheckerProvider) NotZero() ValueChecker {
+	pass := func(got interface{}) bool {
+		return !p.IsZero().Pass(got)
+	}
+	expl := func(label string, got interface{}) string {
+		return p.IsZero().Explain(label+" not", got)
+	}
+	return NewValueChecker(pass, expl)
+}
+
 // SameJSON checks the gotten value and the target value
 // produce the same JSON, ignoring the keys order.
 // It panics if any error occurs in the marshaling process.
