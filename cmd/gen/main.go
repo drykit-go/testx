@@ -34,16 +34,18 @@ var kindsFuncs = map[string]func(tpl, out string) error{
 }
 
 func main() {
+	if err := parseFlags(); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("⏳ Generating %s %s...\n", *name, *kind)
 	if err := run(); err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("✅ Done")
 }
 
 func run() error {
-	if err := parseFlags(); err != nil {
-		return err
-	}
-
 	tpl, out, err := getFilesPaths()
 	if err != nil {
 		return err

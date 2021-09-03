@@ -8,7 +8,9 @@ default:
 
 .PHONY: gen
 gen:
+	@echo "🛠  Building gen binary"
 	@go build -o ./bin/gen ./cmd/gen/main.go
+	@echo "✅ Done"
 	@go generate ./...
 
 # Check code
