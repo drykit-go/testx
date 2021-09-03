@@ -16,6 +16,8 @@ func (s serializer) serializeExpr(expr ast.Expr) string {
 		return t.Name
 	case *ast.ArrayType:
 		return "[]" + s.serializeExpr(t.Elt)
+	case *ast.Ellipsis:
+		return "..." + s.serializeExpr(t.Elt)
 	case *ast.SelectorExpr:
 		return s.serializeExpr(t.X) + "." + t.Sel.Name
 	case *ast.StarExpr:
