@@ -12,11 +12,23 @@ import (
 type bytesCheckerProvider struct{}
 
 // Is checks the gotten []byte is equal to the target.
-func (bytesCheckerProvider) Is(tar []byte) BytesChecker {
-	pass := func(got []byte) bool { return bytes.Equal(got, tar) }
+func (p bytesCheckerProvider) Is(tar []byte) BytesChecker {
+	pass := func(got []byte) bool { return p.eq(got, tar) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
 			"expect %s to equal %v, got %v",
+			label, tar, got,
+		)
+	}
+	return NewBytesChecker(pass, expl)
+}
+
+// Not checks the gotten []byte is not equal to the target.
+func (p bytesCheckerProvider) Not(tar []byte) BytesChecker {
+	pass := func(got []byte) bool { return !p.eq(got, tar) }
+	expl := func(label string, got interface{}) string {
+		return fmt.Sprintf(
+			"expect %s not to equal %v, got %v",
 			label, tar, got,
 		)
 	}
@@ -56,4 +68,8 @@ func (bytesCheckerProvider) Len(c IntChecker) BytesChecker {
 		)
 	}
 	return NewBytesChecker(pass, expl)
+}
+
+func (bytesCheckerProvider) eq(a, b []byte) bool {
+	return bytes.Equal(a, b)
 }
