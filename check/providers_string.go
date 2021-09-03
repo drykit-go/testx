@@ -21,6 +21,18 @@ func (stringCheckerProvider) Is(tar string) StringChecker {
 	return NewStringChecker(pass, expl)
 }
 
+// Not checks the gotten string is not equal to the target.
+func (stringCheckerProvider) Not(tar string) StringChecker {
+	pass := func(got string) bool { return got != tar }
+	expl := func(label string, got interface{}) string {
+		return fmt.Sprintf(
+			"expect %s to equal %v, got %v",
+			label, tar, got,
+		)
+	}
+	return NewStringChecker(pass, expl)
+}
+
 // Len checks the gotten string's length passes the given IntChecker.
 func (stringCheckerProvider) Len(c IntChecker) StringChecker {
 	pass := func(got string) bool { return c.Pass(len(got)) }
