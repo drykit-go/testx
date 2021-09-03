@@ -56,6 +56,26 @@ func (p valueCheckerProvider) Not(values ...interface{}) ValueChecker {
 	return NewValueChecker(pass, expl)
 }
 
+// SameJSON checks the gotten value and the target value
+// produce the same JSON, ignoring the keys order.
+// It panics if any error occurs in the marshaling process.
+func (valueCheckerProvider) SameJSON(tar interface{}) ValueChecker {
+	var gotDec, tarDec interface{}
+	pass := func(got interface{}) bool {
+		return sameJSONproduced(got, tar, &gotDec, &tarDec)
+	}
+	expl := func(label string, got interface{}) string {
+		return fmt.Sprintf(
+			"exp %s to match JSON:\n"+
+				"%#v\n"+
+				"got:\n"+
+				"%#v",
+			label, tarDec, gotDec,
+		)
+	}
+	return NewValueChecker(pass, expl)
+}
+
 func (valueCheckerProvider) eq(a, b interface{}) bool {
 	return reflect.DeepEqual(a, b)
 }

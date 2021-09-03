@@ -1,9 +1,7 @@
 package check
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 )
@@ -12,37 +10,10 @@ import (
 type structCheckerProvider struct{}
 
 // SameJSON checks the gotten struct and the target value
-// result in the same JSON.
+// produce the same JSON, ignoring the keys order.
 // It panics if any error occurs in the marshaling process.
 func (structCheckerProvider) SameJSON(tar interface{}) ValueChecker {
-	var gotDec, tarDec interface{}
-	pass := func(got interface{}) bool {
-		gotJSON, err := json.MarshalIndent(got, "", "  ")
-		if err != nil {
-			log.Panic("failed to marshal struct to json:", err)
-		}
-		tarJSON, err := json.MarshalIndent(tar, "", "  ")
-		if err != nil {
-			log.Panic("failed to marshal target to json:", err)
-		}
-		if err := json.Unmarshal(gotJSON, &gotDec); err != nil {
-			log.Panic(err)
-		}
-		if err := json.Unmarshal(tarJSON, &tarDec); err != nil {
-			log.Panic(err)
-		}
-		return reflect.DeepEqual(gotDec, tarDec)
-	}
-	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"exp %s to match JSON:\n"+
-				"%#v\n"+
-				"got:\n"+
-				"%#v",
-			label, tarDec, gotDec,
-		)
-	}
-	return NewValueChecker(pass, expl)
+	return Value.SameJSON(tar)
 }
 
 // IsZero checks the gotten struct only contains zero values,

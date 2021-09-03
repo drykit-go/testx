@@ -2,10 +2,7 @@ package check
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
-	"log"
-	"reflect"
 )
 
 // bytesCheckerProvider provides checks on type []byte.
@@ -49,13 +46,7 @@ func (p bytesCheckerProvider) Not(values ...[]byte) BytesChecker {
 func (bytesCheckerProvider) SameJSON(tar []byte) BytesChecker {
 	var decGot, decTar interface{}
 	pass := func(got []byte) bool {
-		if err := json.Unmarshal(got, &decGot); err != nil {
-			log.Panic(err)
-		}
-		if err := json.Unmarshal(tar, &decTar); err != nil {
-			log.Panic(err)
-		}
-		return reflect.DeepEqual(decGot, decTar)
+		return sameJSON(got, tar, &decGot, &decTar)
 	}
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(

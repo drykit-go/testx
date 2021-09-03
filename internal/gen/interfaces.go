@@ -21,6 +21,7 @@ var caseMapping = map[string]string{
 	"httpHeader": "HTTPHeader",
 	"value":      "Value",
 	"struct":     "Struct",
+	"map":        "Map",
 }
 
 func typeName(structName string) string {
