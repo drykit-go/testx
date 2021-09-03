@@ -59,7 +59,7 @@ func (stringCheckerProvider) Match(rgx *regexp.Regexp) StringChecker {
 	pass := func(got string) bool { return rgx.MatchString(got) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
-			"expect %s to match regexp %s, got %s",
+			"expect %s to match regexp %s, got %v",
 			label, rgx.String(), got,
 		)
 	}
@@ -71,7 +71,7 @@ func (stringCheckerProvider) NotMatch(rgx *regexp.Regexp) StringChecker {
 	pass := func(got string) bool { return !rgx.MatchString(got) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
-			"expect %s not to match regexp %s, got %s",
+			"expect %s not to match regexp %s, got %v",
 			label, rgx.String(), got,
 		)
 	}
@@ -83,7 +83,7 @@ func (stringCheckerProvider) Contains(sub string) StringChecker {
 	pass := func(got string) bool { return strings.Contains(got, sub) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
-			"expect %s to contain substring %s, got %s",
+			"expect %s to contain substring %s, got %v",
 			label, sub, got,
 		)
 	}
@@ -96,7 +96,7 @@ func (stringCheckerProvider) NotContains(sub string) StringChecker {
 	pass := func(got string) bool { return !strings.Contains(got, sub) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
-			"expect %s not to contain substring %s, got %s",
+			"expect %s not to contain substring %s, got %v",
 			label, sub, got,
 		)
 	}
