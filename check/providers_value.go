@@ -1,6 +1,9 @@
 package check
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 // valueCheckerProvider provides checks on type interface{}.
 type valueCheckerProvider struct{}
@@ -18,4 +21,41 @@ func (valueCheckerProvider) Custom(desc string, f ValuePassFunc) ValueChecker {
 		)
 	}
 	return NewValueChecker(f, expl)
+}
+
+// Is checks the gotten value is equal to the target.
+func (p valueCheckerProvider) Is(tar interface{}) ValueChecker {
+	pass := func(got interface{}) bool { return p.eq(got, tar) }
+	expl := func(label string, got interface{}) string {
+		return fmt.Sprintf(
+			"expect %s to equal %v, got %v",
+			label, tar, got,
+		)
+	}
+	return NewValueChecker(pass, expl)
+}
+
+// Not checks the gotten value is not equal to the target.
+func (p valueCheckerProvider) Not(values ...interface{}) ValueChecker {
+	var match interface{}
+	pass := func(got interface{}) bool {
+		for _, v := range values {
+			if p.eq(got, v) {
+				match = v
+				return false
+			}
+		}
+		return true
+	}
+	expl := func(label string, got interface{}) string {
+		return fmt.Sprintf(
+			"expect %s not to equal %v, got %v",
+			label, match, got,
+		)
+	}
+	return NewValueChecker(pass, expl)
+}
+
+func (valueCheckerProvider) eq(a, b interface{}) bool {
+	return reflect.DeepEqual(a, b)
 }
