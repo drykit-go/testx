@@ -18,12 +18,21 @@ func (intCheckerProvider) Is(tar int) IntChecker {
 }
 
 // Not checks the gotten int is not equal to the target.
-func (intCheckerProvider) Not(tar int) IntChecker {
-	pass := func(got int) bool { return got != tar }
+func (intCheckerProvider) Not(values ...int) IntChecker {
+	var match int
+	pass := func(got int) bool {
+		for _, v := range values {
+			if got == v {
+				match = v
+				return false
+			}
+		}
+		return true
+	}
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
 			"expect %s != %d, got %d",
-			label, tar, got,
+			label, match, got,
 		)
 	}
 	return NewIntChecker(pass, expl)

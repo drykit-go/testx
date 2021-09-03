@@ -14,7 +14,7 @@ func (stringCheckerProvider) Is(tar string) StringChecker {
 	pass := func(got string) bool { return got == tar }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
-			"expect %s to equal %v, got %v",
+			"expect %s == %v, got %v",
 			label, tar, got,
 		)
 	}
@@ -22,12 +22,21 @@ func (stringCheckerProvider) Is(tar string) StringChecker {
 }
 
 // Not checks the gotten string is not equal to the target.
-func (stringCheckerProvider) Not(tar string) StringChecker {
-	pass := func(got string) bool { return got != tar }
+func (stringCheckerProvider) Not(values ...string) StringChecker {
+	var match string
+	pass := func(got string) bool {
+		for _, v := range values {
+			if got == v {
+				match = v
+				return false
+			}
+		}
+		return true
+	}
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
-			"expect %s to equal %v, got %v",
-			label, tar, got,
+			"expect %s != %v, got %v",
+			label, match, got,
 		)
 	}
 	return NewStringChecker(pass, expl)

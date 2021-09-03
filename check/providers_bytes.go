@@ -24,12 +24,21 @@ func (p bytesCheckerProvider) Is(tar []byte) BytesChecker {
 }
 
 // Not checks the gotten []byte is not equal to the target.
-func (p bytesCheckerProvider) Not(tar []byte) BytesChecker {
-	pass := func(got []byte) bool { return !p.eq(got, tar) }
+func (p bytesCheckerProvider) Not(values ...[]byte) BytesChecker {
+	match := []byte{}
+	pass := func(got []byte) bool {
+		for _, v := range values {
+			if p.eq(got, v) {
+				match = v
+				return false
+			}
+		}
+		return true
+	}
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
 			"expect %s not to equal %v, got %v",
-			label, tar, got,
+			label, match, got,
 		)
 	}
 	return NewBytesChecker(pass, expl)
