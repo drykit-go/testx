@@ -12,6 +12,7 @@ import (
 const interfaceSuffix = "CheckerProvider"
 
 var caseMapping = map[string]string{
+	"bool":       "Bool",
 	"int":        "Int",
 	"bytes":      "Bytes",
 	"string":     "String",
