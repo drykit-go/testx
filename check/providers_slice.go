@@ -25,7 +25,7 @@ func (sliceCheckerProvider) Len(c IntChecker) ValueChecker {
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
 			"exp %s length to pass IntChecker\ngot %s",
-			label, c.Explain(label, got),
+			label, c.Explain(label, reflect.ValueOf(got).Len()),
 		)
 	}
 	return NewValueChecker(pass, expl)
@@ -40,14 +40,14 @@ func (sliceCheckerProvider) Cap(c IntChecker) ValueChecker {
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
 			"exp %s capacity to pass IntChecker\ngot %s",
-			label, c.Explain(label, got),
+			label, c.Explain(label, reflect.ValueOf(got).Cap()),
 		)
 	}
 	return NewValueChecker(pass, expl)
 }
 
 // HasValues checks the gotten slice has the given values set.
-func (p sliceCheckerProvider) HasValues(values ...interface{}) ValueChecker { //nolint: dupl
+func (p sliceCheckerProvider) HasValues(values ...interface{}) ValueChecker {
 	var missing []string
 	pass := func(got interface{}) bool {
 		panicOnUnexpectedKind(got, reflect.Slice)
@@ -143,17 +143,18 @@ func (p sliceCheckerProvider) walkUntil(
 	vslice := reflect.ValueOf(slice)
 	l := vslice.Len()
 	for i := 0; i < l; i++ {
-		v := vslice.Index(i)
-		filter := p.applyFilters(filters...)
-		ignored := filter(i, v)
-		if !ignored && stop(i, v) {
+		v := vslice.Index(i).Interface()
+		filter := p.mergeFilters(filters...)
+		passed := filter(i, v)
+		if passed && stop(i, v) {
 			return true
 		}
 	}
 	return false
 }
 
-func (p sliceCheckerProvider) applyFilters(
+// mergeFilters combinates several filtering funcs into one.
+func (p sliceCheckerProvider) mergeFilters(
 	filters ...func(int, interface{}) bool,
 ) func(int, interface{}) bool {
 	if len(filters) == 0 {
@@ -161,7 +162,7 @@ func (p sliceCheckerProvider) applyFilters(
 	}
 	return func(i int, v interface{}) bool {
 		curr := filters[0]
-		next := p.applyFilters(filters[1:]...)
+		next := p.mergeFilters(filters[1:]...)
 		return curr(i, v) && next(i, v)
 	}
 }
