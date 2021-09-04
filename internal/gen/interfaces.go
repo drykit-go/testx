@@ -11,13 +11,18 @@ import (
 
 const interfaceSuffix = "CheckerProvider"
 
+// TODO: use strcase.Pascal, remove record
 var caseMapping = map[string]string{
+	"bool":       "Bool",
 	"int":        "Int",
 	"bytes":      "Bytes",
 	"string":     "String",
 	"duration":   "Duration",
 	"httpHeader": "HTTPHeader",
 	"value":      "Value",
+	"struct":     "Struct",
+	"map":        "Map",
+	"slice":      "Slice",
 }
 
 func typeName(structName string) string {
