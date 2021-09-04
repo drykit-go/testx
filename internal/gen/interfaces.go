@@ -11,7 +11,7 @@ import (
 
 const interfaceSuffix = "CheckerProvider"
 
-// TODO: strcase.Pascal
+// TODO: use strcase.Pascal, remove record
 var caseMapping = map[string]string{
 	"bool":       "Bool",
 	"int":        "Int",
@@ -22,6 +22,7 @@ var caseMapping = map[string]string{
 	"value":      "Value",
 	"struct":     "Struct",
 	"map":        "Map",
+	"slice":      "Slice",
 }
 
 func typeName(structName string) string {

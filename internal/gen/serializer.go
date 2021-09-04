@@ -18,6 +18,8 @@ func (s serializer) serializeExpr(expr ast.Expr) string {
 		return "[]" + s.serializeExpr(t.Elt)
 	case *ast.Ellipsis:
 		return "..." + s.serializeExpr(t.Elt)
+	case *ast.FuncType:
+		return s.buildSignatureFromType(t, "func")
 	case *ast.SelectorExpr:
 		return s.serializeExpr(t.X) + "." + t.Sel.Name
 	case *ast.StarExpr:
@@ -25,7 +27,7 @@ func (s serializer) serializeExpr(expr ast.Expr) string {
 	case *ast.InterfaceType:
 		return "interface{}"
 	default:
-		log.Panicf("unhandled ast.Expr: %#v", expr)
+		log.Panicf("❌ unhandled ast.Expr: %#v", expr)
 		return ""
 	}
 }
@@ -40,11 +42,11 @@ func (s serializer) joinIdentifiers(idents []*ast.Ident, sep string) (out string
 	return
 }
 
-func (s serializer) buildSignature(f *doc.Func) string {
+func (s serializer) buildSignatureFromType(ftyp *ast.FuncType, name string) string {
 	b := strings.Builder{}
-	b.WriteString(f.Name + "(")
+	b.WriteString(name + "(")
 
-	params := f.Decl.Type.Params.List
+	params := ftyp.Params.List
 	for i, p := range params {
 		pname := s.joinIdentifiers(p.Names, ", ")
 		ptype := s.serializeExpr(p.Type)
@@ -55,7 +57,7 @@ func (s serializer) buildSignature(f *doc.Func) string {
 	}
 	b.WriteString(") ")
 
-	results := f.Decl.Type.Results
+	results := ftyp.Results
 	for i, r := range results.List {
 		b.WriteString(fmt.Sprint(r.Type))
 		if i < results.NumFields()-1 {
@@ -63,6 +65,10 @@ func (s serializer) buildSignature(f *doc.Func) string {
 		}
 	}
 	return b.String()
+}
+
+func (s serializer) buildSignature(f *doc.Func) string {
+	return s.buildSignatureFromType(f.Decl.Type, f.Name)
 }
 
 func (s serializer) computeDocLines(src string, repl map[string]string) []string {
