@@ -132,7 +132,7 @@ linters:
   enable:
     - bodyclose # enforce resp.Body.Close()
     - deadcode
-    - dupl # duplicate code
+    # - dupl # duplicate code
     - errcheck
     - exportloopref
     - gocognit # smart complexity analyzer
