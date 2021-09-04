@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// structCheckerProvider provides checks on type interface{}.
+// structCheckerProvider provides checks on kind struct.
 type structCheckerProvider struct{}
 
 // SameJSON checks the gotten struct and the target value
@@ -49,7 +49,7 @@ func (p structCheckerProvider) FieldsEqual(exp interface{}, fields []string) Val
 			"exp %s fields to equal %v\n"+
 				"got %s",
 			label, exp,
-			strings.Join(badFields, ", "),
+			strings.Join(badFields, ","),
 		)
 	}
 	return NewValueChecker(pass, expl)
@@ -76,7 +76,7 @@ func (structCheckerProvider) CheckFields(c ValueChecker, fields []string) ValueC
 			"exp %s fields to pass ValueChecker\n"+
 				"got %s -> %s",
 			label,
-			strings.Join(badFields, ", "), c.Explain(label, got),
+			strings.Join(badFields, ","), c.Explain(label, got),
 		)
 	}
 	return NewValueChecker(pass, expl)
