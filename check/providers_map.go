@@ -115,14 +115,25 @@ func (p mapCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
 	return NewValueChecker(pass, expl)
 }
 
-func (p mapCheckerProvider) CheckValues(c ValueChecker, keys []interface{}) ValueChecker {
+// CheckValues checks the gotten map's values corresponding to the given keys
+// pass the given checker. A key not found is considered a fail.
+// If len(keys) == 0, the check is made on all map values.
+func (p mapCheckerProvider) CheckValues(c ValueChecker, keys ...interface{}) ValueChecker { //nolint: gocognit // TODO: refactor
 	var badEntries []string
 	pass := func(got interface{}) bool {
 		panicOnUnexpectedKind(got, reflect.Map)
-		for _, expk := range keys {
-			gotv, ok := p.get(got, expk)
-			if !ok || !c.Pass(gotv) {
-				badEntries = append(badEntries, fmt.Sprint(expk))
+		if len(keys) == 0 {
+			p.walk(got, func(gotk, gotv interface{}) {
+				if !c.Pass(gotv) {
+					badEntries = append(badEntries, fmt.Sprint(gotk))
+				}
+			})
+		} else {
+			for _, expk := range keys {
+				gotv, ok := p.get(got, expk)
+				if !ok || !c.Pass(gotv) {
+					badEntries = append(badEntries, fmt.Sprint(expk))
+				}
 			}
 		}
 		return len(badEntries) == 0
@@ -156,4 +167,14 @@ func (mapCheckerProvider) hasValue(gotmap, value interface{}) bool {
 		}
 	}
 	return false
+}
+
+func (mapCheckerProvider) walk(gotmap interface{}, f func(k, v interface{})) {
+	vmap := reflect.ValueOf(gotmap)
+	iter := vmap.MapRange()
+	for iter.Next() {
+		k := iter.Key().Interface()
+		v := iter.Value().Interface()
+		f(k, v)
+	}
 }

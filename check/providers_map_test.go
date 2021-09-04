@@ -93,7 +93,7 @@ func TestMapCheckerProvider(t *testing.T) {
 	t.Run("CheckValues pass", func(t *testing.T) {
 		c := check.Map.CheckValues(
 			checkconv.FromInt(check.Int.InRange(41, 43)),
-			[]interface{}{"age"},
+			"age",
 		)
 		assertPassMapChecker(t, "CheckValues", c, m)
 	})
@@ -101,7 +101,7 @@ func TestMapCheckerProvider(t *testing.T) {
 	t.Run("CheckValues fail", func(t *testing.T) {
 		c := check.Map.CheckValues(
 			checkconv.FromInt(check.Int.OutRange(41, 43)),
-			[]interface{}{"age"},
+			"age",
 		)
 		assertFailMapChecker(t, "CheckValues", c, m)
 	})
