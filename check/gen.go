@@ -16,15 +16,15 @@ package check
 //		Explainer
 //	}
 //
-//	type nCheck struct {
+//	type nChecker struct {
 //		passFunc NPassFunc
 //		explFunc ExplainFunc
 //	}
 //
-//	func (c nCheck) Pass(got T) bool { return c.passFunc(got) }
+//	func (c nChecker) Pass(got T) bool { return c.passFunc(got) }
 //
-//	func (c nCheck) Explain(label string, got interface{}) string { return c.explFunc(label, got) }
+//	func (c nChecker) Explain(label string, got interface{}) string { return c.explFunc(label, got) }
 //
-//	func NewNCheck(passFunc NPassFunc, explainFunc ExplainFunc) NChecker {
-//		return nCheck{passFunc: passFunc, explFunc: explainFunc}
+//	func NewNChecker(passFunc NPassFunc, explainFunc ExplainFunc) NChecker {
+//		return nChecker{passFunc: passFunc, explFunc: explainFunc}
 //	}
