@@ -60,7 +60,7 @@ func (p durationCheckerProvider) OutRange(lo, hi time.Duration) DurationChecker 
 
 func (p durationCheckerProvider) inrange(d, lo, hi time.Duration) bool {
 	nsd, nslo, nshi := p.ns(d), p.ns(lo), p.ns(hi)
-	return nslo < nsd && nsd <= nshi
+	return nslo <= nsd && nsd <= nshi
 }
 
 func (durationCheckerProvider) ms(d time.Duration) int64 {
