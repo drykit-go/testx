@@ -13,60 +13,60 @@ func TestHTTPHeaderCheckerProvider(t *testing.T) {
 		"API_KEY":        []string{"secret0", "secret1"},
 	}
 
-	t.Run("KeySet pass", func(t *testing.T) {
-		c := check.HTTPHeader.KeySet("API_KEY")
-		assertPassHTTPHeaderChecker(t, "KeySet", c, h)
+	t.Run("HasKey pass", func(t *testing.T) {
+		c := check.HTTPHeader.HasKey("API_KEY")
+		assertPassHTTPHeaderChecker(t, "HasKey", c, h)
 	})
 
-	t.Run("KeySet fail", func(t *testing.T) {
-		c := check.HTTPHeader.KeySet("password")
-		assertFailHTTPHeaderChecker(t, "KeySet", c, h)
+	t.Run("HasKey fail", func(t *testing.T) {
+		c := check.HTTPHeader.HasKey("password")
+		assertFailHTTPHeaderChecker(t, "HasKey", c, h)
 	})
 
-	t.Run("KeyNotSet pass", func(t *testing.T) {
-		c := check.HTTPHeader.KeyNotSet("password")
-		assertPassHTTPHeaderChecker(t, "KeyNotSet", c, h)
+	t.Run("HasNotKey pass", func(t *testing.T) {
+		c := check.HTTPHeader.HasNotKey("password")
+		assertPassHTTPHeaderChecker(t, "HasNotKey", c, h)
 	})
 
-	t.Run("KeyNotSet fail", func(t *testing.T) {
-		c := check.HTTPHeader.KeyNotSet("API_KEY")
-		assertFailHTTPHeaderChecker(t, "KeyNotSet", c, h)
+	t.Run("HasNotKey fail", func(t *testing.T) {
+		c := check.HTTPHeader.HasNotKey("API_KEY")
+		assertFailHTTPHeaderChecker(t, "HasNotKey", c, h)
 	})
 
-	t.Run("ValueSet pass", func(t *testing.T) {
-		c := check.HTTPHeader.ValueSet("42")
-		assertPassHTTPHeaderChecker(t, "ValueSet", c, h)
-		c = check.HTTPHeader.ValueSet("secret0")
-		assertPassHTTPHeaderChecker(t, "ValueSet", c, h)
+	t.Run("HasValue pass", func(t *testing.T) {
+		c := check.HTTPHeader.HasValue("42")
+		assertPassHTTPHeaderChecker(t, "HasValue", c, h)
+		c = check.HTTPHeader.HasValue("secret0")
+		assertPassHTTPHeaderChecker(t, "HasValue", c, h)
 	})
 
-	t.Run("ValueSet fail", func(t *testing.T) {
-		c := check.HTTPHeader.ValueSet("secret42")
-		assertFailHTTPHeaderChecker(t, "ValueSet", c, h)
-		c = check.HTTPHeader.ValueSet("secret1")
-		assertFailHTTPHeaderChecker(t, "ValueSet", c, h)
+	t.Run("HasValue fail", func(t *testing.T) {
+		c := check.HTTPHeader.HasValue("secret42")
+		assertFailHTTPHeaderChecker(t, "HasValue", c, h)
+		c = check.HTTPHeader.HasValue("secret1")
+		assertFailHTTPHeaderChecker(t, "HasValue", c, h)
 	})
 
-	t.Run("ValueNotSet pass", func(t *testing.T) {
-		c := check.HTTPHeader.ValueNotSet("secret42")
-		assertPassHTTPHeaderChecker(t, "ValueNotSet", c, h)
+	t.Run("HasNotValue pass", func(t *testing.T) {
+		c := check.HTTPHeader.HasNotValue("secret42")
+		assertPassHTTPHeaderChecker(t, "HasNotValue", c, h)
 	})
 
-	t.Run("ValueNotSet fail", func(t *testing.T) {
-		c := check.HTTPHeader.ValueNotSet("42")
-		assertFailHTTPHeaderChecker(t, "ValueNotSet", c, h)
-		c = check.HTTPHeader.ValueNotSet("secret0")
-		assertFailHTTPHeaderChecker(t, "ValueNotSet", c, h)
+	t.Run("HasNotValue fail", func(t *testing.T) {
+		c := check.HTTPHeader.HasNotValue("42")
+		assertFailHTTPHeaderChecker(t, "HasNotValue", c, h)
+		c = check.HTTPHeader.HasNotValue("secret0")
+		assertFailHTTPHeaderChecker(t, "HasNotValue", c, h)
 	})
 
-	t.Run("ValueOf pass", func(t *testing.T) {
-		c := check.HTTPHeader.ValueOf("API_KEY", check.String.Is("secret0"))
-		assertPassHTTPHeaderChecker(t, "ValueOf", c, h)
+	t.Run("CheckValue pass", func(t *testing.T) {
+		c := check.HTTPHeader.CheckValue("API_KEY", check.String.Is("secret0"))
+		assertPassHTTPHeaderChecker(t, "CheckValue", c, h)
 	})
 
-	t.Run("ValueOf fail", func(t *testing.T) {
-		c := check.HTTPHeader.ValueOf("API_KEY", check.String.Not("secret0"))
-		assertFailHTTPHeaderChecker(t, "ValueOf", c, h)
+	t.Run("CheckValue fail", func(t *testing.T) {
+		c := check.HTTPHeader.CheckValue("API_KEY", check.String.Not("secret0"))
+		assertFailHTTPHeaderChecker(t, "CheckValue", c, h)
 	})
 }
 

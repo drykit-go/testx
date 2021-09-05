@@ -4,9 +4,9 @@ import "testing"
 
 func failCheckerTest(t *testing.T, expPass bool, name, expl string) {
 	t.Helper()
-	passOrFail := "pass"
+	passOrFail := "PASS"
 	if !expPass {
-		passOrFail = "fail"
+		passOrFail = "FAIL"
 	}
-	t.Errorf("should %s %s, explain:\n%s", passOrFail, name, expl)
+	t.Errorf("\n❌ exp %s to %s, explain:\n%s", name, passOrFail, expl)
 }

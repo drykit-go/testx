@@ -35,8 +35,8 @@ func ExampleHTTPHandlerRunner() {
 			check.Bytes.Len(check.Int.GTE(20)),
 		).
 		ResponseHeader(
-			check.HTTPHeader.KeyNotSet("SOME_SECRET"),
-			check.HTTPHeader.ValueOf("Content-Type", check.String.Contains("json")),
+			check.HTTPHeader.HasNotKey("SOME_SECRET"),
+			check.HTTPHeader.CheckValue("Content-Type", check.String.Contains("json")),
 		).
 		Duration(check.Duration.Under(50 * time.Millisecond)).
 		// Run(t) // can be used in a test func
