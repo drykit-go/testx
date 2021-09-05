@@ -35,7 +35,7 @@ func BenchmarkAssert(b *testing.B) {
 		}
 	})
 	b.Run("check.HTTPHeaderChecker last_case", func(b *testing.B) {
-		c := check.HTTPHeader.KeySet("")
+		c := check.HTTPHeader.HasKey("")
 		for i := 0; i < b.N; i++ {
 			checkconv.Assert(c)
 		}
