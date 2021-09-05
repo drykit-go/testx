@@ -25,7 +25,7 @@ func (valueCheckerProvider) Custom(desc string, f ValuePassFunc) ValueChecker {
 
 // Is checks the gotten value is equal to the target.
 func (p valueCheckerProvider) Is(tar interface{}) ValueChecker {
-	pass := func(got interface{}) bool { return p.eq(got, tar) }
+	pass := func(got interface{}) bool { return deq(got, tar) }
 	expl := func(label string, got interface{}) string {
 		return fmt.Sprintf(
 			"expect %s to equal %v, got %v",
@@ -40,7 +40,7 @@ func (p valueCheckerProvider) Not(values ...interface{}) ValueChecker {
 	var match interface{}
 	pass := func(got interface{}) bool {
 		for _, v := range values {
-			if p.eq(got, v) {
+			if deq(got, v) {
 				match = v
 				return false
 			}
@@ -102,8 +102,4 @@ func (valueCheckerProvider) SameJSON(tar interface{}) ValueChecker {
 		)
 	}
 	return NewValueChecker(pass, expl)
-}
-
-func (valueCheckerProvider) eq(a, b interface{}) bool {
-	return reflect.DeepEqual(a, b)
 }
