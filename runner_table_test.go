@@ -73,7 +73,7 @@ func TestTableRunner(t *testing.T) {
 }
 
 func TestTableRunnerResults(t *testing.T) {
-	t.Run("should pass", func(t *testing.T) {
+	t.Run("pass", func(t *testing.T) {
 		res := testx.
 			Table(evenSingle, nil).
 			Cases([]testx.Case{
@@ -103,12 +103,13 @@ func TestTableRunnerResults(t *testing.T) {
 		assertEqualTableResults(t, res, exp)
 	})
 
-	t.Run("should fail", func(t *testing.T) {
+	t.Run("fail", func(t *testing.T) {
 		res := testx.
 			Table(evenSingle, nil).
 			Cases([]testx.Case{
-				{In: 10, Exp: true, Lab: "even number"},
-				{In: 11, Exp: true, Lab: "odd number"},
+				{In: 10, Exp: true, Lab: "even number"}, // pass
+				{In: -1, Exp: true, Lab: "odd number"},  // fail
+				{In: -1, Exp: true},                     // fail
 			}).
 			DryRun()
 
@@ -117,15 +118,16 @@ func TestTableRunnerResults(t *testing.T) {
 				passed:  false,
 				failed:  true,
 				nPassed: 1,
-				nFailed: 1,
-				nChecks: 2,
+				nFailed: 2,
+				nChecks: 3,
 				checks: []testx.CheckResult{
 					{Passed: true, Reason: ""},
-					{Passed: false, Reason: "odd number\ntestx_test.evenSingle(11) -> expect true, got false"},
+					{Passed: false, Reason: "[odd number] testx_test.evenSingle(-1):\nexp true\ngot false"},
+					{Passed: false, Reason: "testx_test.evenSingle(-1):\nexp true\ngot false"},
 				},
 			},
-			passedAt:    map[int]bool{0: true, 1: false},
-			failedAt:    map[int]bool{0: false, 1: true},
+			passedAt:    map[int]bool{0: true, 1: false, 2: false},
+			failedAt:    map[int]bool{0: false, 1: true, 2: true},
 			passedLabel: map[string]bool{"even number": true, "odd number": false},
 			failedLabel: map[string]bool{"even number": false, "odd number": true},
 		}
