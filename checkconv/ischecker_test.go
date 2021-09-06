@@ -3,7 +3,7 @@ package checkconv_test
 import (
 	"testing"
 
-	"github.com/drykit-go/testx/check/checkconv"
+	"github.com/drykit-go/testx/checkconv"
 )
 
 func TestIsChecker(t *testing.T) {

@@ -1,6 +1,6 @@
 package checkconv
 
-//go:generate  ../../bin/gen -kind types -name assert
+//go:generate  ../bin/gen -kind types -name assert
 
 // For every type {N,T} defined in ../gen/types.go, running go generate
 // will create the following definitions:

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/drykit-go/testx/check"
-	"github.com/drykit-go/testx/check/checkconv"
+	"github.com/drykit-go/testx/checkconv"
 )
 
 func TestMapCheckerProvider(t *testing.T) {
