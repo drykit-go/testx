@@ -61,7 +61,7 @@ type MetaVar struct {
 
 func computeInterfaces() (ProvidersTemplateData, error) {
 	fset := token.NewFileSet()
-	dir, err := parser.ParseDir(fset, "./", providersFilesOnly, parser.ParseComments)
+	dir, err := parser.ParseDir(fset, "./", isProviderFile, parser.ParseComments)
 	if err != nil {
 		return ProvidersTemplateData{}, err
 	}
@@ -100,10 +100,16 @@ func computeInterfaces() (ProvidersTemplateData, error) {
 	return data, nil
 }
 
-func providersFilesOnly(file fs.FileInfo) bool {
-	return strings.HasPrefix(file.Name(), "providers_") && excludeTestFiles(file)
+func isProviderFile(file fs.FileInfo) bool {
+	return strings.HasPrefix(file.Name(), "providers_") &&
+		!isTestFile(file) &&
+		!isBaseFile(file)
 }
 
-func excludeTestFiles(file fs.FileInfo) bool {
+func isTestFile(file fs.FileInfo) bool {
 	return !strings.HasSuffix(file.Name(), "_test.go")
+}
+
+func isBaseFile(file fs.FileInfo) bool {
+	return !strings.HasSuffix(file.Name(), "_base.go")
 }
