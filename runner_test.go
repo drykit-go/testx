@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/drykit-go/testx"
+	"github.com/drykit-go/testx/internal/fmtexpl"
 )
 
 var deq = reflect.DeepEqual
@@ -26,7 +27,7 @@ func assertEqualBaseResults(t *testing.T, res testx.Resulter, exp baseResults) {
 
 		// Validate len(got.checks), early return if invalid
 		if explen, gotlen := len(exp.checks), len(got.checks); explen != gotlen {
-			failWithErrors(t, "baseResults", fmtFail("len(checks)", explen, gotlen))
+			failWithErrors(t, "baseResults", fmtexpl.Pretty("len(checks)", explen, gotlen))
 			return
 		}
 
@@ -43,7 +44,7 @@ func assertEqualBaseResults(t *testing.T, res testx.Resulter, exp baseResults) {
 			{lab: "nChecks", got: got.nChecks, exp: exp.nChecks},
 		} {
 			if !deq(fv.exp, fv.got) {
-				errs = append(errs, fmtFail(fv.lab, fv.exp, fv.got))
+				errs = append(errs, fmtexpl.Pretty(fv.lab, fv.exp, fv.got))
 			}
 		}
 
@@ -51,14 +52,14 @@ func assertEqualBaseResults(t *testing.T, res testx.Resulter, exp baseResults) {
 		for i, gotc := range got.checks {
 			expc := exp.checks[i]
 			if gotc.Passed != expc.Passed {
-				errs = append(errs, fmtFail(
+				errs = append(errs, fmtexpl.Pretty(
 					fmt.Sprintf("checks[%d].Passed", i),
 					expc.Passed,
 					gotc.Passed),
 				)
 			}
 			if gotc.Reason != expc.Reason {
-				errs = append(errs, fmtFail(
+				errs = append(errs, fmtexpl.Pretty(
 					fmt.Sprintf("checks[%d].Reason", i),
 					expc.Reason,
 					gotc.Reason,
@@ -68,10 +69,6 @@ func assertEqualBaseResults(t *testing.T, res testx.Resulter, exp baseResults) {
 
 		failWithErrors(t, "baseResults", errs...)
 	}
-}
-
-func fmtFail(label string, exp, got interface{}) string {
-	return fmt.Sprintf("❌ %s\nexp %v\ngot %v", label, exp, got)
 }
 
 func failWithErrors(t *testing.T, label string, errs ...string) {

@@ -1,17 +1,21 @@
 package check
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/drykit-go/testx/internal/fmtexpl"
+)
 
 type baseCheckerProvider struct{}
 
-func (baseCheckerProvider) explain(label string, expStr, gotStr interface{}) string {
-	return fmt.Sprintf("%s:\nexp %v\ngot %v", label, expStr, gotStr)
+func (baseCheckerProvider) explain(label string, exp, got interface{}) string {
+	return fmtexpl.Default(label, exp, got)
 }
 
-func (p baseCheckerProvider) explainNot(label string, expStr, gotStr interface{}) string {
-	return p.explain(label, fmt.Sprintf("not %v", expStr), gotStr)
+func (p baseCheckerProvider) explainNot(label string, exp, got interface{}) string {
+	return p.explain(label, fmt.Sprintf("not %v", exp), got)
 }
 
 func (p baseCheckerProvider) explainCheck(label, expStr, gotExpl string) string {
-	return p.explain(label, expStr, "explanation: "+gotExpl)
+	return fmtexpl.Checker(label, expStr, gotExpl)
 }
