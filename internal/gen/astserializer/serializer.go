@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"strings"
+
+	"github.com/drykit-go/cond"
 )
 
 // ComputeDocLines parses the raw doc (as returned by go/doc.Type.Doc),
@@ -49,12 +51,10 @@ func writeFuncParamsString(w io.StringWriter, params *ast.FieldList) {
 		pname := joinIdentifiers(p.Names, ", ")
 		ptype := serializeExpr(p.Type)
 		_, err := w.WriteString(pname + " " + ptype)
-		panicOnErr(err)
+		cond.PanicOnErr(err)
 		if i < len(params.List)-1 {
 			_, err := w.WriteString(", ")
-			if err != nil {
-				panicOnErr(err)
-			}
+			cond.PanicOnErr(err)
 		}
 	}
 }
@@ -62,10 +62,10 @@ func writeFuncParamsString(w io.StringWriter, params *ast.FieldList) {
 func writeFuncResultsString(w io.StringWriter, results *ast.FieldList) {
 	for i, r := range results.List {
 		_, err := w.WriteString(fmt.Sprint(r.Type))
-		panicOnErr(err)
+		cond.PanicOnErr(err)
 		if i < results.NumFields()-1 {
 			_, err := w.WriteString(", ")
-			panicOnErr(err)
+			cond.PanicOnErr(err)
 		}
 	}
 }
@@ -99,13 +99,5 @@ func serializeExpr(expr ast.Expr) string {
 	default:
 		log.Panicf("❌ unhandled ast.Expr: %#v", expr)
 		return ""
-	}
-}
-
-func panicOnErr(errs ...error) {
-	for _, err := range errs {
-		if err != nil {
-			panic(err)
-		}
 	}
 }

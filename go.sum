@@ -1,3 +1,5 @@
+github.com/drykit-go/cond v0.1.0 h1:y7MNxREQLT83vGfcfSKjyFPLC/ZDjYBNp6KuaVVjOg4=
+github.com/drykit-go/cond v0.1.0/go.mod h1:7MXBFjjaB5ZCEB8Q4w2euNOaWuTqf7NjOFZAyV1Jpfg=
 github.com/drykit-go/strcase v0.0.1 h1:6/9D7jk+NBghxUphnPl1AWnN97e7dQBFZUheWBANyiM=
 github.com/drykit-go/strcase v0.0.1/go.mod h1:cWK0/az2f09UPIbJ42Sb8Iqdv01uENrFX+XXKGjPo+8=
 github.com/drykit-go/testx v0.1.0/go.mod h1:qGXb49a8CzQ82crBeCVW8R3kGU1KRgWHnI+Q6CNVbz8=

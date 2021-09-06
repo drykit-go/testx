@@ -1,7 +1,11 @@
 // Package fmtexpl provides functions to format failed test explanations.
 package fmtexpl
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/drykit-go/cond"
+)
 
 // Default computes and return an explain string in the default format.
 func Default(label string, exp, got interface{}) string {
@@ -31,9 +35,7 @@ func Pretty(label string, exp, got interface{}) string {
 // from a func call.
 // TODO: handle multiple func args/results
 func FuncResult(fname, desc string, arg, exp, got interface{}) string {
-	label := fmt.Sprintf("%s(%v)", fname, arg)
-	if desc != "" {
-		label = "[" + desc + "] " + label
-	}
+	fcall := fmt.Sprintf("%s(%v)", fname, arg)
+	label := cond.String("["+desc+"] "+fcall, fcall, desc != "")
 	return Default(label, exp, got)
 }
