@@ -99,7 +99,7 @@ func TestHandlerRunner(t *testing.T) {
 				nFailed: 1,
 				nChecks: 2,
 				checks: []testx.CheckResult{
-					{Passed: false, Reason: "expect response code == -1, got 200"},
+					{Passed: false, Reason: "response code:\nexp -1\ngot 200"},
 					{Passed: true, Reason: ""},
 				},
 			},

@@ -66,7 +66,7 @@ func TestValueRunner(t *testing.T) {
 				{Passed: false, Reason: "value: expect 99, got 42"},
 				{Passed: true, Reason: ""},
 				{Passed: false, Reason: "value: expect not 42, got 42"},
-				{Passed: false, Reason: "expect value < 10, got 42"},
+				{Passed: false, Reason: "value:\nexp < 10\ngot 42"},
 			},
 		}
 

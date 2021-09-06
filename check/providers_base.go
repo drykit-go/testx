@@ -5,7 +5,7 @@ import "fmt"
 type baseCheckerProvider struct{}
 
 func (baseCheckerProvider) explain(label string, expStr, gotStr interface{}) string {
-	return fmt.Sprintf("%s:\n    exp %v\n    got %v", label, expStr, gotStr)
+	return fmt.Sprintf("%s:\nexp %v\ngot %v", label, expStr, gotStr)
 }
 
 func (p baseCheckerProvider) explainNot(label string, expStr, gotStr interface{}) string {
