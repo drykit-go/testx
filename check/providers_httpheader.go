@@ -6,7 +6,7 @@ import (
 )
 
 // httpHeaderCheckerProvider provides checks on type http.Header.
-type httpHeaderCheckerProvider struct{}
+type httpHeaderCheckerProvider struct{ baseCheckerProvider }
 
 // HasKey checks the gotten http.Header has a spcific key set.
 // The corresponding value is ignored, meaning an empty value
@@ -14,10 +14,7 @@ type httpHeaderCheckerProvider struct{}
 func (p httpHeaderCheckerProvider) HasKey(key string) HTTPHeaderChecker {
 	pass := func(got http.Header) bool { return p.hasKey(got, key) }
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expect %s to have key \"%s\" set, got %+v",
-			label, key, got,
-		)
+		return p.explain(label, "to have key "+key, got)
 	}
 	return NewHTTPHeaderChecker(pass, expl)
 }
@@ -27,10 +24,7 @@ func (p httpHeaderCheckerProvider) HasKey(key string) HTTPHeaderChecker {
 func (p httpHeaderCheckerProvider) HasNotKey(key string) HTTPHeaderChecker {
 	pass := func(got http.Header) bool { return !p.hasKey(got, key) }
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expect %s not to have key \"%s\" set, got %+v",
-			label, key, got,
-		)
+		return p.explainNot(label, "to have key "+key, got)
 	}
 	return NewHTTPHeaderChecker(pass, expl)
 }
@@ -40,10 +34,7 @@ func (p httpHeaderCheckerProvider) HasNotKey(key string) HTTPHeaderChecker {
 func (p httpHeaderCheckerProvider) HasValue(val string) HTTPHeaderChecker {
 	pass := func(got http.Header) bool { return p.hasValue(got, val) }
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expect %s to have value \"%s\" set, got %+v",
-			label, val, got,
-		)
+		return p.explain(label, "to have value "+val, got)
 	}
 	return NewHTTPHeaderChecker(pass, expl)
 }
@@ -53,10 +44,7 @@ func (p httpHeaderCheckerProvider) HasValue(val string) HTTPHeaderChecker {
 func (p httpHeaderCheckerProvider) HasNotValue(val string) HTTPHeaderChecker {
 	pass := func(got http.Header) bool { return !p.hasValue(got, val) }
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expect %s not to have value \"%s\" set, got %+v",
-			label, val, got,
-		)
+		return p.explainNot(label, "to have value "+val, got)
 	}
 	return NewHTTPHeaderChecker(pass, expl)
 }
@@ -66,11 +54,18 @@ func (p httpHeaderCheckerProvider) HasNotValue(val string) HTTPHeaderChecker {
 // It only checks the first result for the given key.
 func (p httpHeaderCheckerProvider) CheckValue(key string, c StringChecker) HTTPHeaderChecker {
 	var val string
-	pass := func(got http.Header) bool { v, ok := p.get(got, key); return ok && c.Pass(v) }
+	pass := func(got http.Header) bool {
+		v, ok := p.get(got, key)
+		if !ok {
+			return false
+		}
+		val = v
+		return c.Pass(v)
+	}
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expect %s value for key \"%s\" to pass StringChecker, got:\n\t%s",
-			label, key, c.Explain("given string", val),
+		return p.explainCheck(label,
+			fmt.Sprintf("value for key %s to pass StringChecker", key),
+			c.Explain("value", val),
 		)
 	}
 	return NewHTTPHeaderChecker(pass, expl)

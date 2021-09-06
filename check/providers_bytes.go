@@ -6,16 +6,13 @@ import (
 )
 
 // bytesCheckerProvider provides checks on type []byte.
-type bytesCheckerProvider struct{}
+type bytesCheckerProvider struct{ baseCheckerProvider }
 
 // Is checks the gotten []byte is equal to the target.
 func (p bytesCheckerProvider) Is(tar []byte) BytesChecker {
 	pass := func(got []byte) bool { return p.eq(got, tar) }
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expect %s to equal %v, got %v",
-			label, tar, got,
-		)
+		return p.explain(label, tar, got)
 	}
 	return NewBytesChecker(pass, expl)
 }
@@ -33,25 +30,22 @@ func (p bytesCheckerProvider) Not(values ...[]byte) BytesChecker {
 		return true
 	}
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expect %s not to equal %v, got %v",
-			label, match, got,
-		)
+		return p.explainNot(label, match, got)
 	}
 	return NewBytesChecker(pass, expl)
 }
 
 // SameJSON checks the gotten []byte and the target returns
 // the same JSON object.
-func (bytesCheckerProvider) SameJSON(tar []byte) BytesChecker {
+func (p bytesCheckerProvider) SameJSON(tar []byte) BytesChecker {
 	var decGot, decTar interface{}
 	pass := func(got []byte) bool {
 		return sameJSON(got, tar, &decGot, &decTar)
 	}
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expected json encoded value to equal %#v, got %#v",
-			decTar, decGot,
+		return p.explain(label,
+			fmt.Sprintf("json data: %v", decTar),
+			fmt.Sprintf("json data: %v", decGot),
 		)
 	}
 	return NewBytesChecker(pass, expl)
@@ -59,12 +53,12 @@ func (bytesCheckerProvider) SameJSON(tar []byte) BytesChecker {
 
 // Len checks the gotten []byte's length passes the provided
 // IntChecker.
-func (bytesCheckerProvider) Len(c IntChecker) BytesChecker {
+func (p bytesCheckerProvider) Len(c IntChecker) BytesChecker {
 	pass := func(got []byte) bool { return c.Pass(len(got)) }
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"unexpected %s length: %s",
-			label, c.Explain(label, len(got.([]byte))),
+		return p.explainCheck(label,
+			"length to pass IntChecker",
+			c.Explain("length", len(got.([]byte))),
 		)
 	}
 	return NewBytesChecker(pass, expl)

@@ -8,6 +8,7 @@ import (
 
 	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/check/checkconv"
+	"github.com/drykit-go/testx/internal/fmtexpl"
 )
 
 var _ TableRunner = (*tableRunner)(nil)
@@ -158,11 +159,9 @@ func (r *tableRunner) makeChecker(c Case) check.ValueChecker {
 	}
 
 	pass := func(got interface{}) bool { return xor(deq(got, c.Exp), c.Not) }
-	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"%s\n%s(%v) -> expect %s%v, got %v",
-			c.Lab, r.label, c.In, condString("not ", "", c.Not), c.Exp, got,
-		)
+	expl := func(_ string, got interface{}) string {
+		expStr := fmt.Sprintf("%s%v", condString("not ", "", c.Not), c.Exp)
+		return fmtexpl.FuncResult(r.label, c.Lab, c.In, expStr, got)
 	}
 	return check.NewValueChecker(pass, expl)
 }

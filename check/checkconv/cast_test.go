@@ -27,7 +27,7 @@ func TestCast(t *testing.T) {
 				checker: check.Int.InRange(41, 43),
 				in:      -1,
 				expPass: false,
-				expExpl: "expect value in range [41:43], got -1",
+				expExpl: "value:\nexp in range [41:43]\ngot -1",
 			},
 			{
 				checker: check.Value.Custom("", func(got interface{}) bool { return true }),

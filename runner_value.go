@@ -1,7 +1,6 @@
 package testx
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/drykit-go/testx/check"
@@ -24,31 +23,20 @@ func (r *valueRunner) DryRun() Resulter {
 }
 
 func (r *valueRunner) Exp(exp interface{}) ValueRunner {
-	pass := func(got interface{}) bool { return deq(got, exp) }
-	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf("%s: expect %v, got %v", label, exp, got)
-	}
 	r.addCheck(baseCheck{
 		"value",
 		func() gottype { return r.value },
-		check.NewValueChecker(pass, expl),
+		check.Value.Is(exp),
 	})
 	return r
 }
 
 func (r *valueRunner) ExpNot(values ...interface{}) ValueRunner {
-	for _, nexp := range values {
-		nexp := nexp
-		pass := func(got interface{}) bool { return !deq(got, nexp) }
-		expl := func(label string, got interface{}) string {
-			return fmt.Sprintf("%s: expect not %v, got %v", label, nexp, got)
-		}
-		r.addCheck(baseCheck{
-			"value",
-			func() gottype { return r.value },
-			check.NewValueChecker(pass, expl),
-		})
-	}
+	r.addCheck(baseCheck{
+		"value",
+		func() gottype { return r.value },
+		check.Value.Not(values...),
+	})
 	return r
 }
 

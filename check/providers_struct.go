@@ -7,7 +7,7 @@ import (
 )
 
 // structCheckerProvider provides checks on kind struct.
-type structCheckerProvider struct{}
+type structCheckerProvider struct{ baseCheckerProvider }
 
 // SameJSON checks the gotten struct and the target value
 // produce the same JSON, ignoring the keys order.
@@ -38,17 +38,15 @@ func (p structCheckerProvider) FieldsEqual(exp interface{}, fields []string) Val
 		for _, f := range fields {
 			// panic hasard: field must exist and be exported
 			gotf := gotv.FieldByName(f).Interface()
-			if !p.eq(gotf, exp) {
+			if !deq(gotf, exp) {
 				badFields = append(badFields, fmt.Sprintf(".%s=%v", f, gotf))
 			}
 		}
 		return len(badFields) == 0
 	}
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"exp %s fields to equal %v\n"+
-				"got %s",
-			label, exp,
+		return p.explain(label,
+			fmt.Sprintf("fields to equal %v", exp),
 			strings.Join(badFields, ","),
 		)
 	}
@@ -58,7 +56,7 @@ func (p structCheckerProvider) FieldsEqual(exp interface{}, fields []string) Val
 // FieldsEqual checks all given fields pass the ValueChecker.
 // It panics if the fields do not exist or are not exported,
 // or if the tested value is not a struct.
-func (structCheckerProvider) CheckFields(c ValueChecker, fields []string) ValueChecker {
+func (p structCheckerProvider) CheckFields(c ValueChecker, fields []string) ValueChecker {
 	var badFields []string
 	pass := func(got interface{}) bool {
 		gotv := reflect.ValueOf(got)
@@ -72,16 +70,10 @@ func (structCheckerProvider) CheckFields(c ValueChecker, fields []string) ValueC
 		return len(badFields) == 0
 	}
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"exp %s fields to pass ValueChecker\n"+
-				"got %s -> %s",
-			label,
-			strings.Join(badFields, ","), c.Explain(label, got),
+		return p.explainCheck(label,
+			fmt.Sprintf("fields [%s] to pass ValueChecker", strings.Join(badFields, ",")),
+			c.Explain("field", got),
 		)
 	}
 	return NewValueChecker(pass, expl)
-}
-
-func (p structCheckerProvider) eq(a, b interface{}) bool {
-	return reflect.DeepEqual(a, b)
 }

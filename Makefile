@@ -39,7 +39,7 @@ endif
 
 .PHONY: test
 test:
-	@go test -v -timeout 30s -run $(TEST_FUNC) $(TEST_PKG)
+	@go test -timeout 30s -run $(TEST_FUNC) $(TEST_PKG)
 
 # Docs
 

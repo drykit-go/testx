@@ -7,26 +7,26 @@ import (
 )
 
 func TestValueCheckerProvider(t *testing.T) {
-	type Person struct {
+	type Thing struct {
 		Name string
 	}
 
 	var (
-		v      = Person{"hi"}
-		vcopy  = Person{"hi"}
-		vempty = Person{}
-		badval = Person{"hello"}
+		v      = Thing{"hi"}
+		vsame  = Thing{"hi"}
+		vempty = Thing{}
+		badval = Thing{"hello"}
 		badtyp = struct{ Name string }{"hi"}
 
 		emptyMap   map[int]bool
 		emptySlice []float32
 
-		zeros    = []interface{}{0, "", 0i + 0, vempty, emptyMap, emptySlice}
-		nonZeros = []interface{}{1, "hi", 0i + 1, v, map[int]bool{}, []float32{}}
+		zeros   = []interface{}{0, "", 0i + 0, vempty, emptyMap, emptySlice}
+		nozeros = []interface{}{1, "hi", 0i + 1, v, map[int]bool{}, []float32{}}
 	)
 
 	t.Run("Is pass", func(t *testing.T) {
-		c := check.Value.Is(vcopy)
+		c := check.Value.Is(vsame)
 		assertPassValueChecker(t, "Is", c, v)
 	})
 
@@ -43,7 +43,7 @@ func TestValueCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("Not fail", func(t *testing.T) {
-		c := check.Value.Not(badval, vcopy, badtyp)
+		c := check.Value.Not(badval, vsame, badtyp)
 		assertFailValueChecker(t, "Not", c, v)
 	})
 
@@ -56,14 +56,14 @@ func TestValueCheckerProvider(t *testing.T) {
 
 	t.Run("IsZero fail", func(t *testing.T) {
 		c := check.Value.IsZero()
-		for _, nz := range nonZeros {
+		for _, nz := range nozeros {
 			assertFailValueChecker(t, "IsZero", c, nz)
 		}
 	})
 
 	t.Run("NotZero pass", func(t *testing.T) {
 		c := check.Value.NotZero()
-		for _, nz := range nonZeros {
+		for _, nz := range nozeros {
 			assertPassValueChecker(t, "NotZero", c, nz)
 		}
 	})

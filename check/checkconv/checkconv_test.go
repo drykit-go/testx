@@ -89,14 +89,14 @@ func assertValidValueChecker(t *testing.T, c check.ValueChecker, tc checkerTestc
 	t.Helper()
 	if pass := c.Pass(tc.in); pass != tc.expPass {
 		t.Errorf(
-			"unexpected Pass return value with checker %#v: exp %v, got %v",
+			"unexpected Pass return value with checker %v: exp %v, got %v",
 			tc.checker, tc.expPass, pass,
 		)
 	}
 	if expl := c.Explain("value", tc.in); tc.expExpl != "" && expl != tc.expExpl {
 		t.Errorf(
-			"unexpected Explain return value with checker %#v: exp %v, got %v",
-			tc.checker, tc.expPass, expl,
+			"unexpected Explain return value with checker %#v:\nexp:\n%v\n\ngot:\n%v",
+			tc.checker, tc.expExpl, expl,
 		)
 	}
 }

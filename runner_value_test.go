@@ -35,11 +35,10 @@ func TestValueRunner(t *testing.T) {
 		exp := baseResults{
 			passed:  true,
 			failed:  false,
-			nPassed: 4,
+			nPassed: 3,
 			nFailed: 0,
-			nChecks: 4,
+			nChecks: 3,
 			checks: []testx.CheckResult{
-				{Passed: true, Reason: ""},
 				{Passed: true, Reason: ""},
 				{Passed: true, Reason: ""},
 				{Passed: true, Reason: ""},
@@ -52,6 +51,7 @@ func TestValueRunner(t *testing.T) {
 	t.Run("should fail", func(t *testing.T) {
 		res := testx.Value(42).
 			Exp(99).
+			ExpNot(99).
 			ExpNot(99, 42).
 			Pass(check.Int.LT(10)).
 			DryRun()
@@ -63,10 +63,10 @@ func TestValueRunner(t *testing.T) {
 			nFailed: 3,
 			nChecks: 4,
 			checks: []testx.CheckResult{
-				{Passed: false, Reason: "value: expect 99, got 42"},
+				{Passed: false, Reason: "value:\nexp 99\ngot 42"},
 				{Passed: true, Reason: ""},
-				{Passed: false, Reason: "value: expect not 42, got 42"},
-				{Passed: false, Reason: "expect value < 10, got 42"},
+				{Passed: false, Reason: "value:\nexp not 42\ngot 42"},
+				{Passed: false, Reason: "value:\nexp < 10\ngot 42"},
 			},
 		}
 

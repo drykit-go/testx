@@ -7,7 +7,7 @@ import (
 )
 
 // sliceCheckerProvider provides checks on kind slice.
-type sliceCheckerProvider struct{}
+type sliceCheckerProvider struct{ baseCheckerProvider }
 
 // SameJSON checks the gotten slice and the target value
 // produce the same JSON.
@@ -17,30 +17,34 @@ func (sliceCheckerProvider) SameJSON(tar interface{}) ValueChecker {
 }
 
 // Len checks the length of the gotten slice passes the given IntChecker.
-func (sliceCheckerProvider) Len(c IntChecker) ValueChecker {
+func (p sliceCheckerProvider) Len(c IntChecker) ValueChecker {
+	var gotlen int
 	pass := func(got interface{}) bool {
 		panicOnUnexpectedKind(got, reflect.Slice)
-		return c.Pass(reflect.ValueOf(got).Len())
+		gotlen = reflect.ValueOf(got).Len()
+		return c.Pass(gotlen)
 	}
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"exp %s length to pass IntChecker\ngot %s",
-			label, c.Explain(label, reflect.ValueOf(got).Len()),
+		return p.explainCheck(label,
+			"length to pass IntChecker",
+			c.Explain("length", gotlen),
 		)
 	}
 	return NewValueChecker(pass, expl)
 }
 
 // Cap checks the capacity of the gotten slice passes the given IntChecker.
-func (sliceCheckerProvider) Cap(c IntChecker) ValueChecker {
+func (p sliceCheckerProvider) Cap(c IntChecker) ValueChecker {
+	var gotcap int
 	pass := func(got interface{}) bool {
 		panicOnUnexpectedKind(got, reflect.Slice)
-		return c.Pass(reflect.ValueOf(got).Cap())
+		gotcap = reflect.ValueOf(got).Cap()
+		return c.Pass(gotcap)
 	}
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"exp %s capacity to pass IntChecker\ngot %s",
-			label, c.Explain(label, reflect.ValueOf(got).Cap()),
+		return p.explainCheck(label,
+			"capacity to pass IntChecker",
+			c.Explain("capacity", gotcap),
 		)
 	}
 	return NewValueChecker(pass, expl)
@@ -58,10 +62,10 @@ func (p sliceCheckerProvider) HasValues(values ...interface{}) ValueChecker {
 		}
 		return len(missing) == 0
 	}
-	expl := func(label string, _ interface{}) string {
-		return fmt.Sprintf(
-			"%s misses expected values: %s",
-			label, strings.Join(missing, ","),
+	expl := func(label string, got interface{}) string {
+		return p.explain(label,
+			fmt.Sprintf("to have values %s", strings.Join(missing, ",")),
+			got,
 		)
 	}
 	return NewValueChecker(pass, expl)
@@ -79,10 +83,10 @@ func (p sliceCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
 		}
 		return len(badValues) == 0
 	}
-	expl := func(label string, _ interface{}) string {
-		return fmt.Sprintf(
-			"%s has unexpected values: %s",
-			label, strings.Join(badValues, ","),
+	expl := func(label string, got interface{}) string {
+		return p.explainNot(label,
+			fmt.Sprintf("to have values %s", strings.Join(badValues, ",")),
+			got,
 		)
 	}
 	return NewValueChecker(pass, expl)
@@ -102,9 +106,9 @@ func (p sliceCheckerProvider) CheckValues(c ValueChecker, filters ...func(i int,
 		return len(badValues) == 0
 	}
 	expl := func(label string, _ interface{}) string {
-		return fmt.Sprintf(
-			"%s has unexpected values: %s",
-			label, strings.Join(badValues, ","),
+		return p.explainCheck(label,
+			"values to pass ValueChecker",
+			c.Explain(strings.Join(badValues, ","), "fail"),
 		)
 	}
 	return NewValueChecker(pass, expl)
