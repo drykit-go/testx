@@ -14,7 +14,7 @@ import (
 
 const (
 	// binDirPath is the path from testx root to bin directory.
-	binDirPath = "/testx/bin"
+	binDirPath = "/bin"
 	// tplDirPath is the relative path from bin/gen to internal/gen/templates.
 	tplDirPath = "../internal/gen/templates"
 	// tplExt is the extension for all template files
@@ -80,6 +80,7 @@ func getFilesPaths() (tplPath, outPath string, err error) {
 		return
 	}
 	currDir := filepath.Dir(currExe)
+
 	if !strings.HasSuffix(currDir, binDirPath) {
 		// when run with go run, currDir is an unexploitable temp dir,
 		// for that reason we ensure it is run from the executable.
