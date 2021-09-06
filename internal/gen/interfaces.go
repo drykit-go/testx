@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"errors"
 	"go/doc"
 	"go/parser"
 	"go/token"
@@ -61,25 +62,29 @@ type MetaVar struct {
 
 func computeInterfaces() (ProvidersTemplateData, error) {
 	fset := token.NewFileSet()
-	dir, err := parser.ParseDir(fset, "./", isProviderFile, parser.ParseComments)
+	pkgs, err := parser.ParseDir(fset, "./", isProviderFile, parser.ParseComments)
 	if err != nil {
 		return ProvidersTemplateData{}, err
 	}
-	astp := dir["check"] // TODO: package-agnostic
+	astp, ok := pkgs["check"] // TODO: package-agnostic
+	if !ok {
+		return ProvidersTemplateData{}, errors.New(
+			"no files found for package \"check\", check path or filters",
+		)
+	}
 	docp := doc.New(astp, "./", doc.AllDecls)
 
 	data := ProvidersTemplateData{}
 	for _, t := range docp.Types {
-		itf := MetaInterface{
+		mitf := MetaInterface{ // type TCheckerProvider interface{ ... }
 			Name: interfaceName(t.Name),
 			Docs: astserializer.ComputeDocLines(t.Doc, map[string]string{
 				t.Name: interfaceName(t.Name),
 			}),
 		}
-
-		vvar := MetaVar{
+		mvar := MetaVar{ // var T TCheckerProvider = tCheckerProvider{}
 			Name:  caseMapping[typeName(t.Name)],
-			Type:  itf.Name,
+			Type:  mitf.Name,
 			Value: t.Name + "{}",
 		}
 
@@ -88,13 +93,13 @@ func computeInterfaces() (ProvidersTemplateData, error) {
 			if !m.Decl.Name.IsExported() {
 				continue
 			}
-			itf.Methods = append(itf.Methods, MetaMethod{
+			mitf.Methods = append(mitf.Methods, MetaMethod{
 				Sign: astserializer.BuildFuncSignature(m.Name, m.Decl.Type),
 				Docs: astserializer.ComputeDocLines(m.Doc, nil),
 			})
 		}
-		data.Interfaces = append(data.Interfaces, itf)
-		data.Vars = append(data.Vars, vvar)
+		data.Interfaces = append(data.Interfaces, mitf)
+		data.Vars = append(data.Vars, mvar)
 	}
 
 	return data, nil
@@ -102,8 +107,8 @@ func computeInterfaces() (ProvidersTemplateData, error) {
 
 func isProviderFile(file fs.FileInfo) bool {
 	return strings.HasPrefix(file.Name(), "providers_") &&
-		!isTestFile(file) &&
-		!isBaseFile(file)
+		isTestFile(file) &&
+		isBaseFile(file)
 }
 
 func isTestFile(file fs.FileInfo) bool {
