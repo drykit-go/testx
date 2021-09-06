@@ -1,12 +1,15 @@
 package gen
 
 import (
+	"errors"
 	"go/doc"
 	"go/parser"
 	"go/token"
 	"io/fs"
 	"log"
 	"strings"
+
+	"github.com/drykit-go/testx/internal/gen/astserializer"
 )
 
 const interfaceSuffix = "CheckerProvider"
@@ -58,28 +61,30 @@ type MetaVar struct {
 }
 
 func computeInterfaces() (ProvidersTemplateData, error) {
-	seri := serializer{}
 	fset := token.NewFileSet()
-
-	dir, err := parser.ParseDir(fset, "./", providersFilesOnly, parser.ParseComments)
+	pkgs, err := parser.ParseDir(fset, "./", isProviderFile, parser.ParseComments)
 	if err != nil {
 		return ProvidersTemplateData{}, err
 	}
-	astp := dir["check"]
+	astp, ok := pkgs["check"] // TODO: package-agnostic
+	if !ok {
+		return ProvidersTemplateData{}, errors.New(
+			"no files found for package \"check\", check path or filters",
+		)
+	}
 	docp := doc.New(astp, "./", doc.AllDecls)
 
 	data := ProvidersTemplateData{}
 	for _, t := range docp.Types {
-		itf := MetaInterface{
+		mitf := MetaInterface{ // type TCheckerProvider interface{ ... }
 			Name: interfaceName(t.Name),
-			Docs: seri.computeDocLines(t.Doc, map[string]string{
+			Docs: astserializer.ComputeDocLines(t.Doc, map[string]string{
 				t.Name: interfaceName(t.Name),
 			}),
 		}
-
-		vvar := MetaVar{
+		mvar := MetaVar{ // var T TCheckerProvider = tCheckerProvider{}
 			Name:  caseMapping[typeName(t.Name)],
-			Type:  itf.Name,
+			Type:  mitf.Name,
 			Value: t.Name + "{}",
 		}
 
@@ -88,22 +93,28 @@ func computeInterfaces() (ProvidersTemplateData, error) {
 			if !m.Decl.Name.IsExported() {
 				continue
 			}
-			itf.Methods = append(itf.Methods, MetaMethod{
-				Sign: seri.buildSignature(m),
-				Docs: seri.computeDocLines(m.Doc, nil),
+			mitf.Methods = append(mitf.Methods, MetaMethod{
+				Sign: astserializer.BuildFuncSignature(m.Name, m.Decl.Type),
+				Docs: astserializer.ComputeDocLines(m.Doc, nil),
 			})
 		}
-		data.Interfaces = append(data.Interfaces, itf)
-		data.Vars = append(data.Vars, vvar)
+		data.Interfaces = append(data.Interfaces, mitf)
+		data.Vars = append(data.Vars, mvar)
 	}
 
 	return data, nil
 }
 
-func providersFilesOnly(file fs.FileInfo) bool {
-	return strings.HasPrefix(file.Name(), "providers_") && excludeTestFiles(file)
+func isProviderFile(file fs.FileInfo) bool {
+	return strings.HasPrefix(file.Name(), "providers_") &&
+		isTestFile(file) &&
+		isBaseFile(file)
 }
 
-func excludeTestFiles(file fs.FileInfo) bool {
+func isTestFile(file fs.FileInfo) bool {
 	return !strings.HasSuffix(file.Name(), "_test.go")
+}
+
+func isBaseFile(file fs.FileInfo) bool {
+	return !strings.HasSuffix(file.Name(), "_base.go")
 }
