@@ -39,3 +39,23 @@ func Cast(anyChecker interface{}) (c check.ValueChecker, ok bool) {
 	ok = true
 	return
 }
+
+// CastMany converts the given checkers as described by Cast,
+// and returns them as a slice of check.ValueChecker and a bool
+// indicating whether all conversions were successful.
+//
+// An invalid checker in the args list is silently dismissed,
+// meaning that if ok == false, the length can be inferior to
+// the number of args.
+func CastMany(anyCheckers ...interface{}) (checkers []check.ValueChecker, ok bool) {
+	ok = true
+	for _, in := range anyCheckers {
+		c, valid := Cast(in)
+		if valid {
+			checkers = append(checkers, c)
+		} else {
+			ok = false
+		}
+	}
+	return
+}
