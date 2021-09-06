@@ -7,7 +7,7 @@ import (
 )
 
 // mapCheckerProvider provides checks on kind map.
-type mapCheckerProvider struct{}
+type mapCheckerProvider struct{ baseCheckerProvider }
 
 // SameJSON checks the gotten map and the target value
 // result in the same JSON.
@@ -17,15 +17,17 @@ func (mapCheckerProvider) SameJSON(tar interface{}) ValueChecker {
 }
 
 // Len checks the gotten map passes the given IntChecker.
-func (mapCheckerProvider) Len(c IntChecker) ValueChecker {
+func (p mapCheckerProvider) Len(c IntChecker) ValueChecker {
+	var gotlen int
 	pass := func(got interface{}) bool {
 		panicOnUnexpectedKind(got, reflect.Map)
-		return c.Pass(reflect.ValueOf(got).Len())
+		gotlen = reflect.ValueOf(got).Len()
+		return c.Pass(gotlen)
 	}
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"exp %s length to pass IntChecker\ngot %s",
-			label, c.Explain(label, got),
+		return p.explainCheck(label,
+			"length to pass IntChecker",
+			c.Explain("length", gotlen),
 		)
 	}
 	return NewValueChecker(pass, expl)
@@ -43,11 +45,8 @@ func (p mapCheckerProvider) HasKeys(keys ...interface{}) ValueChecker {
 		}
 		return len(missing) == 0
 	}
-	expl := func(label string, _ interface{}) string {
-		return fmt.Sprintf(
-			"%s misses expected keys: %s",
-			label, strings.Join(missing, ","),
-		)
+	expl := func(label string, got interface{}) string {
+		return p.explain(label, "to have keys "+strings.Join(missing, ","), got)
 	}
 	return NewValueChecker(pass, expl)
 }
@@ -64,11 +63,8 @@ func (p mapCheckerProvider) HasNotKeys(keys ...interface{}) ValueChecker {
 		}
 		return len(badKeys) == 0
 	}
-	expl := func(label string, _ interface{}) string {
-		return fmt.Sprintf(
-			"%s has unexpected keys: %s",
-			label, strings.Join(badKeys, ","),
-		)
+	expl := func(label string, got interface{}) string {
+		return p.explainNot(label, "to have keys "+strings.Join(badKeys, ","), got)
 	}
 	return NewValueChecker(pass, expl)
 }
@@ -85,11 +81,8 @@ func (p mapCheckerProvider) HasValues(values ...interface{}) ValueChecker {
 		}
 		return len(missing) == 0
 	}
-	expl := func(label string, _ interface{}) string {
-		return fmt.Sprintf(
-			"%s misses expected values: %s",
-			label, strings.Join(missing, ","),
-		)
+	expl := func(label string, got interface{}) string {
+		return p.explain(label, "to have values "+strings.Join(missing, ","), got)
 	}
 	return NewValueChecker(pass, expl)
 }
@@ -106,11 +99,8 @@ func (p mapCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
 		}
 		return len(badValues) == 0
 	}
-	expl := func(label string, _ interface{}) string {
-		return fmt.Sprintf(
-			"%s has unexpected values: %s",
-			label, strings.Join(badValues, ","),
-		)
+	expl := func(label string, got interface{}) string {
+		return p.explainNot(label, "to have values "+strings.Join(badValues, ","), got)
 	}
 	return NewValueChecker(pass, expl)
 }
@@ -139,9 +129,9 @@ func (p mapCheckerProvider) CheckValues(c ValueChecker, keys ...interface{}) Val
 		return len(badEntries) == 0
 	}
 	expl := func(label string, _ interface{}) string {
-		return fmt.Sprintf(
-			"%s has missing or unexpected values for keys: %s",
-			label, strings.Join(badEntries, ","),
+		return p.explainCheck(label,
+			fmt.Sprintf("values for keys %v to pass ValueChecker", keys),
+			c.Explain("values", "fail"),
 		)
 	}
 	return NewValueChecker(pass, expl)

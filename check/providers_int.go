@@ -3,22 +3,19 @@ package check
 import "fmt"
 
 // intCheckerProvider provides checks on type int.
-type intCheckerProvider struct{}
+type intCheckerProvider struct{ baseCheckerProvider }
 
 // Is checks the gotten int is equal to the target.
-func (intCheckerProvider) Is(tar int) IntChecker {
+func (p intCheckerProvider) Is(tar int) IntChecker {
 	pass := func(got int) bool { return got == tar }
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expect %s == %d, got %v",
-			label, tar, got,
-		)
+		return p.explain(label, tar, got)
 	}
 	return NewIntChecker(pass, expl)
 }
 
 // Not checks the gotten int is not equal to the target.
-func (intCheckerProvider) Not(values ...int) IntChecker {
+func (p intCheckerProvider) Not(values ...int) IntChecker {
 	var match int
 	pass := func(got int) bool {
 		for _, v := range values {
@@ -30,10 +27,7 @@ func (intCheckerProvider) Not(values ...int) IntChecker {
 		return true
 	}
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expect %s != %d, got %v",
-			label, match, got,
-		)
+		return p.explainNot(label, match, got)
 	}
 	return NewIntChecker(pass, expl)
 }
@@ -42,10 +36,7 @@ func (intCheckerProvider) Not(values ...int) IntChecker {
 func (p intCheckerProvider) InRange(lo, hi int) IntChecker {
 	pass := func(got int) bool { return p.inrange(got, lo, hi) }
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expect %s in range [%d:%d], got %v",
-			label, lo, hi, got,
-		)
+		return p.explain(label, fmt.Sprintf("in range [%v:%v]", lo, hi), got)
 	}
 	return NewIntChecker(pass, expl)
 }
@@ -54,10 +45,7 @@ func (p intCheckerProvider) InRange(lo, hi int) IntChecker {
 func (p intCheckerProvider) OutRange(lo, hi int) IntChecker {
 	pass := func(got int) bool { return !p.inrange(got, lo, hi) }
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expect %s not in range [%d:%d], got %v",
-			label, lo, hi, got,
-		)
+		return p.explainNot(label, fmt.Sprintf("in range [%v:%v]", lo, hi), got)
 	}
 	return NewIntChecker(pass, expl)
 }
@@ -66,10 +54,7 @@ func (p intCheckerProvider) OutRange(lo, hi int) IntChecker {
 func (p intCheckerProvider) GT(tar int) IntChecker {
 	pass := func(got int) bool { return !p.lte(got, tar) }
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expect %s > %d, got %v",
-			label, tar, got,
-		)
+		return p.explain(label, fmt.Sprintf("> %v", tar), got)
 	}
 	return NewIntChecker(pass, expl)
 }
@@ -78,10 +63,7 @@ func (p intCheckerProvider) GT(tar int) IntChecker {
 func (p intCheckerProvider) GTE(tar int) IntChecker {
 	pass := func(got int) bool { return !p.lt(got, tar) }
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expect %s >= to %d, got %v",
-			label, tar, got,
-		)
+		return p.explain(label, fmt.Sprintf(">= %v", tar), got)
 	}
 	return NewIntChecker(pass, expl)
 }
@@ -90,10 +72,7 @@ func (p intCheckerProvider) GTE(tar int) IntChecker {
 func (p intCheckerProvider) LT(tar int) IntChecker {
 	pass := func(got int) bool { return p.lt(got, tar) }
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expect %s < %d, got %v",
-			label, tar, got,
-		)
+		return p.explain(label, fmt.Sprintf("< %v", tar), got)
 	}
 	return NewIntChecker(pass, expl)
 }
@@ -102,10 +81,7 @@ func (p intCheckerProvider) LT(tar int) IntChecker {
 func (p intCheckerProvider) LTE(tar int) IntChecker {
 	pass := func(got int) bool { return p.lte(got, tar) }
 	expl := func(label string, got interface{}) string {
-		return fmt.Sprintf(
-			"expect %s <= to %d, got %v",
-			label, tar, got,
-		)
+		return p.explain(label, fmt.Sprintf(">= %v", tar), got)
 	}
 	return NewIntChecker(pass, expl)
 }
