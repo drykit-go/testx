@@ -51,6 +51,27 @@ func TestAssert(t *testing.T) {
 	})
 }
 
+func TestAssertMany(t *testing.T) {
+	knownCheckers := []interface{}{
+		check.Bool.Is(true),
+		check.NewIntChecker(isEven, isEvenExpl),
+		check.Map.CheckValues(check.Value.Not("a"), "b"),
+	}
+
+	t.Run("known checker type", func(t *testing.T) {
+		res := checkconv.AssertMany(knownCheckers...)
+		if len(res) != len(knownCheckers) {
+			t.Error("failed to assert many known checkers")
+		}
+	})
+
+	t.Run("unknown checker type", func(t *testing.T) {
+		defer assertPanic(t, "assert from unknown checker type")
+		badCheckers := append(knownCheckers, validCheckerFloat64{}) //nolint: gocritic // appendAssign
+		checkconv.AssertMany(badCheckers...)
+	})
+}
+
 func assertPanic(t *testing.T, expMessage string) {
 	t.Helper()
 	r := recover()
