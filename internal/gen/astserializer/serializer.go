@@ -8,25 +8,33 @@ import (
 	"strings"
 )
 
-func ComputeDocLines(src string, repl map[string]string) []string {
+// ComputeDocLines parses the raw doc (as returned by go/doc.Type.Doc),
+// applies the given replacements and returns a slice of strings representing
+// the resulting lines.
+func ComputeDocLines(rawdoc string, repl map[string]string) []string {
 	lines := []string{}
-	if src == "" {
+	if rawdoc == "" {
 		return lines
 	}
 
+	// Set up strings replacer
 	replArgs := []string{}
 	for k, v := range repl {
 		replArgs = append(replArgs, k, v)
 	}
 	replacer := strings.NewReplacer(replArgs...)
 
-	for _, l := range strings.Split(src, "\n") {
+	// Parse and add new lines
+	for _, l := range strings.Split(rawdoc, "\n") {
 		lines = append(lines, replacer.Replace(l))
 	}
 
+	// Strip last line, always empty due to final '\n'
 	return lines[:len(lines)-1]
 }
 
+// BuildFuncSignature builds a func signature given a name an *ast.FuncType
+// and returns it as a string.
 func BuildFuncSignature(name string, ftyp *ast.FuncType) string {
 	b := strings.Builder{}
 	b.WriteString(name + "(")
@@ -62,6 +70,16 @@ func writeFuncResultsString(w io.StringWriter, results *ast.FieldList) {
 	}
 }
 
+func joinIdentifiers(idents []*ast.Ident, sep string) (out string) {
+	for i, ident := range idents {
+		out += ident.Name
+		if i < len(idents)-1 {
+			out += sep
+		}
+	}
+	return
+}
+
 func serializeExpr(expr ast.Expr) string {
 	switch t := expr.(type) {
 	case *ast.Ident:
@@ -82,16 +100,6 @@ func serializeExpr(expr ast.Expr) string {
 		log.Panicf("❌ unhandled ast.Expr: %#v", expr)
 		return ""
 	}
-}
-
-func joinIdentifiers(idents []*ast.Ident, sep string) (out string) {
-	for i, ident := range idents {
-		out += ident.Name
-		if i < len(idents)-1 {
-			out += sep
-		}
-	}
-	return
 }
 
 func panicOnErr(errs ...error) {
