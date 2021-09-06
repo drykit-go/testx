@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/drykit-go/cond"
+
 	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/check/checkconv"
 	"github.com/drykit-go/testx/internal/fmtexpl"
@@ -20,7 +22,7 @@ type Case struct {
 	// if a test case fails.
 	Lab string
 
-	// In is the input value to the tested func.
+	// In is the input value to the tested func.xz
 	In interface{}
 
 	// Exp is the value expected to be returned when calling the tested func.
@@ -160,7 +162,7 @@ func (r *tableRunner) makeChecker(c Case) check.ValueChecker {
 
 	pass := func(got interface{}) bool { return xor(deq(got, c.Exp), c.Not) }
 	expl := func(_ string, got interface{}) string {
-		expStr := fmt.Sprintf("%s%v", condString("not ", "", c.Not), c.Exp)
+		expStr := fmt.Sprintf("%s%v", cond.String("not ", "", c.Not), c.Exp)
 		return fmtexpl.FuncResult(r.label, c.Lab, c.In, expStr, got)
 	}
 	return check.NewValueChecker(pass, expl)
@@ -247,10 +249,10 @@ func newTableRunner(testedFunc interface{}, cfg *TableConfig) TableRunner {
 	r.setConfig(cfg)
 
 	f, err := r.makeFuncReflection(testedFunc)
-	panicOnErr(err, r.validateConfig(f))
+	cond.PanicOnErr(err, r.validateConfig(f))
 
 	args, err := r.makeFixedArgs(f)
-	panicOnErr(err)
+	cond.PanicOnErr(err)
 
 	r.label = f.name
 	r.setGetFunc(f, args)

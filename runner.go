@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/drykit-go/cond"
+
 	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/check/checkconv"
 )
@@ -92,7 +94,7 @@ func (r *baseRunner) baseResults() baseResults {
 	for _, c := range r.checks {
 		got := c.get()
 		passed := c.checker.Pass(got)
-		reason := condString("", c.checker.Explain(c.label, got), passed)
+		reason := cond.String("", c.checker.Explain(c.label, got), passed)
 		results.checks = append(results.checks, CheckResult{
 			Passed: passed,
 			Reason: reason,

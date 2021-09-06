@@ -47,23 +47,3 @@ func getFuncName(f interface{}) string {
 	path := runtime.FuncForPC(fptr).Name()
 	return filepath.Base(path)
 }
-
-// panicOnErr panics if the given err is not nil.
-func panicOnErr(errs ...error) {
-	for _, err := range errs {
-		if err != nil {
-			log.Panic(err)
-		}
-	}
-}
-
-func condValue(vtrue, vfalse interface{}, istrue bool) interface{} {
-	if istrue {
-		return vtrue
-	}
-	return vfalse
-}
-
-func condString(vtrue, vfalse string, istrue bool) string {
-	return condValue(vtrue, vfalse, istrue).(string)
-}
