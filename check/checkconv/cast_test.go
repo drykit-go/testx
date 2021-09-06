@@ -38,7 +38,7 @@ func TestCast(t *testing.T) {
 		}
 
 		for _, c := range cases {
-			assertCasted(t, c)
+			assertCastable(t, c)
 		}
 	})
 
@@ -59,7 +59,7 @@ func TestCast(t *testing.T) {
 		}
 
 		for _, c := range cases {
-			assertCasted(t, c)
+			assertCastable(t, c)
 		}
 	})
 
@@ -80,18 +80,40 @@ func TestCast(t *testing.T) {
 		}
 
 		for _, c := range cases {
-			assertCasted(t, c)
+			assertCastable(t, c)
 		}
 	})
 
 	t.Run("invalid checker", func(t *testing.T) {
 		for _, c := range badCheckers {
-			assertNotCasted(t, c)
+			assertNotCastable(t, c)
 		}
 	})
 }
 
-func assertCasted(t *testing.T, tc checkerTestcase) {
+func TestCastMany(t *testing.T) {
+	t.Run("valid checkers", func(t *testing.T) {
+		res, ok := checkconv.CastMany(goodCheckers...)
+		if !ok {
+			t.Error("returned !ok from good checkers")
+		}
+		if len(res) != len(goodCheckers) {
+			t.Error("failed to cast valid checkers")
+		}
+	})
+
+	t.Run("invalid checkers", func(t *testing.T) {
+		res, ok := checkconv.CastMany(badCheckers...)
+		if ok {
+			t.Error("returned ok from invalid checkers")
+		}
+		if len(res) != 0 {
+			t.Error("casted invalid checkers")
+		}
+	})
+}
+
+func assertCastable(t *testing.T, tc checkerTestcase) {
 	t.Helper()
 	c, ok := checkconv.Cast(tc.checker)
 	if !ok {
@@ -100,7 +122,7 @@ func assertCasted(t *testing.T, tc checkerTestcase) {
 	assertValidValueChecker(t, c, tc)
 }
 
-func assertNotCasted(t *testing.T, badChecker interface{}) {
+func assertNotCastable(t *testing.T, badChecker interface{}) {
 	t.Helper()
 	got, ok := checkconv.Cast(badChecker)
 	if ok {
