@@ -9,6 +9,7 @@ import (
 func TestBytesCheckerProvider(t *testing.T) {
 	var (
 		b      = []byte(`{"id":42,"name":"Marcel Patulacci"}`)
+		sub    = []byte(`"id":42`)
 		diff   = []byte(`{"id":43,"name":"Robert Robichet"}`)
 		eqJSON = []byte("{\n\"id\":   42,\n\n\n  \"name\":\"Marcel Patulacci\" } ")
 	)
@@ -53,6 +54,34 @@ func TestBytesCheckerProvider(t *testing.T) {
 	t.Run("SameJSON fail", func(t *testing.T) {
 		c := check.Bytes.SameJSON(diff)
 		assertFailBytesChecker(t, "SameJSON", c, b)
+	})
+
+	t.Run("Contains pass", func(t *testing.T) {
+		c := check.Bytes.Contains(sub)
+		assertPassBytesChecker(t, "Contains", c, b)
+		c = check.Bytes.Contains(b)
+		assertPassBytesChecker(t, "Contains", c, b)
+	})
+
+	t.Run("Contains fail", func(t *testing.T) {
+		c := check.Bytes.Contains(diff)
+		assertFailBytesChecker(t, "Contains", c, b)
+		c = check.Bytes.Contains(eqJSON)
+		assertFailBytesChecker(t, "Contains", c, b)
+	})
+
+	t.Run("NotContains pass", func(t *testing.T) {
+		c := check.Bytes.NotContains(diff)
+		assertPassBytesChecker(t, "NotContains", c, b)
+		c = check.Bytes.NotContains(eqJSON)
+		assertPassBytesChecker(t, "NotContains", c, b)
+	})
+
+	t.Run("NotContains fail", func(t *testing.T) {
+		c := check.Bytes.NotContains(sub)
+		assertFailBytesChecker(t, "NotContains", c, b)
+		c = check.Bytes.NotContains(b)
+		assertFailBytesChecker(t, "NotContains", c, b)
 	})
 }
 
