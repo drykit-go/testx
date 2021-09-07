@@ -37,3 +37,13 @@ func Assert(knownChecker interface{}) check.ValueChecker {
 		return nil
 	}
 }
+
+// AssertMany converts the given known checkers as described by Assert,
+// and returns them as a slice of check.ValueChecker.
+func AssertMany(knownCheckers ...interface{}) []check.ValueChecker {
+	valueCheckers := []check.ValueChecker{}
+	for _, c := range knownCheckers {
+		valueCheckers = append(valueCheckers, Assert(c))
+	}
+	return valueCheckers
+}

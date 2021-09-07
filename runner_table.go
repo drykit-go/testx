@@ -9,7 +9,7 @@ import (
 	"github.com/drykit-go/cond"
 
 	"github.com/drykit-go/testx/check"
-	"github.com/drykit-go/testx/check/checkconv"
+	"github.com/drykit-go/testx/checkconv"
 	"github.com/drykit-go/testx/internal/fmtexpl"
 )
 
