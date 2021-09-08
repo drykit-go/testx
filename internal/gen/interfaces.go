@@ -89,41 +89,53 @@ func computeInterfaces() (ProvidersTemplateData, error) {
 
 	data := ProvidersTemplateData{}
 	for _, t := range docp.Types {
-		mitf := MetaInterface{ // type TCheckerProvider interface{ ... }
-			Name: interfaceName(t.Name),
-			Docs: astserializer.ComputeDocLines(t.Doc, map[string]string{
-				t.Name: interfaceName(t.Name),
-			}),
-		}
-		mvar := MetaVar{ // var T TCheckerProvider = tCheckerProvider{}
-			Name:  caseMapping[typeName(t.Name)],
-			Type:  mitf.Name,
-			Value: t.Name + "{}",
-		}
-
-		for _, m := range t.Methods {
-			// ignore private methods
-			if !m.Decl.Name.IsExported() {
-				continue
-			}
-			// If a method is inherited, embed the interface of the parent
-			// rather than including all its methods
-			if m.Level != 0 {
-				orig := strings.TrimPrefix(m.Orig, "*") // m.Orig might have a leading "*"
-				mitf.embedInterface(interfaceName(orig))
-				continue
-			}
-			mitf.addFunc(m)
-		}
-		data.Interfaces = append(data.Interfaces, mitf)
-		data.Vars = append(data.Vars, mvar)
+		data.Vars = append(data.Vars, computeMetaVar(t))
+		data.Interfaces = append(data.Interfaces, computeMetaInterface(t))
 	}
 
 	return data, nil
 }
 
+// computeMetaInterface returns a MetaInterface after the given *doc.Type.
+// It reads and attaches the type's name and docs and iterates over its methods.
+// If a method is inherited, it embeds the computed interface name of the parent
+// rather than adding it to the interface.
+func computeMetaInterface(t *doc.Type) MetaInterface {
+	name := interfaceName(t.Name)
+	mitf := MetaInterface{
+		Name: name,
+		Docs: astserializer.ComputeDocLines(t.Doc, map[string]string{
+			t.Name: name,
+		}),
+	}
+	for _, m := range t.Methods {
+		// ignore private methods
+		if !m.Decl.Name.IsExported() {
+			continue
+		}
+		// If a method is inherited, embed the interface of the parent
+		// rather than including all its methods
+		if m.Level != 0 {
+			orig := strings.TrimPrefix(m.Orig, "*") // m.Orig might have a leading "*"
+			mitf.embedInterface(interfaceName(orig))
+			continue
+		}
+		mitf.addFunc(m)
+	}
+	return mitf
+}
+
+// computeMetaVar returns a MetaVar after the given *doc.Type.
+func computeMetaVar(t *doc.Type) MetaVar {
+	return MetaVar{ // var T TCheckerProvider = tCheckerProvider{}
+		Name:  caseMapping[typeName(t.Name)],
+		Type:  interfaceName(t.Name),
+		Value: t.Name + "{}",
+	}
+}
+
 // newDocPackage returns a *doc.Package matching packageName after applying
-// the given filter, or the first non-nil error occuring in the process.
+// the given filter, or the first non-nil error occurring in the process.
 func newDocPackage(packageName string, filter func(fs.FileInfo) bool) (*doc.Package, error) {
 	fset := token.NewFileSet()
 	pkgs, err := parser.ParseDir(fset, "./", filter, parser.ParseComments)
