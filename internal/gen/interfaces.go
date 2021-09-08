@@ -49,19 +49,30 @@ type MetaInterface struct {
 	Docs     []string
 	Name     string
 	Embedded []string
-	Methods  []MetaMethod
+	Funcs    []MetaFunc
 }
 
-func (mi *MetaInterface) embedInterface(name string) {
+// embedInterface appends interfaceName to MetaInterface.Embedded
+// if not already exists, else it is ignored.
+func (mi *MetaInterface) embedInterface(interfaceName string) {
 	for _, itf := range mi.Embedded {
-		if itf == name {
+		if itf == interfaceName {
 			return
 		}
 	}
-	mi.Embedded = append(mi.Embedded, name)
+	mi.Embedded = append(mi.Embedded, interfaceName)
 }
 
-type MetaMethod struct {
+// addFunc creates a MetaFunc from *doc.Func and appends it
+// to MetaInterface.Funcs.
+func (mi *MetaInterface) addFunc(f *doc.Func) {
+	mi.Funcs = append(mi.Funcs, MetaFunc{
+		Sign: astserializer.BuildFuncSignature(f.Name, f.Decl.Type),
+		Docs: astserializer.ComputeDocLines(f.Doc, nil),
+	})
+}
+
+type MetaFunc struct {
 	Sign string
 	Docs []string
 }
@@ -102,10 +113,7 @@ func computeInterfaces() (ProvidersTemplateData, error) {
 				mitf.embedInterface(interfaceName(orig))
 				continue
 			}
-			mitf.Methods = append(mitf.Methods, MetaMethod{
-				Sign: astserializer.BuildFuncSignature(m.Name, m.Decl.Type),
-				Docs: astserializer.ComputeDocLines(m.Doc, nil),
-			})
+			mitf.addFunc(m)
 		}
 		data.Interfaces = append(data.Interfaces, mitf)
 		data.Vars = append(data.Vars, mvar)
