@@ -46,9 +46,19 @@ type ProvidersTemplateData struct {
 }
 
 type MetaInterface struct {
-	Docs    []string
-	Name    string
-	Methods []MetaMethod
+	Docs     []string
+	Name     string
+	Embedded []string
+	Methods  []MetaMethod
+}
+
+func (mi *MetaInterface) embedInterface(name string) {
+	for _, itf := range mi.Embedded {
+		if itf == name {
+			return
+		}
+	}
+	mi.Embedded = append(mi.Embedded, name)
 }
 
 type MetaMethod struct {
@@ -91,6 +101,13 @@ func computeInterfaces() (ProvidersTemplateData, error) {
 		for _, m := range t.Methods {
 			// ignore private methods
 			if !m.Decl.Name.IsExported() {
+				continue
+			}
+			// If a method is inherited, embed the interface of the parent
+			// rather than including all its methods
+			if m.Level != 0 {
+				orig := strings.TrimPrefix(m.Orig, "*") // m.Orig might have a leading "*"
+				mitf.embedInterface(interfaceName(orig))
 				continue
 			}
 			mitf.Methods = append(mitf.Methods, MetaMethod{

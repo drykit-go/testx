@@ -6,6 +6,10 @@ type (
 	// {{.}}
 	{{- end}}
 	{{.Name}} interface {
+		{{range .Embedded -}}
+		{{.}}
+
+		{{end -}}
 		{{range .Methods -}}
 		{{range .Docs -}}
 		// {{.}}
