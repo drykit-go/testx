@@ -1,7 +1,7 @@
 package gen
 
 import (
-	"errors"
+	"fmt"
 	"go/doc"
 	"go/parser"
 	"go/token"
@@ -71,18 +71,10 @@ type MetaVar struct {
 }
 
 func computeInterfaces() (ProvidersTemplateData, error) {
-	fset := token.NewFileSet()
-	pkgs, err := parser.ParseDir(fset, "./", isProviderFile, parser.ParseComments)
+	docp, err := newDocPackage("check", isProviderFile) // TODO: package-agnostic
 	if err != nil {
 		return ProvidersTemplateData{}, err
 	}
-	astp, ok := pkgs["check"] // TODO: package-agnostic
-	if !ok {
-		return ProvidersTemplateData{}, errors.New(
-			"no files found for package \"check\", check path or filters",
-		)
-	}
-	docp := doc.New(astp, "./", doc.AllDecls)
 
 	data := ProvidersTemplateData{}
 	for _, t := range docp.Types {
@@ -120,6 +112,24 @@ func computeInterfaces() (ProvidersTemplateData, error) {
 	}
 
 	return data, nil
+}
+
+// newDocPackage returns a *doc.Package matching packageName after applying
+// the given filter, or the first non-nil error occuring in the process.
+func newDocPackage(packageName string, filter func(fs.FileInfo) bool) (*doc.Package, error) {
+	fset := token.NewFileSet()
+	pkgs, err := parser.ParseDir(fset, "./", filter, parser.ParseComments)
+	if err != nil {
+		return nil, err
+	}
+	astp, ok := pkgs[packageName] // TODO: package-agnostic
+	if !ok {
+		return nil, fmt.Errorf(
+			"no files found for package %s, check path or filters",
+			packageName,
+		)
+	}
+	return doc.New(astp, "./", doc.AllDecls), nil
 }
 
 func isProviderFile(file fs.FileInfo) bool {
