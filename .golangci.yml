@@ -103,9 +103,6 @@ linters-settings:
       rangeValCopy:
         sizeThreshold: 256
 
-  gocyclo:
-    min-complexity: 8
-
   gofumpt:
     lang-version: "1.16"
     extra-rules: true
@@ -137,7 +134,6 @@ linters:
     - exportloopref
     - gocognit # smart complexity analyzer
     - gocritic # opinionated linter
-    - gocyclo # complexity analyzer
     - gofumpt # stricter gofmt
     - goimports # imports order
     - gosec # security checks
