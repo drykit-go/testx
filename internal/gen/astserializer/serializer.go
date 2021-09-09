@@ -2,10 +2,13 @@ package astserializer
 
 import (
 	"go/ast"
-	"io"
 	"log"
 	"strings"
 )
+
+// stringBuilder is a wrapper of strings.Builder with additionnal methods
+// to write serialized representation of go/ast types.
+type stringBuilder struct{ strings.Builder }
 
 // ComputeDocLines parses the raw doc (as returned by go/doc.Type.Doc),
 // applies the given replacements and returns a slice of strings representing
@@ -35,72 +38,75 @@ func ComputeDocLines(rawdoc string, repl map[string]string) []string {
 // BuildFuncSignature builds a func signature given a name an *ast.FuncType
 // and returns it as a string.
 func BuildFuncSignature(name string, ftyp *ast.FuncType) string {
-	b := strings.Builder{}
-	b.WriteString(name + "(")
-	writeFuncParamsString(&b, ftyp.Params)
-	b.WriteString(") ")
-	writeFuncResultsString(&b, ftyp.Results)
+	b := stringBuilder{}
+	b.writeFunc(name, ftyp)
 	return b.String()
 }
 
-func writeFuncParamsString(w io.StringWriter, params *ast.FieldList) {
+// writeExpr writes a serialized ast.Expr to the builder.
+func (b *stringBuilder) writeExpr(expr ast.Expr) {
+	switch t := expr.(type) {
+	case *ast.Ident:
+		b.WriteString(t.Name)
+	case *ast.ArrayType:
+		b.WriteString("[]")
+		b.writeExpr(t.Elt)
+	case *ast.Ellipsis:
+		b.WriteString("...")
+		b.writeExpr(t.Elt)
+	case *ast.FuncType:
+		b.writeFunc("func", t)
+	case *ast.SelectorExpr:
+		b.writeSelector(t)
+	case *ast.StarExpr:
+		b.WriteString("*")
+		b.writeExpr(t.X)
+	case *ast.ChanType:
+		b.writeChan(t)
+	case *ast.MapType:
+		b.writeMap(t)
+	case *ast.StructType:
+		b.writeStruct(t)
+	case *ast.InterfaceType:
+		b.writeInterface(t)
+	default:
+		log.Panicf("❌ unhandled ast.Expr: %#v", t)
+	}
+}
+
+// writeFunc writes a serialized func type to the builder.
+func (b *stringBuilder) writeFunc(name string, t *ast.FuncType) {
+	b.WriteString(name + "(")
+	b.writeFuncParams(t.Params)
+	b.WriteString(") ")
+	b.writeFuncResults(t.Results)
+}
+
+// writeFuncParam writes a serialized func params list to the builder.
+// It does nothing if params == nil
+func (b *stringBuilder) writeFuncParams(params *ast.FieldList) {
 	if params == nil {
 		return
 	}
-	w.WriteString(joinFields(params.List, ", "))
+	b.writeJoinedFields(params.List, ", ")
 }
 
-func writeFuncResultsString(w io.StringWriter, results *ast.FieldList) {
+// writeFuncResults writes a serialized func results list to the builder.
+// It does nothing if results == nil. If results contains several values,
+// they are wrapped in parentheses.
+func (b *stringBuilder) writeFuncResults(results *ast.FieldList) {
 	if results == nil {
 		return
 	}
 	if results.NumFields() > 1 {
-		w.WriteString("(")
-		defer w.WriteString(")")
+		b.WriteString("(")
+		defer b.WriteString(")")
 	}
-	w.WriteString(joinFields(results.List, ", "))
+	b.writeJoinedFields(results.List, ", ")
 }
 
-func joinIdents(idents []*ast.Ident, sep string) string {
-	b := strings.Builder{}
-	for i, ident := range idents {
-		b.WriteString(ident.Name)
-		if i != len(idents)-1 {
-			b.WriteString(sep)
-		}
-	}
-	return b.String()
-}
-
-func serializeExpr(expr ast.Expr) string {
-	switch t := expr.(type) {
-	case *ast.Ident:
-		return t.Name
-	case *ast.ArrayType:
-		return "[]" + serializeExpr(t.Elt)
-	case *ast.Ellipsis:
-		return "..." + serializeExpr(t.Elt)
-	case *ast.FuncType:
-		return BuildFuncSignature("func", t)
-	case *ast.SelectorExpr:
-		return serializeExpr(t.X) + "." + t.Sel.Name
-	case *ast.StarExpr:
-		return "*" + serializeExpr(t.X)
-	case *ast.ChanType:
-		return serializeChanType(t)
-	case *ast.MapType:
-		return "map[" + serializeExpr(t.Key) + "]" + serializeExpr(t.Value)
-	case *ast.StructType:
-		return serializeStructType(t)
-	case *ast.InterfaceType:
-		return serializeInterfaceType(t)
-	default:
-		log.Panicf("❌ unhandled ast.Expr: %#v", t)
-		return ""
-	}
-}
-
-func serializeChanType(t *ast.ChanType) string {
+// writeChan writes a serialized chan type to the builder.
+func (b *stringBuilder) writeChan(t *ast.ChanType) {
 	var chanstr string
 	switch t.Dir {
 	case ast.RECV:
@@ -110,51 +116,72 @@ func serializeChanType(t *ast.ChanType) string {
 	default:
 		chanstr = "chan"
 	}
-	return chanstr + " " + serializeExpr(t.Value)
+	b.WriteString(chanstr)
+	b.WriteString(" ")
+	b.writeExpr(t.Value)
 }
 
-func serializeStructType(t *ast.StructType) string {
-	b := strings.Builder{}
+// writeStruct writes a serialized struct type to the builder.
+func (b *stringBuilder) writeStruct(t *ast.StructType) {
 	b.WriteString("struct{")
-	b.WriteString(joinFields(t.Fields.List, "; "))
+	b.writeJoinedFields(t.Fields.List, "; ")
 	b.WriteString("}")
-	return b.String()
 }
 
-func serializeInterfaceType(t *ast.InterfaceType) string {
-	b := strings.Builder{}
+// writeStruct writes a serialized map type to the builder.
+func (b *stringBuilder) writeMap(t *ast.MapType) {
+	b.WriteString("map[")
+	b.writeExpr(t.Key)
+	b.WriteString("]")
+	b.writeExpr(t.Value)
+}
+
+// writeStruct writes a serialized interface type to the builder.
+func (b *stringBuilder) writeInterface(t *ast.InterfaceType) {
 	b.WriteString("interface{")
-	b.WriteString(joinInterfaceFields(t.Methods.List, "; "))
+	b.writeJoinedInterfaceFields(t.Methods.List, "; ")
 	b.WriteString("}")
-	return b.String()
 }
 
-// joinFields returns a string representation of a slice of *ast.Field,
-// separated by sep. It can be used to serialiaze func params or results,
+// writeStruct writes a serialized selector expression to the builder.
+func (b *stringBuilder) writeSelector(t *ast.SelectorExpr) {
+	b.writeExpr(t.X)
+	b.WriteString(".")
+	b.WriteString(t.Sel.Name)
+}
+
+// writeStruct writes joined identifiers separated by sep to the builder
+func (b *stringBuilder) writeJoinedIdents(idents []*ast.Ident, sep string) {
+	for i, ident := range idents {
+		b.WriteString(ident.Name)
+		if i != len(idents)-1 {
+			b.WriteString(sep)
+		}
+	}
+}
+
+// writeJoinedFields writes joined fields separated by sep to the builder.
+// It can be used to serialiaze a list of func params or results,
 // as well as struct fields.
-func joinFields(fields []*ast.Field, sep string) string {
-	b := strings.Builder{}
+// For interface fields and methods, use writeJoinedInterfaceFields instead
+func (b *stringBuilder) writeJoinedFields(fields []*ast.Field, sep string) {
 	for i, f := range fields {
-		fname := joinIdents(f.Names, ", ")
-		ftype := serializeExpr(f.Type)
-		b.WriteString(fname)
+		b.writeJoinedIdents(f.Names, ", ")
 		b.WriteString(" ")
-		b.WriteString(ftype)
+		b.writeExpr(f.Type)
 		if i != len(fields)-1 {
 			b.WriteString(sep)
 		}
 	}
-	return b.String()
 }
 
-func joinInterfaceFields(fields []*ast.Field, sep string) string {
-	b := strings.Builder{}
-	for i, field := range fields {
-		switch t := field.Type.(type) {
+func (b *stringBuilder) writeJoinedInterfaceFields(fields []*ast.Field, sep string) {
+	for i, f := range fields {
+		switch t := f.Type.(type) {
 		case *ast.Ident:
 			b.WriteString(t.Name)
 		case *ast.FuncType:
-			b.WriteString(BuildFuncSignature(field.Names[0].Name, t))
+			b.WriteString(BuildFuncSignature(f.Names[0].Name, t))
 		default:
 			log.Panicf("joinInterfaceFields: unhandled type %#v", t)
 		}
@@ -162,5 +189,4 @@ func joinInterfaceFields(fields []*ast.Field, sep string) string {
 			b.WriteString(sep)
 		}
 	}
-	return b.String()
 }
