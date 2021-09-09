@@ -1,13 +1,10 @@
 package astserializer
 
 import (
-	"fmt"
 	"go/ast"
 	"io"
 	"log"
 	"strings"
-
-	"github.com/drykit-go/cond"
 )
 
 // ComputeDocLines parses the raw doc (as returned by go/doc.Type.Doc),
@@ -47,37 +44,32 @@ func BuildFuncSignature(name string, ftyp *ast.FuncType) string {
 }
 
 func writeFuncParamsString(w io.StringWriter, params *ast.FieldList) {
-	for i, p := range params.List {
-		pname := joinIdentifiers(p.Names, ", ")
-		ptype := serializeExpr(p.Type)
-		_, err := w.WriteString(pname + " " + ptype)
-		cond.PanicOnErr(err)
-		if i < len(params.List)-1 {
-			_, err := w.WriteString(", ")
-			cond.PanicOnErr(err)
-		}
+	if params == nil {
+		return
 	}
+	w.WriteString(joinFields(params.List, ", "))
 }
 
 func writeFuncResultsString(w io.StringWriter, results *ast.FieldList) {
-	for i, r := range results.List {
-		_, err := w.WriteString(fmt.Sprint(r.Type))
-		cond.PanicOnErr(err)
-		if i < results.NumFields()-1 {
-			_, err := w.WriteString(", ")
-			cond.PanicOnErr(err)
-		}
+	if results == nil {
+		return
 	}
+	if results.NumFields() > 1 {
+		w.WriteString("(")
+		defer w.WriteString(")")
+	}
+	w.WriteString(joinFields(results.List, ", "))
 }
 
-func joinIdentifiers(idents []*ast.Ident, sep string) (out string) {
+func joinIdents(idents []*ast.Ident, sep string) string {
+	b := strings.Builder{}
 	for i, ident := range idents {
-		out += ident.Name
-		if i < len(idents)-1 {
-			out += sep
+		b.WriteString(ident.Name)
+		if i != len(idents)-1 {
+			b.WriteString(sep)
 		}
 	}
-	return
+	return b.String()
 }
 
 func serializeExpr(expr ast.Expr) string {
@@ -94,10 +86,81 @@ func serializeExpr(expr ast.Expr) string {
 		return serializeExpr(t.X) + "." + t.Sel.Name
 	case *ast.StarExpr:
 		return "*" + serializeExpr(t.X)
+	case *ast.ChanType:
+		return serializeChanType(t)
+	case *ast.MapType:
+		return "map[" + serializeExpr(t.Key) + "]" + serializeExpr(t.Value)
+	case *ast.StructType:
+		return serializeStructType(t)
 	case *ast.InterfaceType:
-		return "interface{}"
+		return serializeInterfaceType(t)
 	default:
-		log.Panicf("❌ unhandled ast.Expr: %#v", expr)
+		log.Panicf("❌ unhandled ast.Expr: %#v", t)
 		return ""
 	}
+}
+
+func serializeChanType(t *ast.ChanType) string {
+	var chanstr string
+	switch t.Dir {
+	case ast.RECV:
+		chanstr = "<-chan"
+	case ast.SEND:
+		chanstr = "chan<-"
+	default:
+		chanstr = "chan"
+	}
+	return chanstr + " " + serializeExpr(t.Value)
+}
+
+func serializeStructType(t *ast.StructType) string {
+	b := strings.Builder{}
+	b.WriteString("struct{")
+	b.WriteString(joinFields(t.Fields.List, "; "))
+	b.WriteString("}")
+	return b.String()
+}
+
+func serializeInterfaceType(t *ast.InterfaceType) string {
+	b := strings.Builder{}
+	b.WriteString("interface{")
+	b.WriteString(joinInterfaceFields(t.Methods.List, "; "))
+	b.WriteString("}")
+	return b.String()
+}
+
+// joinFields returns a string representation of a slice of *ast.Field,
+// separated by sep. It can be used to serialiaze func params or results,
+// as well as struct fields.
+func joinFields(fields []*ast.Field, sep string) string {
+	b := strings.Builder{}
+	for i, f := range fields {
+		fname := joinIdents(f.Names, ", ")
+		ftype := serializeExpr(f.Type)
+		b.WriteString(fname)
+		b.WriteString(" ")
+		b.WriteString(ftype)
+		if i != len(fields)-1 {
+			b.WriteString(sep)
+		}
+	}
+	return b.String()
+}
+
+func joinInterfaceFields(fields []*ast.Field, sep string) string {
+	b := strings.Builder{}
+	for i, field := range fields {
+		switch t := field.Type.(type) {
+		case *ast.Ident:
+			b.WriteString(t.Name)
+		case *ast.FuncType:
+			b.WriteString(BuildFuncSignature(field.Names[0].Name, t))
+		default:
+			log.Panicf("joinInterfaceFields: unhandled type %#v", t)
+		}
+		if i != len(fields) {
+			b.WriteString(sep)
+		}
+	}
+	return b.String()
 }
