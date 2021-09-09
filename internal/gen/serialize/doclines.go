@@ -1,11 +1,11 @@
-package astserializer
+package serialize
 
 import "strings"
 
-// ComputeDocLines parses the raw doc (as returned by go/doc.Type.Doc),
+// DocLines parses the raw doc (as returned by go/doc.Type.Doc),
 // applies the given replacements and returns a slice of strings representing
 // the resulting lines.
-func ComputeDocLines(rawdoc string, repl map[string]string) []string {
+func DocLines(rawdoc string, repl map[string]string) []string {
 	lines := []string{}
 	if rawdoc == "" {
 		return lines

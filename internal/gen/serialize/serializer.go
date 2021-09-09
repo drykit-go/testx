@@ -1,4 +1,4 @@
-package astserializer
+package serialize
 
 import (
 	"go/ast"
@@ -10,9 +10,9 @@ import (
 // to write serialized representation of go/ast types.
 type stringBuilder struct{ strings.Builder }
 
-// BuildFuncSignature builds a func signature given a name an *ast.FuncType
+// FuncSignature builds a func signature given a name an *ast.FuncType
 // and returns it as a string.
-func BuildFuncSignature(name string, ftyp *ast.FuncType) string {
+func FuncSignature(name string, ftyp *ast.FuncType) string {
 	b := stringBuilder{}
 	b.writeFunc(name, ftyp)
 	return b.String()
@@ -156,7 +156,7 @@ func (b *stringBuilder) writeJoinedInterfaceFields(fields []*ast.Field, sep stri
 		case *ast.Ident:
 			b.WriteString(t.Name)
 		case *ast.FuncType:
-			b.WriteString(BuildFuncSignature(f.Names[0].Name, t))
+			b.WriteString(FuncSignature(f.Names[0].Name, t))
 		default:
 			log.Panicf("joinInterfaceFields: unhandled type %#v", t)
 		}

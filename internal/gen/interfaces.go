@@ -9,7 +9,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/drykit-go/testx/internal/gen/astserializer"
+	"github.com/drykit-go/testx/internal/gen/serialize"
 )
 
 const interfaceSuffix = "CheckerProvider"
@@ -67,8 +67,8 @@ func (mi *MetaInterface) embedInterface(interfaceName string) {
 // to MetaInterface.Funcs.
 func (mi *MetaInterface) addFunc(f *doc.Func) {
 	mi.Funcs = append(mi.Funcs, MetaFunc{
-		Sign: astserializer.BuildFuncSignature(f.Name, f.Decl.Type),
-		Docs: astserializer.ComputeDocLines(f.Doc, nil),
+		Sign: serialize.FuncSignature(f.Name, f.Decl.Type),
+		Docs: serialize.DocLines(f.Doc, nil),
 	})
 }
 
@@ -104,7 +104,7 @@ func computeMetaInterface(t *doc.Type) MetaInterface {
 	name := interfaceName(t.Name)
 	mitf := MetaInterface{
 		Name: name,
-		Docs: astserializer.ComputeDocLines(t.Doc, map[string]string{
+		Docs: serialize.DocLines(t.Doc, map[string]string{
 			t.Name: name,
 		}),
 	}
