@@ -4,5 +4,5 @@ go 1.16
 
 require (
 	github.com/drykit-go/cond v0.1.0
-	github.com/drykit-go/strcase v0.0.1
+	github.com/drykit-go/strcase v0.2.0
 )

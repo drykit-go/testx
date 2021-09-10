@@ -6,40 +6,11 @@ import (
 	"go/parser"
 	"go/token"
 	"io/fs"
-	"log"
 	"strings"
 
 	"github.com/drykit-go/testx/internal/gen/metatype"
 	"github.com/drykit-go/testx/internal/gen/serialize"
 )
-
-const interfaceSuffix = "CheckerProvider"
-
-// TODO: use strcase.Pascal, remove record
-var caseMapping = map[string]string{
-	"bool":       "Bool",
-	"int":        "Int",
-	"bytes":      "Bytes",
-	"string":     "String",
-	"duration":   "Duration",
-	"httpHeader": "HTTPHeader",
-	"value":      "Value",
-	"struct":     "Struct",
-	"map":        "Map",
-	"slice":      "Slice",
-}
-
-func typeName(structName string) string {
-	return strings.TrimSuffix(structName, interfaceSuffix)
-}
-
-func interfaceName(structName string) string {
-	upper, ok := caseMapping[typeName(structName)]
-	if !ok {
-		log.Panicf("missing gen.CaseMapping type key for %s", structName)
-	}
-	return upper + interfaceSuffix
-}
 
 type ProvidersMetaData struct {
 	Interfaces []metatype.Interface
@@ -66,7 +37,7 @@ func computeInterfaces() (ProvidersMetaData, error) {
 // If a method is inherited, it embeds the computed interface name of the parent
 // rather than adding it to the interface.
 func computeMetaInterface(t *doc.Type) metatype.Interface {
-	name := interfaceName(t.Name)
+	name := structToInterfaceName(t.Name)
 	mitf := metatype.Interface{
 		Name: name,
 		Docs: serialize.DocLines(t.Doc, map[string]string{
@@ -82,7 +53,7 @@ func computeMetaInterface(t *doc.Type) metatype.Interface {
 		// rather than including all its methods
 		if m.Level != 0 {
 			orig := strings.TrimPrefix(m.Orig, "*") // m.Orig might have a leading "*"
-			mitf.EmbedInterface(interfaceName(orig))
+			mitf.EmbedInterface(structToInterfaceName(orig))
 			continue
 		}
 		mitf.AddFunc(metatype.Func{
@@ -96,8 +67,8 @@ func computeMetaInterface(t *doc.Type) metatype.Interface {
 // computeMetaVar returns a MetaVar after the given *doc.Type.
 func computeMetaVar(t *doc.Type) metatype.Var {
 	return metatype.Var{ // var T TCheckerProvider = tCheckerProvider{}
-		Name:  caseMapping[typeName(t.Name)],
-		Type:  interfaceName(t.Name),
+		Name:  structToVarName(t.Name),
+		Type:  structToInterfaceName(t.Name),
 		Value: t.Name + "{}",
 	}
 }
