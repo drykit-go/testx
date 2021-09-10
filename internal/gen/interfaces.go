@@ -9,6 +9,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/drykit-go/testx/internal/gen/metatype"
 	"github.com/drykit-go/testx/internal/gen/serialize"
 )
 
@@ -40,54 +41,18 @@ func interfaceName(structName string) string {
 	return upper + interfaceSuffix
 }
 
-type ProvidersTemplateData struct {
-	Interfaces []MetaInterface
-	Vars       []MetaVar
+type ProvidersMetaData struct {
+	Interfaces []metatype.Interface
+	Vars       []metatype.Var
 }
 
-type MetaInterface struct {
-	Docs     []string
-	Name     string
-	Embedded []string
-	Funcs    []MetaFunc
-}
-
-// embedInterface appends interfaceName to MetaInterface.Embedded
-// if not already exists, else it is ignored.
-func (mi *MetaInterface) embedInterface(interfaceName string) {
-	for _, itf := range mi.Embedded {
-		if itf == interfaceName {
-			return
-		}
-	}
-	mi.Embedded = append(mi.Embedded, interfaceName)
-}
-
-// addFunc creates a MetaFunc from *doc.Func and appends it
-// to MetaInterface.Funcs.
-func (mi *MetaInterface) addFunc(f *doc.Func) {
-	mi.Funcs = append(mi.Funcs, MetaFunc{
-		Sign: serialize.FuncSignature(f.Name, f.Decl.Type),
-		Docs: serialize.DocLines(f.Doc, nil),
-	})
-}
-
-type MetaFunc struct {
-	Sign string
-	Docs []string
-}
-
-type MetaVar struct {
-	Name, Type, Value string
-}
-
-func computeInterfaces() (ProvidersTemplateData, error) {
+func computeInterfaces() (ProvidersMetaData, error) {
 	docp, err := newDocPackage("check", isProviderFile) // TODO: package-agnostic
 	if err != nil {
-		return ProvidersTemplateData{}, err
+		return ProvidersMetaData{}, err
 	}
 
-	data := ProvidersTemplateData{}
+	data := ProvidersMetaData{}
 	for _, t := range docp.Types {
 		data.Vars = append(data.Vars, computeMetaVar(t))
 		data.Interfaces = append(data.Interfaces, computeMetaInterface(t))
@@ -100,9 +65,9 @@ func computeInterfaces() (ProvidersTemplateData, error) {
 // It reads and attaches the type's name and docs and iterates over its methods.
 // If a method is inherited, it embeds the computed interface name of the parent
 // rather than adding it to the interface.
-func computeMetaInterface(t *doc.Type) MetaInterface {
+func computeMetaInterface(t *doc.Type) metatype.Interface {
 	name := interfaceName(t.Name)
-	mitf := MetaInterface{
+	mitf := metatype.Interface{
 		Name: name,
 		Docs: serialize.DocLines(t.Doc, map[string]string{
 			t.Name: name,
@@ -117,17 +82,20 @@ func computeMetaInterface(t *doc.Type) MetaInterface {
 		// rather than including all its methods
 		if m.Level != 0 {
 			orig := strings.TrimPrefix(m.Orig, "*") // m.Orig might have a leading "*"
-			mitf.embedInterface(interfaceName(orig))
+			mitf.EmbedInterface(interfaceName(orig))
 			continue
 		}
-		mitf.addFunc(m)
+		mitf.AddFunc(metatype.Func{
+			Sign: serialize.FuncSignature(m.Name, m.Decl.Type),
+			Docs: serialize.DocLines(m.Doc, nil),
+		})
 	}
 	return mitf
 }
 
 // computeMetaVar returns a MetaVar after the given *doc.Type.
-func computeMetaVar(t *doc.Type) MetaVar {
-	return MetaVar{ // var T TCheckerProvider = tCheckerProvider{}
+func computeMetaVar(t *doc.Type) metatype.Var {
+	return metatype.Var{ // var T TCheckerProvider = tCheckerProvider{}
 		Name:  caseMapping[typeName(t.Name)],
 		Type:  interfaceName(t.Name),
 		Value: t.Name + "{}",
