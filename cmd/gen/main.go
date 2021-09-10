@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/drykit-go/testx/internal/gen"
 )
@@ -34,6 +35,7 @@ var kindsFuncs = map[string]func(tpl, out string) error{
 }
 
 func main() {
+	t0 := time.Now()
 	if err := parseFlags(); err != nil {
 		log.Fatal(err)
 	}
@@ -42,7 +44,7 @@ func main() {
 	if err := run(); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("✅ Done")
+	fmt.Printf("✅ Done in %v\n\n", time.Since(t0))
 }
 
 func run() error {
