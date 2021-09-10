@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"strings"
 
+	"github.com/drykit-go/testx/internal/gen/docparser"
 	"github.com/drykit-go/testx/internal/gen/metatype"
 	"github.com/drykit-go/testx/internal/gen/serialize"
 )
@@ -40,10 +41,11 @@ func computeMetaInterface(t *doc.Type) metatype.Interface {
 	name := structToInterfaceName(t.Name)
 	mitf := metatype.Interface{
 		Name: name,
-		Docs: serialize.DocLines(t.Doc, map[string]string{
+		DocLines: docparser.ParseDocLines(t.Doc, map[string]string{
 			t.Name: name,
 		}),
 	}
+
 	for _, m := range t.Methods {
 		// ignore private methods
 		if !m.Decl.Name.IsExported() {
@@ -57,8 +59,8 @@ func computeMetaInterface(t *doc.Type) metatype.Interface {
 			continue
 		}
 		mitf.AddFunc(metatype.Func{
-			Sign: serialize.FuncSignature(m.Name, m.Decl.Type),
-			Docs: serialize.DocLines(m.Doc, nil),
+			Sign:     serialize.FuncSignature(m.Name, m.Decl.Type),
+			DocLines: docparser.ParseDocLines(m.Doc, nil),
 		})
 	}
 	return mitf
@@ -81,7 +83,7 @@ func newDocPackage(packageName string, filter func(fs.FileInfo) bool) (*doc.Pack
 	if err != nil {
 		return nil, err
 	}
-	astp, ok := pkgs[packageName] // TODO: package-agnostic
+	astp, ok := pkgs[packageName]
 	if !ok {
 		return nil, fmt.Errorf(
 			"no files found for package %s, check path or filters",
@@ -93,14 +95,14 @@ func newDocPackage(packageName string, filter func(fs.FileInfo) bool) (*doc.Pack
 
 func isProviderFile(file fs.FileInfo) bool {
 	return strings.HasPrefix(file.Name(), "providers_") &&
-		isTestFile(file) &&
-		isBaseFile(file)
+		!isTestFile(file) &&
+		!isBaseFile(file)
 }
 
 func isTestFile(file fs.FileInfo) bool {
-	return !strings.HasSuffix(file.Name(), "_test.go")
+	return strings.HasSuffix(file.Name(), "_test.go")
 }
 
 func isBaseFile(file fs.FileInfo) bool {
-	return !strings.HasSuffix(file.Name(), "_base.go")
+	return strings.HasSuffix(file.Name(), "_base.go")
 }

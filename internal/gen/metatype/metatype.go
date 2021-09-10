@@ -1,8 +1,8 @@
 package metatype
 
 type Interface struct {
-	Docs     []string
 	Name     string
+	DocLines []string
 	Embedded []string
 	Funcs    []Func
 }
@@ -25,8 +25,8 @@ func (mi *Interface) AddFunc(f Func) {
 }
 
 type Func struct {
-	Sign string
-	Docs []string
+	Sign     string
+	DocLines []string
 }
 
 type Var struct {

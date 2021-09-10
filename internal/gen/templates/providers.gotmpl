@@ -2,7 +2,7 @@ package check
 
 type (
 	{{- range .Interfaces -}}
-	{{range .Docs}}
+	{{range .DocLines}}
 	// {{.}}
 	{{- end}}
 	{{.Name}} interface {
@@ -11,7 +11,7 @@ type (
 
 		{{end -}}
 		{{range .Funcs -}}
-		{{range .Docs -}}
+		{{range .DocLines -}}
 		// {{.}}
 		{{end -}}
 		{{.Sign}}

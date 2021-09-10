@@ -1,11 +1,10 @@
-package serialize
+package docparser
 
-import "strings"
+import (
+	"strings"
+)
 
-// DocLines parses the raw doc (as returned by go/doc.Type.Doc),
-// applies the given replacements and returns a slice of strings representing
-// the resulting lines.
-func DocLines(rawdoc string, repl map[string]string) []string {
+func ParseDocLines(rawdoc string, repl map[string]string) []string {
 	lines := []string{}
 	if rawdoc == "" {
 		return lines
