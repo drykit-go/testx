@@ -40,15 +40,6 @@ func sameJSON(x, y []byte, xptr, yptr interface{}) bool {
 	return reflect.DeepEqual(xptr, yptr)
 }
 
-func panicOnUnexpectedKind(got interface{}, exp reflect.Kind) {
-	if v := reflect.ValueOf(got); v.Kind() != exp {
-		log.Panicf(
-			"expect %s kind as input, got %s",
-			exp.String(), v.String(),
-		)
-	}
-}
-
 func deq(a, b interface{}) bool {
 	return reflect.DeepEqual(a, b)
 }
