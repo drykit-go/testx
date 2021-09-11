@@ -36,10 +36,13 @@ type FuncSignature struct {
 	In, Out []reflect.Kind
 }
 
+// Match returns true if ftyp in/out kinds match the FuncSignature ones.
 func (s FuncSignature) Match(ftyp reflect.Type) bool {
 	return s.matchIn(ftyp) && s.matchOut(ftyp)
 }
 
+// ImplementedBy returns true if v's type has a method that matches
+// FuncSignature's Name and In/Out kinds.
 func (s FuncSignature) ImplementedBy(v reflect.Value) bool {
 	m := v.MethodByName(s.Name)
 	if !m.IsValid() {
@@ -76,12 +79,16 @@ func (s FuncSignature) validKind(gotk, expk reflect.Kind) bool {
 	return expk == AnyKind || gotk == expk
 }
 
+// Func is a WIP. It is currently used by tableRunner.
+// TODO: merge FuncSignature into it?
 type Func struct {
 	Name string
 	Rtyp reflect.Type
 	Rval reflect.Value
 }
 
+// NewFunc returns a *Func from the given func input, of a non-nil error
+// if fn's kind is not reflect.Func.'
 func NewFunc(fn interface{}) (*Func, error) {
 	fval := reflect.ValueOf(fn)
 	if !IsFunc(fval) {

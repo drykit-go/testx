@@ -36,6 +36,7 @@ func UnwrapValues(wrapped []reflect.Value) (values []interface{}) {
 	return
 }
 
+// PanicOnUnexpectedKind panics if v's kind is not exp.
 func PanicOnUnexpectedKind(v interface{}, exp reflect.Kind) {
 	panicOnUnexpectedKind(reflect.ValueOf(v), exp)
 }
