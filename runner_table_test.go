@@ -72,6 +72,15 @@ func TestTableRunner(t *testing.T) {
 	})
 }
 
+func TestTableRunnerMultiple(t *testing.T) {
+	get2ndParam := func(a, b, c int) int { return b }
+	testx.Table(get2ndParam, &testx.TableConfig{ModeMultiple: true}).
+		CasesM([]testx.CaseM{
+			{Args: []interface{}{-1, 42, -1}, Exps: []interface{}{42}},
+		}).
+		Run(t)
+}
+
 func TestTableRunnerResults(t *testing.T) {
 	t.Run("pass", func(t *testing.T) {
 		res := testx.

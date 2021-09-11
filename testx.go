@@ -41,6 +41,8 @@ type TableRunner interface {
 	DryRun() TableResulter
 	// Cases adds test cases to be run on the tested func.
 	Cases(cases []Case) TableRunner
+
+	CasesM(cases []CaseM) TableRunner
 }
 
 // HTTPHandlerRunner provides methods to perform tests on a http.Handler

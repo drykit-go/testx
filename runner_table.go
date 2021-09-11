@@ -32,11 +32,17 @@ type Case struct {
 	Not bool
 }
 
+type CaseM struct {
+	Lab  string
+	Args []interface{}
+	Exps []interface{}
+}
+
 // TableConfig is an object of options allowing to configure a table runner.
 // It allows to test functions having multiple input parameters or multiple
 // return values.
 type TableConfig struct {
-	// InPos is the nth parameter in which In value is injected.
+	// InPos is the nth parameter in which Case.In value is injected.
 	// It is required if the tested func accepts multiple parameters.
 	// Default is 0.
 	InPos int
@@ -53,7 +59,11 @@ type TableConfig struct {
 	// Depending on the value of len(FixedArgs) - nparams, Case.In will either
 	// replace (0) or be inserted (-1) at index InPos.
 	FixedArgs []interface{}
+
+	ModeMultiple bool
 }
+
+type Arg interface{}
 
 type tableRunner struct {
 	baseRunner
@@ -61,6 +71,9 @@ type tableRunner struct {
 	label  string
 	config TableConfig
 	get    func(in interface{}) gottype
+	// getm   func(args []interface{}) []interface{}
+
+	funcref interface{}
 }
 
 func (r *tableRunner) Run(t *testing.T) {
@@ -79,6 +92,48 @@ func (r *tableRunner) Cases(cases []Case) TableRunner {
 			label:   c.Lab,
 			get:     func() gottype { return r.get(c.In) },
 			checker: r.makeChecker(c),
+		})
+	}
+	return r
+}
+
+func (r *tableRunner) CasesM(cases []CaseM) TableRunner {
+	if r.funcref == nil {
+		log.Fatal("r.funcref is nil")
+	}
+
+	fval := reflect.ValueOf(r.funcref)
+	ftyp := fval.Type()
+
+	for _, c := range cases {
+		c := c
+
+		if ftyp.NumIn() != len(c.Args) {
+			log.Fatal("Args do not match func params signature")
+		}
+		if ftyp.NumOut() != len(c.Exps) {
+			log.Fatal("Exps do not match funs results signature")
+		}
+
+		get := func(args []interface{}) []interface{} {
+			var vargs []reflect.Value
+			for _, a := range args {
+				vargs = append(vargs, reflect.ValueOf(a))
+			}
+
+			var outs []interface{}
+			vouts := fval.Call(vargs)
+			for _, o := range vouts {
+				outs = append(outs, o.Interface())
+			}
+
+			return outs
+		}
+
+		r.addCheck(baseCheck{
+			label:   c.Lab,
+			get:     func() gottype { return get(c.Args) },
+			checker: r.makeCheckerM(c),
 		})
 	}
 	return r
@@ -139,6 +194,10 @@ func (r *tableRunner) validateConfig(f funcReflection) error {
 			r.config.OutPos,
 		)
 	}
+	// TODO: temp
+	if r.config.ModeMultiple {
+		return nil
+	}
 	if outPos, numOut := r.config.OutPos, f.rtyp.NumOut(); outPos >= numOut {
 		return fmt.Errorf(
 			"invalid value for OutPos: must be < to the number of values returned by %s (%d > %d)",
@@ -168,7 +227,31 @@ func (r *tableRunner) makeChecker(c Case) check.ValueChecker {
 	return check.NewValueChecker(pass, expl)
 }
 
+func (r *tableRunner) makeCheckerM(c CaseM) check.ValueChecker {
+	pass := func(got interface{}) bool {
+		gots := got.([]interface{})
+		if len(gots) != len(c.Exps) {
+			panic("len(CaseM.Exp) do not match")
+		}
+		ok := true
+		for i, exp := range c.Exps {
+			if got := gots[i]; !deq(got, exp) {
+				ok = false
+			}
+		}
+		return ok
+	}
+	expl := func(_ string, got interface{}) string {
+		return fmtexpl.FuncResult(r.label, c.Lab, c.Args, c.Exps, got.([]interface{}))
+	}
+	return check.NewValueChecker(pass, expl)
+}
+
 func (r *tableRunner) makeFuncReflection(in interface{}) (funcReflection, error) {
+	if r.config.ModeMultiple { // TODO: temp
+		r.funcref = in
+		return funcReflection{}, nil
+	}
 	rval := reflect.ValueOf(in)
 	rtyp := rval.Type()
 
@@ -203,6 +286,10 @@ func (r *tableRunner) makeFuncReflection(in interface{}) (funcReflection, error)
 }
 
 func (r *tableRunner) makeFixedArgs(f funcReflection) ([]reflect.Value, error) {
+	// TODO: temp
+	if r.config.ModeMultiple {
+		return nil, nil
+	}
 	nparams := f.rtyp.NumIn()
 	nargs := len(r.config.FixedArgs)
 	args := make([]reflect.Value, nparams)
@@ -294,3 +381,5 @@ func (res tableResults) PassedLabel(label string) bool {
 func (res tableResults) FailedLabel(label string) bool {
 	return !res.PassedLabel(label)
 }
+
+func TableM(testedFunc interface{}) {}
