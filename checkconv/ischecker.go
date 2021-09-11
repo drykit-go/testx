@@ -1,57 +1,22 @@
 package checkconv
 
-import "reflect"
+import (
+	"reflect"
 
-type signature struct {
-	name    string
-	in, out []reflect.Kind
-}
-
-func (s signature) match(v reflect.Value) bool {
-	m := v.MethodByName(s.name)
-	if !m.IsValid() {
-		return false
-	}
-	t := m.Type()
-	return s.matchIn(t) && s.matchOut(t)
-}
-
-func (s signature) matchIn(t reflect.Type) bool {
-	return s.matchValues(t.NumIn(), t.In, s.in)
-}
-
-func (s signature) matchOut(t reflect.Type) bool {
-	return s.matchValues(t.NumOut(), t.Out, s.out)
-}
-
-func (s signature) matchValues(numValues int, getIthVal func(int) reflect.Type, expKinds []reflect.Kind) bool {
-	if numValues != len(expKinds) {
-		return false
-	}
-	for i := 0; i < numValues; i++ {
-		if !s.validKind(getIthVal(i).Kind(), expKinds[i]) {
-			return false
-		}
-	}
-	return true
-}
-
-func (s signature) validKind(gotk, expk reflect.Kind) bool {
-	// reflect.Invalid is used as a generic wildcard
-	return expk == reflect.Invalid || gotk == expk
-}
+	"github.com/drykit-go/testx/internal/reflectutil"
+)
 
 var (
-	signaturePass = signature{
-		name: "Pass",
-		in:   []reflect.Kind{reflect.Invalid}, // reflect.Invalid is used as a generic wildcard
-		out:  []reflect.Kind{reflect.Bool},
+	signaturePass = reflectutil.FuncSignature{
+		Name: "Pass",
+		In:   []reflect.Kind{reflectutil.AnyKind},
+		Out:  []reflect.Kind{reflect.Bool},
 	}
 
-	signatureExpl = signature{
-		name: "Explain",
-		in:   []reflect.Kind{reflect.String, reflect.Interface},
-		out:  []reflect.Kind{reflect.String},
+	signatureExpl = reflectutil.FuncSignature{
+		Name: "Explain",
+		In:   []reflect.Kind{reflect.String, reflect.Interface},
+		Out:  []reflect.Kind{reflect.String},
 	}
 )
 
@@ -71,9 +36,9 @@ func IsChecker(in interface{}) bool {
 }
 
 func isPasser(v reflect.Value) bool {
-	return signaturePass.match(v)
+	return signaturePass.ImplementedBy(v)
 }
 
 func isExplainer(v reflect.Value) bool {
-	return signatureExpl.match(v)
+	return signatureExpl.ImplementedBy(v)
 }

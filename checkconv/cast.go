@@ -24,14 +24,14 @@ func Cast(anyChecker interface{}) (c check.ValueChecker, ok bool) {
 	c = check.NewValueChecker(
 		func(got interface{}) bool {
 			gotv := reflect.ValueOf(got)
-			return v.MethodByName(signaturePass.name).
+			return v.MethodByName(signaturePass.Name).
 				Call([]reflect.Value{gotv})[0].
 				Bool()
 		},
 		func(label string, got interface{}) string {
 			labv := reflect.ValueOf(label)
 			gotv := reflect.ValueOf(got)
-			return v.MethodByName(signatureExpl.name).
+			return v.MethodByName(signatureExpl.Name).
 				Call([]reflect.Value{labv, gotv})[0].
 				String()
 		},
