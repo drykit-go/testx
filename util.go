@@ -3,9 +3,7 @@ package testx
 import (
 	"io"
 	"log"
-	"path/filepath"
 	"reflect"
-	"runtime"
 	"time"
 )
 
@@ -31,19 +29,4 @@ func mustReadIO(origin string, reader io.ReadCloser) []byte {
 		log.Panicf("error reading %s: %s", origin, err)
 	}
 	return b
-}
-
-// getFuncName returns the name of the given func prefixed with
-// the name of the package it is from.  It panics if f is not a func.
-func getFuncName(f interface{}) string {
-	fval := reflect.ValueOf(f)
-	if kind := fval.Kind(); kind != reflect.Func {
-		log.Panicf(
-			"calling getFuncName with a non func argument (%s %v)",
-			fval.Type().String(), fval.String(),
-		)
-	}
-	fptr := fval.Pointer()
-	path := runtime.FuncForPC(fptr).Name()
-	return filepath.Base(path)
 }
