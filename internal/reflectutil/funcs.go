@@ -31,6 +31,33 @@ func funcName(fval reflect.Value) string {
 	return filepath.Base(path)
 }
 
+// Func is a FuncSignature associated with its actual reflect.Value.
+type Func struct {
+	FuncSignature
+	Value reflect.Value
+}
+
+// Call calls Func's underlying func with given args and returns the results
+// as a slice of empty interfaces.
+func (f *Func) Call(args []interface{}) []interface{} {
+	return UnwrapValues(f.Value.Call(WrapValues(args)))
+}
+
+// NewFunc returns a *Func from the given func input, of a non-nil error
+// if fn's kind is not reflect.Func.'
+func NewFunc(fn interface{}) (*Func, error) {
+	fval := reflect.ValueOf(fn)
+	if !IsFunc(fval) {
+		return nil, fmt.Errorf("%w: got %v", ErrNotAFunc, fn)
+	}
+	return &Func{
+		FuncSignature: FuncSignature{Name: funcName(fval)},
+		Value:         fval,
+	}, nil
+}
+
+// FuncSignature is a func signature having a name and In/Out types represented
+// by slices of reflect.Kind.
 type FuncSignature struct {
 	Name    string
 	In, Out []reflect.Kind
@@ -77,26 +104,4 @@ func (s FuncSignature) matchValues(
 
 func (s FuncSignature) validKind(gotk, expk reflect.Kind) bool {
 	return expk == AnyKind || gotk == expk
-}
-
-// Func is a WIP. It is currently used by tableRunner.
-// TODO: merge FuncSignature into it?
-type Func struct {
-	Name string
-	Rtyp reflect.Type
-	Rval reflect.Value
-}
-
-// NewFunc returns a *Func from the given func input, of a non-nil error
-// if fn's kind is not reflect.Func.'
-func NewFunc(fn interface{}) (*Func, error) {
-	fval := reflect.ValueOf(fn)
-	if !IsFunc(fval) {
-		return nil, fmt.Errorf("%w: got %v", ErrNotAFunc, fn)
-	}
-	return &Func{
-		Name: funcName(fval),
-		Rtyp: fval.Type(),
-		Rval: fval,
-	}, nil
 }
