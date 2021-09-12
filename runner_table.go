@@ -3,7 +3,6 @@ package testx
 import (
 	"fmt"
 	"log"
-	"reflect"
 	"testing"
 
 	"github.com/drykit-go/cond"
@@ -11,6 +10,7 @@ import (
 	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/checkconv"
 	"github.com/drykit-go/testx/internal/fmtexpl"
+	"github.com/drykit-go/testx/internal/reflectutil"
 )
 
 var _ TableRunner = (*tableRunner)(nil)
@@ -52,7 +52,17 @@ type TableConfig struct {
 	// the number of parameters of the tested func.
 	// Depending on the value of len(FixedArgs) - nparams, Case.In will either
 	// replace (0) or be inserted (-1) at index InPos.
-	FixedArgs []interface{}
+	FixedArgs Args
+}
+
+type Args []interface{}
+
+func (args Args) replaceAt(pos int, arg interface{}) Args {
+	if pos >= len(args) {
+		log.Panic("Args.set(i, v): i is out of range")
+	}
+	args[pos] = arg
+	return args
 }
 
 type tableRunner struct {
@@ -61,6 +71,8 @@ type tableRunner struct {
 	label  string
 	config TableConfig
 	get    func(in interface{}) gottype
+
+	rfunc *reflectutil.Func
 }
 
 func (r *tableRunner) Run(t *testing.T) {
@@ -89,26 +101,6 @@ func (r *tableRunner) Config(cfg *TableConfig) TableRunner {
 	return r
 }
 
-func (r *tableRunner) Label(label string) TableRunner {
-	r.label = label
-	return r
-}
-
-func (r *tableRunner) FixedArgs(args ...interface{}) TableRunner {
-	r.config.FixedArgs = args
-	return r
-}
-
-func (r *tableRunner) InPos(pos int) TableRunner {
-	r.config.InPos = pos
-	return r
-}
-
-func (r *tableRunner) OutPos(pos int) TableRunner {
-	r.config.OutPos = pos
-	return r
-}
-
 func (r *tableRunner) setConfig(cfg *TableConfig) {
 	if cfg == nil {
 		r.config = TableConfig{}
@@ -117,38 +109,48 @@ func (r *tableRunner) setConfig(cfg *TableConfig) {
 	}
 }
 
-func (r *tableRunner) setGetFunc(f funcReflection, args []reflect.Value) {
+func (r *tableRunner) setRfunc(in interface{}) error {
+	rfunc, err := reflectutil.NewFunc(in)
+	if err != nil {
+		return fmt.Errorf("Table(func): %w", err)
+	}
+	ftype := rfunc.Value.Type()
+	if ftype.NumIn() == 0 {
+		return fmt.Errorf(
+			"Table(%s): invalid func: it must accept at least 1 parameter",
+			rfunc.Name,
+		)
+	}
+	if ftype.NumOut() == 0 {
+		return fmt.Errorf(
+			"Table(%s): invalid func: it must return at least 1 value",
+			rfunc.Name,
+		)
+	}
+	r.rfunc = rfunc
+	return nil
+}
+
+func (r *tableRunner) setGetFunc(args Args) {
 	r.get = func(in interface{}) gottype {
-		args[r.config.InPos] = reflect.ValueOf(in)
-		out := f.rval.Call(args)
-		got := out[r.config.OutPos]
-		return got.Interface()
+		pin, pout := r.config.InPos, r.config.OutPos
+		return r.rfunc.Call(args.replaceAt(pin, in))[pout]
 	}
 }
 
-func (r *tableRunner) validateConfig(f funcReflection) error {
-	if r.config.InPos < 0 {
+func (r *tableRunner) validateConfig() error {
+	validPos := func(pos, max int) bool { return pos >= 0 && pos < max }
+	ftyp := r.rfunc.Value.Type()
+	if pout, nout := r.config.OutPos, ftyp.NumOut(); !validPos(pout, nout) {
 		return fmt.Errorf(
-			"invalid value for InPos: must be >= 0, got %d",
-			r.config.InPos,
+			"%w: OutPos: exp 0 <= n < %d (number of values returned by %s), got %d",
+			ErrInvalidTableConfig, nout, r.rfunc.Name, pout,
 		)
 	}
-	if r.config.OutPos < 0 {
+	if pin, nin := r.config.InPos, ftyp.NumIn(); !validPos(pin, nin) {
 		return fmt.Errorf(
-			"invalid value for OutPos: must be >= 0, got %d",
-			r.config.OutPos,
-		)
-	}
-	if outPos, numOut := r.config.OutPos, f.rtyp.NumOut(); outPos >= numOut {
-		return fmt.Errorf(
-			"invalid value for OutPos: must be < to the number of values returned by %s (%d > %d)",
-			f.name, outPos, numOut,
-		)
-	}
-	if inPos, numIn := r.config.InPos, f.rtyp.NumIn(); inPos >= numIn {
-		return fmt.Errorf(
-			"invalid value for InPos: must be < to the number of parameters of %s (%d > %d)",
-			f.name, inPos, numIn,
+			"%w: InPos: exp 0 <= n < %d (number of parameters of %s), got %d",
+			ErrInvalidTableConfig, nin, r.rfunc.Name, pin,
 		)
 	}
 	return nil
@@ -168,71 +170,26 @@ func (r *tableRunner) makeChecker(c Case) check.ValueChecker {
 	return check.NewValueChecker(pass, expl)
 }
 
-func (r *tableRunner) makeFuncReflection(in interface{}) (funcReflection, error) {
-	rval := reflect.ValueOf(in)
-	rtyp := rval.Type()
-
-	if kind := rtyp.Kind(); kind != reflect.Func {
-		return funcReflection{}, fmt.Errorf(
-			"calling Table(f) with a non func argument (got %s %s)",
-			rtyp.String(), rval.String(),
-		)
-	}
-
-	name := getFuncName(in)
-
-	if rtyp.NumIn() == 0 {
-		return funcReflection{}, fmt.Errorf(
-			"%s is not a valid func: it must accept at least 1 parameter",
-			name,
-		)
-	}
-
-	if rtyp.NumOut() == 0 {
-		return funcReflection{}, fmt.Errorf(
-			"%s is not a valid func: it must return at least 1 value",
-			name,
-		)
-	}
-
-	return funcReflection{
-		name: name,
-		rval: rval,
-		rtyp: rtyp,
-	}, nil
-}
-
-func (r *tableRunner) makeFixedArgs(f funcReflection) ([]reflect.Value, error) {
-	nparams := f.rtyp.NumIn()
+func (r *tableRunner) makeFixedArgs() (Args, error) {
+	nparams := r.rfunc.Value.Type().NumIn()
 	nargs := len(r.config.FixedArgs)
-	args := make([]reflect.Value, nparams)
 
-	fillskip := func(at int) []reflect.Value {
+	fillskip := func(at int) Args {
+		args := make(Args, nparams)
+		delta := 0
 		for i := 0; i < nparams; i++ {
-			var v interface{}
-			switch {
-			case i == at:
-				v = nil
-			case i > at:
-				v = r.config.FixedArgs[i-1]
-			default:
-				v = r.config.FixedArgs[i]
+			if i == at {
+				delta++
+				continue
 			}
-			args[i] = reflect.ValueOf(v)
-		}
-		return args
-	}
-
-	fillall := func() []reflect.Value {
-		for i, v := range r.config.FixedArgs {
-			args[i] = reflect.ValueOf(v)
+			args[i] = r.config.FixedArgs[i-delta]
 		}
 		return args
 	}
 
 	switch d := nparams - nargs; d {
 	case 0:
-		return fillall(), nil
+		return r.config.FixedArgs, nil
 	case 1:
 		return fillskip(r.config.InPos), nil
 	default:
@@ -248,23 +205,23 @@ func newTableRunner(testedFunc interface{}, cfg *TableConfig) TableRunner {
 	r := tableRunner{}
 	r.setConfig(cfg)
 
-	f, err := r.makeFuncReflection(testedFunc)
-	cond.PanicOnErr(err, r.validateConfig(f))
+	cond.PanicOnErr(
+		r.setRfunc(testedFunc),
+		r.validateConfig(),
+	)
 
-	args, err := r.makeFixedArgs(f)
+	args, err := r.makeFixedArgs()
 	cond.PanicOnErr(err)
 
-	r.label = f.name
-	r.setGetFunc(f, args)
+	r.label = r.rfunc.Name
+	r.setGetFunc(args)
 
 	return &r
 }
 
-type funcReflection struct {
-	name string
-	rval reflect.Value
-	rtyp reflect.Type
-}
+/*
+	Results
+*/
 
 type tableResults struct {
 	baseResults
@@ -272,7 +229,7 @@ type tableResults struct {
 
 func (res tableResults) PassedAt(i int) bool {
 	if i >= len(res.checks) {
-		log.Panicf("Provided index %d is out of range", i)
+		log.Panicf("TableResults: index %d is out of range", i)
 	}
 	return res.checks[i].Passed
 }
@@ -287,7 +244,7 @@ func (res tableResults) PassedLabel(label string) bool {
 			return c.Passed
 		}
 	}
-	log.Panicf("No test case with label %s", label)
+	log.Panicf("TableResults: no test case with label %s", label)
 	return false
 }
 

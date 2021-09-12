@@ -2,7 +2,8 @@ package check
 
 import (
 	"fmt"
-	"reflect"
+
+	"github.com/drykit-go/testx/internal/reflectutil"
 )
 
 // valueCheckerProvider provides checks on type interface{}.
@@ -48,17 +49,16 @@ func (p valueCheckerProvider) Not(values ...interface{}) ValueChecker {
 // IsZero checks the gotten value is a zero value, indicating it might not
 // have been initialized.
 func (p valueCheckerProvider) IsZero() ValueChecker {
-	pass := func(got interface{}) bool { return reflect.ValueOf(got).IsZero() }
 	expl := func(label string, got interface{}) string {
 		return p.explain(label, "to be a zero value", got)
 	}
-	return NewValueChecker(pass, expl)
+	return NewValueChecker(reflectutil.IsZero, expl)
 }
 
 // NotZero checks the gotten struct contains at least 1 non-zero value,
 // meaning it has been initialized.
 func (p valueCheckerProvider) NotZero() ValueChecker {
-	pass := func(got interface{}) bool { return !p.IsZero().Pass(got) }
+	pass := func(got interface{}) bool { return !reflectutil.IsZero(got) }
 	expl := func(label string, got interface{}) string {
 		return p.explainNot(label, "to be a zero value", got)
 	}
