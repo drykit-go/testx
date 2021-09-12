@@ -10,7 +10,7 @@ default:
 gen:
 	@echo "🛠  Building gen binary"
 	@go build -o ./bin/gen ./cmd/gen/main.go
-	@echo "✅ Done"
+	@echo "✅ Done\n"
 	@go generate ./...
 
 # Check code

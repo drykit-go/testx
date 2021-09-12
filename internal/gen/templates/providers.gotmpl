@@ -2,12 +2,16 @@ package check
 
 type (
 	{{- range .Interfaces -}}
-	{{range .Docs}}
+	{{range .DocLines}}
 	// {{.}}
 	{{- end}}
 	{{.Name}} interface {
-		{{range .Methods -}}
-		{{range .Docs -}}
+		{{range .Embedded -}}
+		{{.}}
+
+		{{end -}}
+		{{range .Funcs -}}
+		{{range .DocLines -}}
 		// {{.}}
 		{{end -}}
 		{{.Sign}}

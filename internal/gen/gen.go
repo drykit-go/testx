@@ -100,5 +100,11 @@ func generateHeader() string {
 
 func runFormatter(filepath string) error {
 	cmd := exec.Command("goimports", "-w", filepath)
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf(
+			"goimports returned an error running on file %s, it is probably malformed",
+			filepath,
+		)
+	}
+	return nil
 }
