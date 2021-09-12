@@ -2,7 +2,6 @@ package testx
 
 import (
 	"testing"
-	"time"
 
 	"github.com/drykit-go/cond"
 
@@ -108,9 +107,8 @@ func (r *baseRunner) baseResults() baseResults {
 }
 
 type baseResults struct {
-	checks   []CheckResult
-	nFailed  int
-	execTime time.Duration
+	checks  []CheckResult
+	nFailed int
 }
 
 func (r baseResults) Checks() []CheckResult {
@@ -135,8 +133,4 @@ func (r baseResults) NFailed() int {
 
 func (r baseResults) NChecks() int {
 	return len(r.checks)
-}
-
-func (r baseResults) ExecTime() time.Duration {
-	return r.execTime
 }

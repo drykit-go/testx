@@ -8,9 +8,9 @@ import (
 	"github.com/drykit-go/testx/check"
 )
 
-//
-// Runners interfaces
-//
+/*
+	Runners interfaces
+*/
 
 // Runner provides a method Run to perform various tests.
 type Runner interface {
@@ -62,9 +62,9 @@ type HTTPHandlerRunner interface {
 	Duration(...check.DurationChecker) HTTPHandlerRunner
 }
 
-//
-// Results interfaces
-//
+/*
+	Results interfaces
+*/
 
 // Resulter provides methods to read test results after a dry run.
 type Resulter interface {
@@ -80,10 +80,6 @@ type Resulter interface {
 	NPassed() int
 	// NPassed returns the number of checks that failed.
 	NFailed() int
-	// ExecTime is not yet implemented and may be deleted in the future.
-	// Do not rely on it.
-	// ExecTime returns the execution time of the whole test.
-	ExecTime() time.Duration
 }
 
 // HandlerResulter provides methods to read HandlerRunner results
@@ -126,9 +122,9 @@ type CheckResult struct {
 	label  string
 }
 
-//
-// Runners
-//
+/*
+	Runners
+*/
 
 // Value returns a ValueRunner to run tests on a single value.
 func Value(v interface{}) ValueRunner {
