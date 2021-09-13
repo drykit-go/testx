@@ -6,6 +6,7 @@ import (
 
 	"github.com/drykit-go/testx"
 	"github.com/drykit-go/testx/check"
+	"github.com/drykit-go/testx/checkconv"
 )
 
 // Example
@@ -14,7 +15,7 @@ func ExampleValueRunner() {
 	results := testx.Value(42).
 		Exp(42).
 		ExpNot(3, "hello").
-		Pass(check.Int.InRange(41, 43)).
+		Pass(checkconv.FromInt(check.Int.InRange(41, 43))).
 		// Run(t) // can be used in a test func
 		DryRun()
 
@@ -29,7 +30,7 @@ func TestValueRunner(t *testing.T) {
 		res := testx.Value(42).
 			Exp(42).
 			ExpNot(3, "hello").
-			Pass(check.Int.InRange(41, 43)).
+			Pass(checkconv.FromInt(check.Int.InRange(41, 43))).
 			DryRun()
 
 		exp := baseResults{
@@ -53,7 +54,7 @@ func TestValueRunner(t *testing.T) {
 			Exp(99).
 			ExpNot(99).
 			ExpNot(99, 42).
-			Pass(check.Int.LT(10)).
+			Pass(checkconv.FromInt(check.Int.LT(10))).
 			DryRun()
 
 		exp := baseResults{

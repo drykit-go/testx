@@ -29,7 +29,7 @@ type ValueRunner interface {
 	// ExpNot adds inequality checks on the tested value.
 	ExpNot(values ...interface{}) ValueRunner
 	// Pass adds checkers on the tested value.
-	Pass(checkers ...interface{}) ValueRunner
+	Pass(checkers ...check.ValueChecker) ValueRunner
 }
 
 // TableRunner provides methods to perform tests on a given func
