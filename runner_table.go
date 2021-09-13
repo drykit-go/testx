@@ -205,10 +205,8 @@ func newTableRunner(testedFunc interface{}, cfg *TableConfig) TableRunner {
 	r := tableRunner{}
 	r.setConfig(cfg)
 
-	cond.PanicOnErr(
-		r.setRfunc(testedFunc),
-		r.validateConfig(),
-	)
+	cond.PanicOnErr(r.setRfunc(testedFunc))
+	cond.PanicOnErr(r.validateConfig())
 
 	args, err := r.makeFixedArgs()
 	cond.PanicOnErr(err)
