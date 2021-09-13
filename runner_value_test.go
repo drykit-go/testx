@@ -14,7 +14,7 @@ import (
 func ExampleValueRunner() {
 	results := testx.Value(42).
 		Exp(42).
-		ExpNot(3, "hello").
+		Not(3, "hello").
 		Pass(checkconv.FromInt(check.Int.InRange(41, 43))).
 		// Run(t) // can be used in a test func
 		DryRun()
@@ -29,7 +29,7 @@ func TestValueRunner(t *testing.T) {
 	t.Run("should pass", func(t *testing.T) {
 		res := testx.Value(42).
 			Exp(42).
-			ExpNot(3, "hello").
+			Not(3, "hello").
 			Pass(checkconv.FromInt(check.Int.InRange(41, 43))).
 			DryRun()
 
@@ -52,8 +52,8 @@ func TestValueRunner(t *testing.T) {
 	t.Run("should fail", func(t *testing.T) {
 		res := testx.Value(42).
 			Exp(99).
-			ExpNot(99).
-			ExpNot(99, 42).
+			Not(99).
+			Not(99, 42).
 			Pass(checkconv.FromInt(check.Int.LT(10))).
 			DryRun()
 

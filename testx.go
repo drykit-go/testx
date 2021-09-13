@@ -26,8 +26,8 @@ type ValueRunner interface {
 	DryRun() Resulter
 	// Exp adds an equality check on the tested value.
 	Exp(value interface{}) ValueRunner
-	// ExpNot adds inequality checks on the tested value.
-	ExpNot(values ...interface{}) ValueRunner
+	// Not adds inequality checks on the tested value.
+	Not(values ...interface{}) ValueRunner
 	// Pass adds checkers on the tested value.
 	Pass(checkers ...check.ValueChecker) ValueRunner
 }

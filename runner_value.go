@@ -31,7 +31,7 @@ func (r *valueRunner) Exp(exp interface{}) ValueRunner {
 	return r
 }
 
-func (r *valueRunner) ExpNot(values ...interface{}) ValueRunner {
+func (r *valueRunner) Not(values ...interface{}) ValueRunner {
 	r.addCheck(baseCheck{
 		"value",
 		func() gottype { return r.value },
