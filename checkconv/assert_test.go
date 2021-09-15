@@ -38,7 +38,7 @@ func TestAssert(t *testing.T) {
 
 	t.Run("unknown checker type", func(t *testing.T) {
 		defer assertPanic(t, "assert from unknown checker type")
-		checkconv.Assert(validCheckerFloat64{})
+		checkconv.Assert(validCheckerFloat32{})
 	})
 
 	t.Run("invalid checkers", func(t *testing.T) {
@@ -67,7 +67,7 @@ func TestAssertMany(t *testing.T) {
 
 	t.Run("unknown checker type", func(t *testing.T) {
 		defer assertPanic(t, "assert from unknown checker type")
-		badCheckers := append(knownCheckers, validCheckerFloat64{}) //nolint: gocritic // appendAssign
+		badCheckers := append(knownCheckers, validCheckerFloat32{}) //nolint: gocritic // appendAssign
 		checkconv.AssertMany(badCheckers...)
 	})
 }

@@ -44,10 +44,10 @@ type validCheckerInt struct{}
 func (validCheckerInt) Pass(int) bool                      { return true }
 func (validCheckerInt) Explain(string, interface{}) string { return "ok" }
 
-type validCheckerFloat64 struct{}
+type validCheckerFloat32 struct{}
 
-func (validCheckerFloat64) Pass(float64) bool                  { return true }
-func (validCheckerFloat64) Explain(string, interface{}) string { return "ok" }
+func (validCheckerFloat32) Pass(float32) bool                  { return true }
+func (validCheckerFloat32) Explain(string, interface{}) string { return "ok" }
 
 type validCheckerInterface struct{}
 
@@ -71,7 +71,7 @@ var badCheckers = []interface{}{
 
 var goodCheckers = []interface{}{
 	validCheckerInt{},
-	validCheckerFloat64{},
+	validCheckerFloat32{},
 	validCheckerInterface{},
 }
 

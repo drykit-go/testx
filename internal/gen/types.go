@@ -10,6 +10,7 @@ var types = []struct {
 	{N: "Bytes", T: "[]byte"},
 	{N: "String", T: "string"},
 	{N: "Int", T: "int"},
+	{N: "Float64", T: "float64"},
 	{N: "Duration", T: "time.Duration"},
 	{N: "HTTPHeader", T: "http.Header"},
 	{N: "Value", T: "interface{}"},
