@@ -1,9 +1,12 @@
 package testx
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/drykit-go/cond"
 
 	"github.com/drykit-go/testx/check"
 )
@@ -120,6 +123,10 @@ type CheckResult struct {
 	// check.Explainer, typically in format "expect X, got Y".
 	Reason string
 	label  string
+}
+
+func (cr CheckResult) String() string {
+	return fmt.Sprintf("{%s%s}", cond.String("passed", "failed ", cr.Passed), cr.Reason)
 }
 
 /*
