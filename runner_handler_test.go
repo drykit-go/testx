@@ -2,51 +2,12 @@ package testx_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"testing"
-	"time"
 
 	testx "github.com/drykit-go/testx"
 	"github.com/drykit-go/testx/check"
 )
-
-// Example
-
-func ExampleHTTPHandlerRunner() {
-	// dummy handler to be tested
-	h := func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusTeapot)
-		w.Header().Set("Content-Type", "application/json")
-		b, _ := json.Marshal(map[string]interface{}{"message": "Hello World!"})
-		w.Write(b)
-	}
-	// request to the tested handler
-	r, _ := http.NewRequest(http.MethodGet, "/", nil)
-
-	results := testx.HTTPHandlerFunc(h, r).
-		ResponseStatus(check.String.Contains("teapot")).
-		ResponseCode(
-			check.Int.OutRange(200, 299),
-			check.Int.Not(304),
-		).
-		ResponseBody(
-			check.Bytes.SameJSON([]byte(`{ "message"    : "Hello World!"   }  `)),
-			check.Bytes.Len(check.Int.GTE(20)),
-		).
-		ResponseHeader(
-			check.HTTPHeader.HasNotKey("SOME_SECRET"),
-			check.HTTPHeader.CheckValue("Content-Type", check.String.Contains("json")),
-		).
-		Duration(check.Duration.Under(50 * time.Millisecond)).
-		// Run(t) // can be used in a test func
-		DryRun()
-
-	fmt.Println(results.Passed())
-	// Output: true
-}
-
-// Tests
 
 func TestHandlerRunner(t *testing.T) {
 	hf := func(w http.ResponseWriter, _ *http.Request) {
