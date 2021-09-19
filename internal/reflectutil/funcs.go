@@ -43,7 +43,7 @@ func (f *Func) Call(args []interface{}) []interface{} {
 	return UnwrapValues(f.Value.Call(WrapValues(args)))
 }
 
-// NewFunc returns a *Func from the given func input, of a non-nil error
+// NewFunc returns a *Func from the given func input, or a non-nil error
 // if fn's kind is not reflect.Func.'
 func NewFunc(fn interface{}) (*Func, error) {
 	fval := reflect.ValueOf(fn)
@@ -71,6 +71,9 @@ func (s FuncSignature) Match(ftyp reflect.Type) bool {
 // ImplementedBy returns true if v's type has a method that matches
 // FuncSignature's Name and In/Out kinds.
 func (s FuncSignature) ImplementedBy(v reflect.Value) bool {
+	if !v.IsValid() {
+		return false
+	}
 	m := v.MethodByName(s.Name)
 	if !m.IsValid() {
 		return false
