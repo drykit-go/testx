@@ -25,7 +25,7 @@ type Runner interface {
 type ValueRunner interface {
 	Runner
 	// DryRun returns a Resulter to access test results
-	// without running it.
+	// without running *testing.T.
 	DryRun() Resulter
 	// Exp adds an equality check on the tested value.
 	Exp(value interface{}) ValueRunner
@@ -40,7 +40,7 @@ type ValueRunner interface {
 type TableRunner interface {
 	Runner
 	// DryRun returns a TableResulter to access test results
-	// without running it.
+	// without running *testing.T.
 	DryRun() TableResulter
 	// Cases adds test cases to be run on the tested func.
 	Cases(cases []Case) TableRunner
@@ -51,7 +51,7 @@ type TableRunner interface {
 type HTTPHandlerRunner interface {
 	Runner
 	// DryRun returns a HandlerResulter to access test results
-	// without running it.
+	// without running *testing.T.
 	DryRun() HandlerResulter
 	// ResponseHeader adds checkers on the response header.
 	ResponseHeader(...check.HTTPHeaderChecker) HTTPHandlerRunner

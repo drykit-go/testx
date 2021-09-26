@@ -26,6 +26,7 @@ type Case struct {
 	In interface{}
 
 	// Exp is the value expected to be returned when calling the tested func.
+	// If Exp is a checker, the checker is run instead.
 	Exp interface{}
 
 	// Not reverses the test check for an equality.
