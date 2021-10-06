@@ -44,6 +44,10 @@ type (
 	// It returns a boolean that indicates whether the gotten http.Header value
 	// passes the current check.
 	HTTPHeaderPassFunc func(got http.Header) bool
+	// HTTPResponsePassFunc is the required method to implement HTTPResponsePasser.
+	// It returns a boolean that indicates whether the gotten *http.Response value
+	// passes the current check.
+	HTTPResponsePassFunc func(got *http.Response) bool
 	// ValuePassFunc is the required method to implement ValuePasser.
 	// It returns a boolean that indicates whether the gotten interface{} value
 	// passes the current check.
@@ -82,6 +86,9 @@ type (
 	// HTTPHeaderPasser provides a method Pass that returns a bool that indicates
 	// whether the gotten http.Header value passes the current check.
 	HTTPHeaderPasser interface{ Pass(got http.Header) bool }
+	// HTTPResponsePasser provides a method Pass that returns a bool that indicates
+	// whether the gotten *http.Response value passes the current check.
+	HTTPResponsePasser interface{ Pass(got *http.Response) bool }
 	// ValuePasser provides a method Pass that returns a bool that indicates
 	// whether the gotten interface{} value passes the current check.
 	ValuePasser interface{ Pass(got interface{}) bool }
@@ -131,6 +138,11 @@ type (
 	// HTTPHeaderChecker implements both HTTPHeaderPasser and Explainer interfaces.
 	HTTPHeaderChecker interface {
 		HTTPHeaderPasser
+		Explainer
+	}
+	// HTTPResponseChecker implements both HTTPResponsePasser and Explainer interfaces.
+	HTTPResponseChecker interface {
+		HTTPResponsePasser
 		Explainer
 	}
 	// ValueChecker implements both ValuePasser and Explainer interfaces.

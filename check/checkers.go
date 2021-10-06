@@ -152,6 +152,22 @@ func NewHTTPHeaderChecker(passFunc HTTPHeaderPassFunc, explainFunc ExplainFunc) 
 	return httpHeaderChecker{baseChecker: newBaseChecker(explainFunc), passFunc: passFunc}
 }
 
+// httpResponseChecker is an implementation of HTTPResponseChecker interface
+type httpResponseChecker struct {
+	baseChecker
+	passFunc HTTPResponsePassFunc
+}
+
+// Pass returns a boolean that indicates whether the gotten *http.Response value
+// passes the current check.
+func (c httpResponseChecker) Pass(got *http.Response) bool { return c.passFunc(got) }
+
+// NewHTTPResponseChecker returns a custom HTTPResponseChecker with the provided
+// HTTPResponsePassFunc and ExplainFunc.
+func NewHTTPResponseChecker(passFunc HTTPResponsePassFunc, explainFunc ExplainFunc) HTTPResponseChecker {
+	return httpResponseChecker{baseChecker: newBaseChecker(explainFunc), passFunc: passFunc}
+}
+
 // valueChecker is an implementation of ValueChecker interface
 type valueChecker struct {
 	baseChecker

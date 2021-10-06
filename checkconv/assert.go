@@ -86,6 +86,15 @@ func FromHTTPHeader(c check.HTTPHeaderChecker) check.ValueChecker {
 	)
 }
 
+// FromHTTPResponse returns a new check.ValueChecker from the given HTTPResponse checker.
+// It can be used to facilitate checkers usage by test runners.
+func FromHTTPResponse(c check.HTTPResponseChecker) check.ValueChecker {
+	return check.NewValueChecker(
+		func(got interface{}) bool { return c.Pass(got.(*http.Response)) },
+		c.Explain,
+	)
+}
+
 // Assert takes a known typed checker (such as check.IntChecker)
 // and returns its as a check.ValueChecker.
 // It panics if checker is not a known checker type. For instance,
@@ -111,6 +120,8 @@ func Assert(knownChecker interface{}) check.ValueChecker {
 		return FromContext(c)
 	case check.HTTPHeaderChecker:
 		return FromHTTPHeader(c)
+	case check.HTTPResponseChecker:
+		return FromHTTPResponse(c)
 	case check.ValueChecker:
 		return c
 	default:
