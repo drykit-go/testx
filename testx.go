@@ -1,16 +1,19 @@
 package testx
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 	"time"
 
+	"github.com/drykit-go/cond"
+
 	"github.com/drykit-go/testx/check"
 )
 
-//
-// Runners interfaces
-//
+/*
+	Runners interfaces
+*/
 
 // Runner provides a method Run to perform various tests.
 type Runner interface {
@@ -22,7 +25,7 @@ type Runner interface {
 type ValueRunner interface {
 	Runner
 	// DryRun returns a Resulter to access test results
-	// without running it.
+	// without running *testing.T.
 	DryRun() Resulter
 	// Exp adds an equality check on the tested value.
 	Exp(value interface{}) ValueRunner
@@ -37,7 +40,7 @@ type ValueRunner interface {
 type TableRunner interface {
 	Runner
 	// DryRun returns a TableResulter to access test results
-	// without running it.
+	// without running *testing.T.
 	DryRun() TableResulter
 	// Cases adds test cases to be run on the tested func.
 	Cases(cases []Case) TableRunner
@@ -48,7 +51,7 @@ type TableRunner interface {
 type HTTPHandlerRunner interface {
 	Runner
 	// DryRun returns a HandlerResulter to access test results
-	// without running it.
+	// without running *testing.T.
 	DryRun() HandlerResulter
 	// ResponseHeader adds checkers on the response header.
 	ResponseHeader(...check.HTTPHeaderChecker) HTTPHandlerRunner
@@ -62,9 +65,9 @@ type HTTPHandlerRunner interface {
 	Duration(...check.DurationChecker) HTTPHandlerRunner
 }
 
-//
-// Results interfaces
-//
+/*
+	Results interfaces
+*/
 
 // Resulter provides methods to read test results after a dry run.
 type Resulter interface {
@@ -80,10 +83,6 @@ type Resulter interface {
 	NPassed() int
 	// NPassed returns the number of checks that failed.
 	NFailed() int
-	// ExecTime is not yet implemented and may be deleted in the future.
-	// Do not rely on it.
-	// ExecTime returns the execution time of the whole test.
-	ExecTime() time.Duration
 }
 
 // HandlerResulter provides methods to read HandlerRunner results
@@ -126,9 +125,13 @@ type CheckResult struct {
 	label  string
 }
 
-//
-// Runners
-//
+func (cr CheckResult) String() string {
+	return fmt.Sprintf("{%s%s}", cond.String("passed", "failed ", cr.Passed), cr.Reason)
+}
+
+/*
+	Runners
+*/
 
 // Value returns a ValueRunner to run tests on a single value.
 func Value(v interface{}) ValueRunner {

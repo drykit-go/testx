@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/drykit-go/testx"
 	"github.com/drykit-go/testx/internal/fmtexpl"
@@ -17,7 +16,6 @@ type baseResults struct {
 	checks                    []testx.CheckResult
 	passed, failed            bool
 	nPassed, nFailed, nChecks int
-	execTime                  time.Duration
 }
 
 func assertEqualBaseResults(t *testing.T, res testx.Resulter, exp baseResults) {
@@ -94,12 +92,11 @@ func toBaseResults(res testx.Resulter) baseResults {
 	}
 
 	return baseResults{
-		checks:   withLabelRemoved(res.Checks()),
-		passed:   res.Passed(),
-		failed:   res.Failed(),
-		nPassed:  res.NPassed(),
-		nFailed:  res.NFailed(),
-		nChecks:  res.NChecks(),
-		execTime: res.ExecTime(),
+		checks:  withLabelRemoved(res.Checks()),
+		passed:  res.Passed(),
+		failed:  res.Failed(),
+		nPassed: res.NPassed(),
+		nFailed: res.NFailed(),
+		nChecks: res.NChecks(),
 	}
 }

@@ -45,8 +45,8 @@ func Cast(anyChecker interface{}) (c check.ValueChecker, ok bool) {
 // indicating whether all conversions were successful.
 //
 // An invalid checker in the args list is silently dismissed,
-// meaning that if ok == false, the length can be inferior to
-// the number of args.
+// this the resulting checkers length can be inferior to the number of args
+// if ok === false.
 func CastMany(anyCheckers ...interface{}) (checkers []check.ValueChecker, ok bool) {
 	ok = true
 	for _, in := range anyCheckers {

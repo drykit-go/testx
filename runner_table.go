@@ -26,6 +26,7 @@ type Case struct {
 	In interface{}
 
 	// Exp is the value expected to be returned when calling the tested func.
+	// If Exp is a checker, the checker is run instead.
 	Exp interface{}
 
 	// Not reverses the test check for an equality.
@@ -205,10 +206,8 @@ func newTableRunner(testedFunc interface{}, cfg *TableConfig) TableRunner {
 	r := tableRunner{}
 	r.setConfig(cfg)
 
-	cond.PanicOnErr(
-		r.setRfunc(testedFunc),
-		r.validateConfig(),
-	)
+	cond.PanicOnErr(r.setRfunc(testedFunc))
+	cond.PanicOnErr(r.validateConfig())
 
 	args, err := r.makeFixedArgs()
 	cond.PanicOnErr(err)

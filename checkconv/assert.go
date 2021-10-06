@@ -77,7 +77,7 @@ func FromHTTPHeader(c check.HTTPHeaderChecker) check.ValueChecker {
 }
 
 // Assert takes a known typed checker (such as check.IntChecker)
-// and returns its as a check.ValueChecker.
+// and returns it as a check.ValueChecker.
 // It panics if checker is not a known checker type. For instance,
 // a custom checker that implements check.IntChecker will be successfully
 // converted, while a valid implementation of an unknown interface,

@@ -1,29 +1,12 @@
 package testx_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/drykit-go/testx"
 	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/checkconv"
 )
-
-// Example
-
-func ExampleValueRunner() {
-	results := testx.Value(42).
-		Exp(42).
-		Not(3, "hello").
-		Pass(checkconv.FromInt(check.Int.InRange(41, 43))).
-		// Run(t) // can be used in a test func
-		DryRun()
-
-	fmt.Println(results.Passed())
-	// Output: true
-}
-
-// Tests
 
 func TestValueRunner(t *testing.T) {
 	t.Run("should pass", func(t *testing.T) {
