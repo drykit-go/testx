@@ -5,7 +5,7 @@ import (
 )
 
 // httpResponseCheckerProvider provides checks on type *http.Response.
-type httpResponseCheckerProvider struct{ baseCheckerProvider }
+type httpResponseCheckerProvider struct{ baseHTTPCheckerProvider }
 
 // StatusCode checks the gotten *http.Response StatusCode passes
 // the input IntChecker.
@@ -43,10 +43,7 @@ func (p httpResponseCheckerProvider) ContentLength(c IntChecker) HTTPResponseChe
 		clen = int(got.ContentLength)
 		return c.Pass(clen)
 	}
-	expl := func(label string, _ interface{}) string {
-		return p.explain(label, "content length to pass IntChecker", clen)
-	}
-	return NewHTTPResponseChecker(pass, expl)
+	return NewHTTPResponseChecker(pass, p.explainContentLengthFunc(c, clen))
 }
 
 // Header checks the gotten *http.Response Header passes
@@ -57,10 +54,7 @@ func (p httpResponseCheckerProvider) Header(c HTTPHeaderChecker) HTTPResponseChe
 		header = got.Header
 		return c.Pass(header)
 	}
-	expl := func(label string, _ interface{}) string {
-		return p.explain(label, "header to pass HTTPHeaderChecker", header)
-	}
-	return NewHTTPResponseChecker(pass, expl)
+	return NewHTTPResponseChecker(pass, p.explainHeaderFunc(c, header))
 }
 
 // Body checks the gotten *http.Response Body passes the input BytesChecker.
@@ -72,8 +66,5 @@ func (p httpResponseCheckerProvider) Body(c BytesChecker) HTTPResponseChecker {
 		body = mustReadIO("check.HTTPResponse.Body", got.Body)
 		return c.Pass(body)
 	}
-	expl := func(label string, _ interface{}) string {
-		return p.explain(label, "body to pass BytesChecker", body)
-	}
-	return NewHTTPResponseChecker(pass, expl)
+	return NewHTTPResponseChecker(pass, p.explainBodyFunc(c, body))
 }
