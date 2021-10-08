@@ -14,6 +14,7 @@ var types = []struct {
 	{N: "Duration", T: "time.Duration"},
 	{N: "Context", T: "context.Context"},
 	{N: "HTTPHeader", T: "http.Header"},
+	{N: "HTTPRequest", T: "*http.Request"},
 	{N: "HTTPResponse", T: "*http.Response"},
 	{N: "Value", T: "interface{}"},
 }
