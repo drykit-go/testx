@@ -36,7 +36,7 @@ func (p httpResponseCheckerProvider) Status(c StringChecker) HTTPResponseChecker
 }
 
 // ContentLength checks the gotten *http.Response ContentLength passes
-// the input StringChecker.
+// the input IntChecker.
 func (p httpResponseCheckerProvider) ContentLength(c IntChecker) HTTPResponseChecker {
 	var clen int
 	pass := func(got *http.Response) bool {
@@ -50,7 +50,7 @@ func (p httpResponseCheckerProvider) ContentLength(c IntChecker) HTTPResponseChe
 }
 
 // Header checks the gotten *http.Response Header passes
-// the input StringChecker.
+// the input HTTPHeaderChecker.
 func (p httpResponseCheckerProvider) Header(c HTTPHeaderChecker) HTTPResponseChecker {
 	var header http.Header
 	pass := func(got *http.Response) bool {

@@ -79,7 +79,6 @@ func TestHTTPResponseCheckerProvider(t *testing.T) {
 	t.Run("Body pass", func(t *testing.T) {
 		c := check.HTTPResponse.Body(check.Bytes.Is(expBody))
 		assertPassHTTPResponseChecker(t, "Body", c, newResponse())
-		assertPassHTTPResponseChecker(t, "Body", c, newResponse())
 	})
 
 	t.Run("Body fail", func(t *testing.T) {
