@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"net/http"
 )
 
@@ -39,4 +40,21 @@ func (p httpRequestCheckerProvider) Body(c BytesChecker) HTTPRequestChecker {
 		return c.Pass(body)
 	}
 	return NewHTTPRequestChecker(pass, p.explainBodyFunc(c, body))
+}
+
+// Context checks the gotten *http.Request Context passes
+// the input ContextChecker.
+func (p httpRequestCheckerProvider) Context(c ContextChecker) HTTPRequestChecker {
+	var ctx context.Context
+	pass := func(got *http.Request) bool {
+		ctx = got.Context()
+		return c.Pass(ctx)
+	}
+	expl := func(label string, got interface{}) string {
+		return p.explainCheck(label,
+			"context to pass ContextChecker",
+			c.Explain("context", ctx),
+		)
+	}
+	return NewHTTPRequestChecker(pass, expl)
 }
