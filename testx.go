@@ -140,14 +140,14 @@ func Value(v interface{}) ValueRunner {
 
 // HTTPHandler returns a HandlerRunner to run tests on a http.HTTPHandler
 // response to given request.
-func HTTPHandler(h http.Handler, r *http.Request) HTTPHandlerRunner {
-	return newHandlerRunner(h.ServeHTTP, r)
+func HTTPHandler(h http.Handler) HTTPHandlerRunner {
+	return newHandlerRunner(h.ServeHTTP)
 }
 
 // HTTPHandlerFunc returns a HandlerRunner to run tests on a http.HTTPHandlerFunc
 // response to a given request.
-func HTTPHandlerFunc(hf http.HandlerFunc, r *http.Request) HTTPHandlerRunner {
-	return newHandlerRunner(hf, r)
+func HTTPHandlerFunc(hf http.HandlerFunc) HTTPHandlerRunner {
+	return newHandlerRunner(hf)
 }
 
 // Table returns a TableRunner to run test cases on a func. By default,

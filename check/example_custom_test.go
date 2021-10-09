@@ -33,9 +33,9 @@ func HandleNotFound(w http.ResponseWriter, _ *http.Request) {
 }
 
 func Example_customChecker() {
-	request, _ := http.NewRequest("GET", "", nil)
+	request, _ := http.NewRequest("GET", "/", nil)
 
-	results := testx.HTTPHandlerFunc(HandleNotFound, request).
+	results := testx.HTTPHandlerFunc(HandleNotFound).WithRequest(request).
 		// HTTPResponseCode is a valid IntChecker
 		Response(check.HTTPResponse.StatusCode(HTTPCodeChecker{})).
 		DryRun()

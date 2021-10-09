@@ -25,7 +25,7 @@ func TestHTTPHandlerRunner(t *testing.T) {
 	expBody := []byte(`{"message":"Hello, World!"}`)
 
 	t.Run("should pass", func(t *testing.T) {
-		res := testx.HTTPHandlerFunc(hf, r).
+		res := testx.HTTPHandlerFunc(hf).WithRequest(r).
 			Duration(check.Duration.Under(100*time.Millisecond)).
 			Request(check.HTTPRequest.Context(check.Context.HasKeys("userID"))).
 			Response(
@@ -58,7 +58,7 @@ func TestHTTPHandlerRunner(t *testing.T) {
 	})
 
 	t.Run("should fail", func(t *testing.T) {
-		res := testx.HTTPHandlerFunc(hf, r).
+		res := testx.HTTPHandlerFunc(hf).WithRequest(r).
 			Request(check.HTTPRequest.Context(check.Context.HasKeys("abc"))).
 			Response(
 				check.HTTPResponse.StatusCode(check.Int.Is(-1)),
