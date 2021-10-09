@@ -3,6 +3,8 @@ package check
 import (
 	"context"
 	"net/http"
+
+	"github.com/drykit-go/testx/internal/ioutil"
 )
 
 // httpRequestCheckerProvider provides checks on type *http.Request.
@@ -36,7 +38,7 @@ func (p httpRequestCheckerProvider) Header(c HTTPHeaderChecker) HTTPRequestCheck
 func (p httpRequestCheckerProvider) Body(c BytesChecker) HTTPRequestChecker {
 	var body []byte
 	pass := func(got *http.Request) bool {
-		body = mustReadIO("check.HTTPRequest.Body", got.Body)
+		body = ioutil.NopRead(&got.Body)
 		return c.Pass(body)
 	}
 	return NewHTTPRequestChecker(pass, p.explainBodyFunc(c, body))

@@ -2,7 +2,6 @@ package check
 
 import (
 	"encoding/json"
-	"io"
 	"log"
 	"reflect"
 )
@@ -43,15 +42,4 @@ func sameJSON(x, y []byte, xptr, yptr interface{}) bool {
 
 func deq(a, b interface{}) bool {
 	return reflect.DeepEqual(a, b)
-}
-
-// mustReadIO reads and closes a reader. It panics if any error occurs
-// in the process, in which case the provided label is used to specify
-// some context in the error message.
-func mustReadIO(label string, reader io.ReadCloser) []byte {
-	b, err := io.ReadAll(reader)
-	if err != nil {
-		log.Panicf("error reading %s: %s", label, err)
-	}
-	return b
 }

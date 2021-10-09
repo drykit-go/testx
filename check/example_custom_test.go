@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/drykit-go/testx"
+	"github.com/drykit-go/testx/check"
 )
 
 /*
@@ -35,7 +36,8 @@ func Example_customChecker() {
 	request, _ := http.NewRequest("GET", "", nil)
 
 	results := testx.HTTPHandlerFunc(HandleNotFound, request).
-		ResponseCode(HTTPCodeChecker{}). // HTTPResponseCode is a valid IntChecker
+		// HTTPResponseCode is a valid IntChecker
+		Response(check.HTTPResponse.StatusCode(HTTPCodeChecker{})).
 		DryRun()
 
 	fmt.Println(results.Passed())
@@ -45,5 +47,7 @@ func Example_customChecker() {
 	// Output:
 	// false
 	// 404
-	// [{failed response code: got bad http code: 404}]
+	// [{failed http response:
+	// exp status code to pass IntChecker
+	// got 404}]
 }
