@@ -1,8 +1,6 @@
 package testx
 
 import (
-	"bytes"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,6 +8,7 @@ import (
 
 	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/checkconv"
+	"github.com/drykit-go/testx/internal/ioutil"
 )
 
 var _ HTTPHandlerRunner = (*handlerRunner)(nil)
@@ -21,8 +20,7 @@ type handlerRunner struct {
 	rr *httptest.ResponseRecorder
 	rq *http.Request
 
-	response     *http.Response
-	responseBody []byte
+	response *http.Response
 
 	duration time.Duration
 }
@@ -39,25 +37,15 @@ func (r *handlerRunner) DryRun() HandlerResulter {
 		baseResults:  r.baseResults(),
 		duration:     r.duration,
 		response:     r.response,
-		responseBody: r.responseBody,
+		responseBody: ioutil.NopRead(&r.response.Body),
 	}
 }
 
 func (r *handlerRunner) dryRun() {
 	main := func() { r.hf(r.rr, r.rq) }
 	r.duration = timeFunc(main)
-	r.setResponse(r.rr)
-}
-
-func (r *handlerRunner) setResponse(rr *httptest.ResponseRecorder) {
-	result := rr.Result()
-	defer result.Body.Close()
-	r.response = &http.Response{}
-	r.response.Header = rr.Header()
-	r.response.Status = result.Status
-	r.response.StatusCode = result.StatusCode
-	r.responseBody = mustReadIO("httpHandlerRunner.setResponse", result.Body)
-	r.response.Body = io.NopCloser(bytes.NewBuffer(r.responseBody))
+	r.response = r.rr.Result() //nolint:bodyclose
+	r.response.Header = r.rr.Header()
 }
 
 func (r *handlerRunner) Duration(checks ...check.DurationChecker) HTTPHandlerRunner {
