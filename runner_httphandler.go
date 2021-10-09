@@ -1,23 +1,18 @@
 package testx
 
 import (
+	"bytes"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/drykit-go/testx/check"
+	"github.com/drykit-go/testx/checkconv"
 )
 
 var _ HTTPHandlerRunner = (*handlerRunner)(nil)
-
-type httpResponse struct {
-	header   http.Header
-	status   string
-	code     int
-	body     []byte
-	duration time.Duration
-}
 
 type handlerRunner struct {
 	baseRunner
@@ -26,7 +21,10 @@ type handlerRunner struct {
 	rr *httptest.ResponseRecorder
 	rq *http.Request
 
-	response httpResponse
+	response     *http.Response
+	responseBody []byte
+
+	duration time.Duration
 
 	hasDurationCheck bool
 }
@@ -40,31 +38,34 @@ func (r *handlerRunner) Run(t *testing.T) {
 func (r *handlerRunner) DryRun() HandlerResulter {
 	r.dryRun()
 	return handlerResults{
-		baseResults: r.baseResults(),
-		response:    r.response,
+		baseResults:  r.baseResults(),
+		duration:     r.duration,
+		response:     r.response,
+		responseBody: r.responseBody,
 	}
 }
 
 func (r *handlerRunner) dryRun() {
 	main := func() { r.hf(r.rr, r.rq) }
-	duration := timeFunc(main)
-	r.setResponse(r.rr, duration)
+	r.duration = timeFunc(main)
+	r.setResponse(r.rr)
 }
 
-func (r *handlerRunner) setResponse(rr *httptest.ResponseRecorder, d time.Duration) {
+func (r *handlerRunner) setResponse(rr *httptest.ResponseRecorder) {
 	result := rr.Result()
 	defer result.Body.Close()
-	r.response.header = rr.Header()
-	r.response.status = result.Status
-	r.response.code = result.StatusCode
-	r.response.body = mustReadIO("response body", result.Body)
-	r.response.duration = d
+	r.response = &http.Response{}
+	r.response.Header = rr.Header()
+	r.response.Status = result.Status
+	r.response.StatusCode = result.StatusCode
+	r.responseBody = mustReadIO("httpHandlerRunner.setResponse", result.Body)
+	r.response.Body = io.NopCloser(bytes.NewBuffer(r.responseBody))
 }
 
 func (r *handlerRunner) ResponseStatus(checks ...check.StringChecker) HTTPHandlerRunner {
 	r.addStringChecks(
 		"response status",
-		func() gottype { return r.response.status },
+		func() gottype { return r.response.Status },
 		checks,
 	)
 	return r
@@ -73,7 +74,7 @@ func (r *handlerRunner) ResponseStatus(checks ...check.StringChecker) HTTPHandle
 func (r *handlerRunner) ResponseCode(checks ...check.IntChecker) HTTPHandlerRunner {
 	r.addIntChecks(
 		"response code",
-		func() gottype { return r.response.code },
+		func() gottype { return r.response.StatusCode },
 		checks,
 	)
 	return r
@@ -82,7 +83,7 @@ func (r *handlerRunner) ResponseCode(checks ...check.IntChecker) HTTPHandlerRunn
 func (r *handlerRunner) ResponseBody(checks ...check.BytesChecker) HTTPHandlerRunner {
 	r.addBytesChecks(
 		"response body",
-		func() gottype { return r.response.body },
+		func() gottype { return r.response.Body },
 		checks,
 	)
 	return r
@@ -92,7 +93,7 @@ func (r *handlerRunner) Duration(checks ...check.DurationChecker) HTTPHandlerRun
 	r.hasDurationCheck = true
 	r.addDurationChecks(
 		"handling duration",
-		func() gottype { return r.response.duration },
+		func() gottype { return r.duration },
 		checks,
 	)
 	return r
@@ -101,9 +102,31 @@ func (r *handlerRunner) Duration(checks ...check.DurationChecker) HTTPHandlerRun
 func (r *handlerRunner) ResponseHeader(checks ...check.HTTPHeaderChecker) HTTPHandlerRunner {
 	r.addHTTPHeaderChecks(
 		"response header",
-		func() gottype { return r.response.header },
+		func() gottype { return r.response.Header },
 		checks,
 	)
+	return r
+}
+
+func (r *handlerRunner) Request(checkers ...check.HTTPRequestChecker) HTTPHandlerRunner {
+	for _, c := range checkers {
+		r.addCheck(baseCheck{
+			label:   "http request",
+			get:     func() gottype { return r.rq },
+			checker: checkconv.FromHTTPRequest(c),
+		})
+	}
+	return r
+}
+
+func (r *handlerRunner) Response(checkers ...check.HTTPResponseChecker) HTTPHandlerRunner {
+	for _, c := range checkers {
+		r.addCheck(baseCheck{
+			label:   "http response",
+			get:     func() gottype { return r.response },
+			checker: checkconv.FromHTTPResponse(c),
+		})
+	}
 	return r
 }
 
@@ -117,27 +140,29 @@ func newHandlerRunner(hf http.HandlerFunc, r *http.Request) HTTPHandlerRunner {
 
 type handlerResults struct {
 	baseResults
-	response httpResponse
+	duration     time.Duration
+	response     *http.Response
+	responseBody []byte
 }
 
 var _ HandlerResulter = (*handlerResults)(nil)
 
 func (r handlerResults) ResponseHeader() http.Header {
-	return r.response.header
+	return r.response.Header
 }
 
 func (r handlerResults) ResponseStatus() string {
-	return r.response.status
+	return r.response.Status
 }
 
 func (r handlerResults) ResponseCode() int {
-	return r.response.code
+	return r.response.StatusCode
 }
 
 func (r handlerResults) ResponseBody() []byte {
-	return r.response.body
+	return r.responseBody
 }
 
 func (r handlerResults) ResponseDuration() time.Duration {
-	return r.response.duration
+	return r.duration
 }
