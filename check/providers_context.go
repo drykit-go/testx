@@ -41,7 +41,10 @@ func (p contextCheckerProvider) HasKeys(keys ...interface{}) ContextChecker {
 		return len(missing) == 0
 	}
 	expl := func(label string, got interface{}) string {
-		return p.explain(label, "to have keys "+strings.Join(missing, ","), got)
+		return p.explain(label,
+			"to have keys "+strings.Join(missing, ","),
+			"keys not set",
+		)
 	}
 	return NewContextChecker(pass, expl)
 }
@@ -61,7 +64,7 @@ func (p contextCheckerProvider) Value(key interface{}, c ValueChecker) ContextCh
 	expl := func(label string, got interface{}) string {
 		return p.explainCheck(label,
 			fmt.Sprintf("value for key %v to pass ValueChecker", key),
-			c.Explain("value", got),
+			c.Explain("value", v),
 		)
 	}
 	return NewContextChecker(pass, expl)
