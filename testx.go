@@ -57,15 +57,7 @@ type HTTPHandlerRunner interface {
 	Request(...check.HTTPRequestChecker) HTTPHandlerRunner
 	// Response adds checkers on the written response.
 	Response(...check.HTTPResponseChecker) HTTPHandlerRunner
-	// ResponseHeader adds checkers on the response header.
-	ResponseHeader(...check.HTTPHeaderChecker) HTTPHandlerRunner
-	// ResponseHeader adds checkers on the response status.
-	ResponseStatus(...check.StringChecker) HTTPHandlerRunner
-	// ResponseHeader adds checkers on the response code.
-	ResponseCode(...check.IntChecker) HTTPHandlerRunner
-	// ResponseHeader adds checkers on the response body.
-	ResponseBody(...check.BytesChecker) HTTPHandlerRunner
-	// ResponseHeader adds checkers on the handling duration.
+	// Duration adds checkers on the handling duration.
 	Duration(...check.DurationChecker) HTTPHandlerRunner
 }
 

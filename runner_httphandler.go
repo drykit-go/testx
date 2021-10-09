@@ -25,8 +25,6 @@ type handlerRunner struct {
 	responseBody []byte
 
 	duration time.Duration
-
-	hasDurationCheck bool
 }
 
 func (r *handlerRunner) Run(t *testing.T) {
@@ -62,47 +60,10 @@ func (r *handlerRunner) setResponse(rr *httptest.ResponseRecorder) {
 	r.response.Body = io.NopCloser(bytes.NewBuffer(r.responseBody))
 }
 
-func (r *handlerRunner) ResponseStatus(checks ...check.StringChecker) HTTPHandlerRunner {
-	r.addStringChecks(
-		"response status",
-		func() gottype { return r.response.Status },
-		checks,
-	)
-	return r
-}
-
-func (r *handlerRunner) ResponseCode(checks ...check.IntChecker) HTTPHandlerRunner {
-	r.addIntChecks(
-		"response code",
-		func() gottype { return r.response.StatusCode },
-		checks,
-	)
-	return r
-}
-
-func (r *handlerRunner) ResponseBody(checks ...check.BytesChecker) HTTPHandlerRunner {
-	r.addBytesChecks(
-		"response body",
-		func() gottype { return r.response.Body },
-		checks,
-	)
-	return r
-}
-
 func (r *handlerRunner) Duration(checks ...check.DurationChecker) HTTPHandlerRunner {
-	r.hasDurationCheck = true
 	r.addDurationChecks(
 		"handling duration",
 		func() gottype { return r.duration },
-		checks,
-	)
-	return r
-}
-
-func (r *handlerRunner) ResponseHeader(checks ...check.HTTPHeaderChecker) HTTPHandlerRunner {
-	r.addHTTPHeaderChecks(
-		"response header",
-		func() gottype { return r.response.Header },
 		checks,
 	)
 	return r
