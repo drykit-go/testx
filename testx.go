@@ -53,6 +53,10 @@ type HTTPHandlerRunner interface {
 	// DryRun returns a HandlerResulter to access test results
 	// without running *testing.T.
 	DryRun() HandlerResulter
+	// WithRequest sets the input request to call the handler with.
+	// If not set, the following value is used as a default request:
+	//	defaultRequest := http.NewRequest("GET", "/", nil)
+	WithRequest(*http.Request) HTTPHandlerRunner
 	// Request adds checkers on the input request after the handler is called.
 	Request(...check.HTTPRequestChecker) HTTPHandlerRunner
 	// Response adds checkers on the written response.
