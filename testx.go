@@ -53,11 +53,11 @@ type HTTPHandlerRunner interface {
 	// DryRun returns a HandlerResulter to access test results
 	// without running *testing.T.
 	DryRun() HandlerResulter
-	// Request adds checkers on the resulting request.
+	// Request adds checkers on the input request after the handler is called.
 	Request(...check.HTTPRequestChecker) HTTPHandlerRunner
 	// Response adds checkers on the written response.
 	Response(...check.HTTPResponseChecker) HTTPHandlerRunner
-	// Duration adds checkers on the handling duration.
+	// Duration adds checkers on the handler's execution time;
 	Duration(...check.DurationChecker) HTTPHandlerRunner
 }
 
