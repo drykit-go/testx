@@ -25,7 +25,7 @@ func ExampleHTTPHandlerFunc() {
 
 	t.Run("good request", func(t *testing.T) {
 		r, _ := http.NewRequest("GET", "/endpoint?id=42", nil)
-		testx.HTTPHandlerFunc(MyHTTPHandler, r).
+		testx.HTTPHandlerFunc(MyHTTPHandler).WithRequest(r).
 			Response(
 				check.HTTPResponse.StatusCode(check.Int.InRange(200, 299)),
 				check.HTTPResponse.Body(check.Bytes.Is([]byte("ok"))),
@@ -35,7 +35,7 @@ func ExampleHTTPHandlerFunc() {
 
 	t.Run("bad request", func(t *testing.T) {
 		r, _ := http.NewRequest("GET", "/endpoint?id=404", nil)
-		testx.HTTPHandlerFunc(MyHTTPHandler, r).
+		testx.HTTPHandlerFunc(MyHTTPHandler).WithRequest(r).
 			Response(check.HTTPResponse.Status(check.String.Contains("Not Found"))).
 			Duration(check.Duration.Under(10 * time.Millisecond)).
 			Run(t)
@@ -43,8 +43,10 @@ func ExampleHTTPHandlerFunc() {
 }
 
 func ExampleHTTPHandlerFunc_dryRun() {
+	handlerRunner := testx.HTTPHandlerFunc(MyHTTPHandler)
+
 	goodRequest, _ := http.NewRequest("GET", "/endpoint?id=42", nil)
-	goodRequestResults := testx.HTTPHandlerFunc(MyHTTPHandler, goodRequest).
+	goodRequestResults := handlerRunner.WithRequest(goodRequest).
 		Response(
 			check.HTTPResponse.StatusCode(check.Int.InRange(200, 299)),
 			check.HTTPResponse.Body(check.Bytes.Is([]byte("ok"))),
@@ -52,7 +54,7 @@ func ExampleHTTPHandlerFunc_dryRun() {
 		DryRun()
 
 	badRequest, _ := http.NewRequest("GET", "/endpoint?id=404", nil)
-	badRequestResults := testx.HTTPHandlerFunc(MyHTTPHandler, badRequest).
+	badRequestResults := handlerRunner.WithRequest(badRequest).
 		Response(check.HTTPResponse.Status(check.String.Contains("Not Found"))).
 		Duration(check.Duration.Under(10 * time.Millisecond)).
 		DryRun()

@@ -25,27 +25,13 @@ type handlerRunner struct {
 	duration time.Duration
 }
 
-func (r *handlerRunner) Run(t *testing.T) {
-	t.Helper()
-	r.dryRun()
-	r.run(t)
-}
-
-func (r *handlerRunner) DryRun() HandlerResulter {
-	r.dryRun()
-	return handlerResults{
-		baseResults:  r.baseResults(),
-		duration:     r.duration,
-		response:     r.response,
-		responseBody: ioutil.NopRead(&r.response.Body),
+func (r *handlerRunner) WithRequest(request *http.Request) HTTPHandlerRunner {
+	return &handlerRunner{
+		baseRunner: r.baseRunner,
+		hf:         r.hf,
+		rr:         httptest.NewRecorder(),
+		rq:         request,
 	}
-}
-
-func (r *handlerRunner) dryRun() {
-	main := func() { r.hf(r.rr, r.rq) }
-	r.duration = timeFunc(main)
-	r.response = r.rr.Result() //nolint:bodyclose
-	r.response.Header = r.rr.Header()
 }
 
 func (r *handlerRunner) Duration(checks ...check.DurationChecker) HTTPHandlerRunner {
@@ -79,19 +65,47 @@ func (r *handlerRunner) Response(checkers ...check.HTTPResponseChecker) HTTPHand
 	return r
 }
 
-func newHandlerRunner(hf http.HandlerFunc, r *http.Request) HTTPHandlerRunner {
-	return &handlerRunner{
-		hf: hf,
-		rr: httptest.NewRecorder(),
-		rq: r,
+func (r *handlerRunner) Run(t *testing.T) {
+	t.Helper()
+	r.dryRun()
+	r.run(t)
+}
+
+func (r *handlerRunner) DryRun() HandlerResulter {
+	r.dryRun()
+	return handlerResults{
+		baseResults: r.baseResults(),
+		duration:    r.duration,
+		response:    r.response,
 	}
+}
+
+func (r *handlerRunner) dryRun() {
+	main := func() { r.hf(r.rr, r.rq) }
+
+	r.rr = httptest.NewRecorder()
+	if r.rq == nil {
+		r.rq = r.defaultRequest()
+	}
+
+	r.duration = timeFunc(main)
+	r.response = r.rr.Result() //nolint:bodyclose
+	r.response.Header = r.rr.Header()
+}
+
+func (r *handlerRunner) defaultRequest() *http.Request {
+	rq, _ := http.NewRequest("GET", "/", nil)
+	return rq
+}
+
+func newHandlerRunner(hf http.HandlerFunc) HTTPHandlerRunner {
+	return &handlerRunner{hf: hf}
 }
 
 type handlerResults struct {
 	baseResults
-	duration     time.Duration
-	response     *http.Response
-	responseBody []byte
+	duration time.Duration
+	response *http.Response
 }
 
 var _ HandlerResulter = (*handlerResults)(nil)
@@ -109,7 +123,7 @@ func (r handlerResults) ResponseCode() int {
 }
 
 func (r handlerResults) ResponseBody() []byte {
-	return r.responseBody
+	return ioutil.NopRead(&r.response.Body)
 }
 
 func (r handlerResults) ResponseDuration() time.Duration {

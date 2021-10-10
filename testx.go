@@ -53,6 +53,10 @@ type HTTPHandlerRunner interface {
 	// DryRun returns a HandlerResulter to access test results
 	// without running *testing.T.
 	DryRun() HandlerResulter
+	// WithRequest sets the input request to call the handler with.
+	// If not set, the following value is used as a default request:
+	//	defaultRequest := http.NewRequest("GET", "/", nil)
+	WithRequest(*http.Request) HTTPHandlerRunner
 	// Request adds checkers on the input request after the handler is called.
 	Request(...check.HTTPRequestChecker) HTTPHandlerRunner
 	// Response adds checkers on the written response.
@@ -136,14 +140,14 @@ func Value(v interface{}) ValueRunner {
 
 // HTTPHandler returns a HandlerRunner to run tests on a http.HTTPHandler
 // response to given request.
-func HTTPHandler(h http.Handler, r *http.Request) HTTPHandlerRunner {
-	return newHandlerRunner(h.ServeHTTP, r)
+func HTTPHandler(h http.Handler) HTTPHandlerRunner {
+	return newHandlerRunner(h.ServeHTTP)
 }
 
 // HTTPHandlerFunc returns a HandlerRunner to run tests on a http.HTTPHandlerFunc
 // response to a given request.
-func HTTPHandlerFunc(hf http.HandlerFunc, r *http.Request) HTTPHandlerRunner {
-	return newHandlerRunner(hf, r)
+func HTTPHandlerFunc(hf http.HandlerFunc) HTTPHandlerRunner {
+	return newHandlerRunner(hf)
 }
 
 // Table returns a TableRunner to run test cases on a func. By default,
