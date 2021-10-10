@@ -1,6 +1,7 @@
 package testx_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -38,6 +39,26 @@ func ExampleHTTPHandlerFunc() {
 		testx.HTTPHandlerFunc(MyHTTPHandler).WithRequest(r).
 			Response(check.HTTPResponse.Status(check.String.Contains("Not Found"))).
 			Duration(check.Duration.Under(10 * time.Millisecond)).
+			Run(t)
+	})
+}
+
+func TestExampleHTTPHandlerFunc_middleware(t *testing.T) {
+	var expCtxKey interface{} = "userID"
+
+	// authenticate is a middleware that sets a userID to the request context.
+	authenticate := func(next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			ctx := context.WithValue(r.Context(), expCtxKey, 42)
+			next(w, r.WithContext(ctx))
+		}
+	}
+
+	t.Run("middleware authenticate", func(t *testing.T) {
+		testx.HTTPHandlerFunc(MyHTTPHandler, authenticate).
+			Request(
+				check.HTTPRequest.Context(check.Context.HasKeys(expCtxKey)),
+			).
 			Run(t)
 	})
 }
