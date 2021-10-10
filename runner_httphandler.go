@@ -8,6 +8,7 @@ import (
 
 	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/checkconv"
+	"github.com/drykit-go/testx/internal/httputil/middleware"
 	"github.com/drykit-go/testx/internal/ioutil"
 )
 
@@ -17,18 +18,20 @@ type handlerRunner struct {
 	baseRunner
 
 	hf http.HandlerFunc
+	mw func(http.HandlerFunc) http.HandlerFunc
 	rr *httptest.ResponseRecorder
 	rq *http.Request
 
-	response *http.Response
-
-	duration time.Duration
+	gotRequest *http.Request
+	response   *http.Response
+	duration   time.Duration
 }
 
 func (r *handlerRunner) WithRequest(request *http.Request) HTTPHandlerRunner {
 	return &handlerRunner{
 		baseRunner: r.baseRunner,
 		hf:         r.hf,
+		mw:         r.mw,
 		rr:         httptest.NewRecorder(),
 		rq:         request,
 	}
@@ -47,7 +50,7 @@ func (r *handlerRunner) Request(checkers ...check.HTTPRequestChecker) HTTPHandle
 	for _, c := range checkers {
 		r.addCheck(baseCheck{
 			label:   "http request",
-			get:     func() gottype { return r.rq },
+			get:     func() gottype { return r.gotRequest },
 			checker: checkconv.FromHTTPRequest(c),
 		})
 	}
@@ -81,11 +84,16 @@ func (r *handlerRunner) DryRun() HandlerResulter {
 }
 
 func (r *handlerRunner) dryRun() {
-	main := func() { r.hf(r.rr, r.rq) }
-
 	r.rr = httptest.NewRecorder()
 	if r.rq == nil {
 		r.rq = r.defaultRequest()
+	}
+
+	hf := r.mw(r.interceptRequest(r.hf))
+	r.hf = hf
+
+	main := func() {
+		hf(r.rr, r.rq)
 	}
 
 	r.duration = timeFunc(main)
@@ -94,12 +102,35 @@ func (r *handlerRunner) dryRun() {
 }
 
 func (r *handlerRunner) defaultRequest() *http.Request {
-	rq, _ := http.NewRequest("GET", "/", nil)
-	return rq
+	req, _ := http.NewRequest("GET", "/", nil)
+	return req
 }
 
-func newHandlerRunner(hf http.HandlerFunc) HTTPHandlerRunner {
-	return &handlerRunner{hf: hf}
+func newHandlerRunner(
+	hf http.HandlerFunc,
+	middlewares ...func(http.HandlerFunc) http.HandlerFunc,
+) HTTPHandlerRunner {
+	runner := &handlerRunner{hf: hf}
+	runner.setMiddleware(middlewares...)
+	return runner
+}
+
+func (r *handlerRunner) interceptRequest(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		r.gotRequest = req.Clone(req.Context())
+		next(w, req)
+	}
+}
+
+func (r *handlerRunner) setMiddleware(middlewares ...func(http.HandlerFunc) http.HandlerFunc) {
+	r.mw = middleware.MergeRight(middlewares...)
+}
+
+func Adapt(hf http.HandlerFunc, adapters ...func(http.HandlerFunc) http.HandlerFunc) http.HandlerFunc {
+	for _, adapter := range adapters {
+		hf = adapter(hf)
+	}
+	return hf
 }
 
 type handlerResults struct {
