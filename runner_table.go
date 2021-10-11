@@ -15,14 +15,14 @@ import (
 
 var _ TableRunner = (*tableRunner)(nil)
 
-// Case represents a Table test case. It must be provided an In value
-// and an Exp value at least.
+// Case represents a Table test case. It must be provided values for
+// Case.In and Case.Exp at least.
 type Case struct {
-	// Lab is the label of the current case. If provided it will be printed
-	// if a test case fails.
+	// Lab is the label of the current case to be printed if the current
+	// case fails.
 	Lab string
 
-	// In is the input value to the tested func.xz
+	// In is the input value injected in the tested func.
 	In interface{}
 
 	// Exp is the value expected to be returned when calling the tested func.
@@ -36,23 +36,35 @@ type Case struct {
 // TableConfig is an object of options allowing to configure a table runner.
 // It allows to test functions having multiple input parameters or multiple
 // return values.
+
 type TableConfig struct {
 	// InPos is the nth parameter in which In value is injected.
 	// It is required if the tested func accepts multiple parameters.
 	// Default is 0.
 	InPos int
 
-	// OutPos is the nth output value that is tested against Exp.
+	// OutPos is the nth output value that is tested against Case.Exp.
 	// It is required if the tested func returns multiple values.
 	// Default is 0.
 	OutPos int
 
 	// FixedArgs is a slice of arguments to be injected into the tested func.
 	// It is required if the tested func accepts multiple parameters.
-	// len(FixedArgs) must equal nparams or nparams - 1, nparams being
-	// the number of parameters of the tested func.
-	// Depending on the value of len(FixedArgs) - nparams, Case.In will either
-	// replace (0) or be inserted (-1) at index InPos.
+	//
+	// Let nparams the number of parameters of the tested func, len(FixedArgs)
+	// must equal nparams or nparams - 1.
+	//
+	// The following examples produce the same result:
+	//
+	// 	testx.Table(myFunc).Config(
+	// 		InPos: 1
+	// 		FixedArgs: []interface{"myArg0", "myArg2"} // len(FixedArgs) == 2
+	// 	)
+	//
+	// 	testx.Table(myFunc).Config(
+	// 		InPos: 1
+	// 		FixedArgs: []interface{0: "myArg0", 2: "myArg2"} // len(FixedArgs == 3)
+	// 	)
 	FixedArgs Args
 }
 
@@ -198,10 +210,6 @@ func (r *tableRunner) makeFixedArgs() (Args, error) {
 	}
 }
 
-// Table returns a TableRunner that runs test cases provided via
-// Cases() method on the given testedFunc. A TableConfig may be
-// required if the testedFunc accepts several parameters or returns
-// several values.
 func newTableRunner(testedFunc interface{}, cfg *TableConfig) TableRunner {
 	r := tableRunner{}
 	r.setConfig(cfg)
