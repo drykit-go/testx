@@ -63,7 +63,7 @@ type TableConfig struct {
 	//
 	// 	testx.Table(myFunc).Config(
 	// 		InPos: 1
-	// 		FixedArgs: []interface{0: "myArg0", 2: "myArg2"} // len(FixedArgs == 3)
+	// 		FixedArgs: []interface{0: "myArg0", 2: "myArg2"} // len(FixedArgs) == 3
 	// 	)
 	FixedArgs Args
 }
@@ -72,7 +72,7 @@ type Args []interface{}
 
 func (args Args) replaceAt(pos int, arg interface{}) Args {
 	if pos >= len(args) {
-		log.Panic("Args.set(i, v): i is out of range")
+		log.Panic("Args.replaceAt(i, v): i is out of range")
 	}
 	args[pos] = arg
 	return args
@@ -129,16 +129,10 @@ func (r *tableRunner) setRfunc(in interface{}) error {
 	}
 	ftype := rfunc.Value.Type()
 	if ftype.NumIn() == 0 {
-		return fmt.Errorf(
-			"Table(%s): invalid func: it must accept at least 1 parameter",
-			rfunc.Name,
-		)
+		return fmt.Errorf("Table(%s): %w", rfunc.Name, ErrTableRunnerFuncNumIn)
 	}
 	if ftype.NumOut() == 0 {
-		return fmt.Errorf(
-			"Table(%s): invalid func: it must return at least 1 value",
-			rfunc.Name,
-		)
+		return fmt.Errorf("Table(%s): %w", rfunc.Name, ErrTableRunnerFuncNumOut)
 	}
 	r.rfunc = rfunc
 	return nil
@@ -154,17 +148,11 @@ func (r *tableRunner) setGetFunc(args Args) {
 func (r *tableRunner) validateConfig() error {
 	validPos := func(pos, max int) bool { return pos >= 0 && pos < max }
 	ftyp := r.rfunc.Value.Type()
-	if pout, nout := r.config.OutPos, ftyp.NumOut(); !validPos(pout, nout) {
-		return fmt.Errorf(
-			"%w: OutPos: exp 0 <= n < %d (number of values returned by %s), got %d",
-			ErrInvalidTableConfig, nout, r.rfunc.Name, pout,
-		)
-	}
 	if pin, nin := r.config.InPos, ftyp.NumIn(); !validPos(pin, nin) {
-		return fmt.Errorf(
-			"%w: InPos: exp 0 <= n < %d (number of parameters of %s), got %d",
-			ErrInvalidTableConfig, nin, r.rfunc.Name, pin,
-		)
+		return errTableRunnerConfigInPos(r.rfunc.Name, pin, nin)
+	}
+	if pout, nout := r.config.OutPos, ftyp.NumOut(); !validPos(pout, nout) {
+		return errTableRunnerConfigOutPos(r.rfunc.Name, pout, nout)
 	}
 	return nil
 }
@@ -206,7 +194,7 @@ func (r *tableRunner) makeFixedArgs() (Args, error) {
 	case 1:
 		return fillskip(r.config.InPos), nil
 	default:
-		return nil, fmt.Errorf("invalid FixedArgs number: %d", nargs)
+		return nil, errTableRunnerConfigFixedArgs(d)
 	}
 }
 
@@ -236,7 +224,7 @@ type tableResults struct {
 
 func (res tableResults) PassedAt(i int) bool {
 	if i >= len(res.checks) {
-		log.Panicf("TableResults: index %d is out of range", i)
+		panic(fmt.Sprintf("TableResults: index %d is out of range", i))
 	}
 	return res.checks[i].Passed
 }
@@ -251,8 +239,7 @@ func (res tableResults) PassedLabel(label string) bool {
 			return c.Passed
 		}
 	}
-	log.Panicf("TableResults: no test case with label %s", label)
-	return false
+	panic(fmt.Sprintf("TableResults: no test case with label %s", label))
 }
 
 func (res tableResults) FailedLabel(label string) bool {

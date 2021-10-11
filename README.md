@@ -80,13 +80,14 @@ For unadic functions (1 parameter, 1 return value), its usage is straightforward
 ```go
 func isEven(n int) { return n&1 == 0 }
 
-func TestIsEven(t *testing.T) {}
-testx.Table(isEven, nil).Cases([]testx.Case{
-    {In: 0, Exp: true},
-    {In: 1, Exp: false},
-    {In: -1, Exp: false},
-    {In: -2, Exp: true},
-}).Run(t)
+func TestIsEven(t *testing.T) {
+    testx.Table(isEven, nil).Cases([]testx.Case{
+        {In: 0, Exp: true},
+        {In: 1, Exp: false},
+        {In: -1, Exp: false},
+        {In: -2, Exp: true},
+    }).Run(t)
+}
 ```
 
 Note that `TableRunner` supports any function type (any parameters number,
