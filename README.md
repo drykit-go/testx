@@ -59,7 +59,7 @@ It provides methods to perform checks:
 ```go
 func TestHandleGetMovieByID(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/movies/42", nil)
-	testx.HTTPHandlerFunc(GetMovieByID, r).
+	testx.HTTPHandlerFunc(GetMovieByID).WithRequest(r).
 		Request(check.HTTPRequest.Context(check.Context.HasKeys("userID"))).
 		Response(
 			check.HTTPResponse.StatusCode(check.Int.InRange(200, 299)),
@@ -68,7 +68,6 @@ func TestHandleGetMovieByID(t *testing.T) {
 		Duration(check.Duration.Under(10 * time.Millisecond)).
 		Run(t)
 }
-
 ```
 
 More examples in file [example_httphandler_test.go](./example_httphandler_test.go).
