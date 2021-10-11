@@ -75,7 +75,7 @@ func TestHTTPHandlerRunner(t *testing.T) {
 				nChecks: 3,
 				checks: []testx.CheckResult{
 					{Passed: false, Reason: "http request:\nexp context to pass ContextChecker\ngot explanation: context:\nexp to have keys abc\ngot keys not set"},
-					{Passed: false, Reason: "http response:\nexp status code to pass IntChecker\ngot 200"},
+					{Passed: false, Reason: "http response:\nexp status code to pass IntChecker\ngot explanation: status code:\nexp -1\ngot 200"},
 					{Passed: true, Reason: ""},
 				},
 			},

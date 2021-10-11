@@ -9,6 +9,7 @@ import (
 	"github.com/drykit-go/cond"
 
 	"github.com/drykit-go/testx/check"
+	"github.com/drykit-go/testx/internal/httputil/middleware"
 )
 
 /*
@@ -140,14 +141,20 @@ func Value(v interface{}) ValueRunner {
 
 // HTTPHandler returns a HandlerRunner to run tests on a http.HTTPHandler
 // response to given request.
-func HTTPHandler(h http.Handler) HTTPHandlerRunner {
-	return newHandlerRunner(h.ServeHTTP)
+func HTTPHandler(
+	h http.Handler,
+	middlewares ...func(http.Handler) http.Handler,
+) HTTPHandlerRunner {
+	return newHTTPHandlerRunner(h.ServeHTTP, middleware.AsFuncs(middlewares...)...)
 }
 
 // HTTPHandlerFunc returns a HandlerRunner to run tests on a http.HTTPHandlerFunc
 // response to a given request.
-func HTTPHandlerFunc(hf http.HandlerFunc) HTTPHandlerRunner {
-	return newHandlerRunner(hf)
+func HTTPHandlerFunc(
+	hf http.HandlerFunc,
+	middlewareFuncs ...func(http.HandlerFunc) http.HandlerFunc,
+) HTTPHandlerRunner {
+	return newHTTPHandlerRunner(hf, middlewareFuncs...)
 }
 
 // Table returns a TableRunner to run test cases on a func. By default,

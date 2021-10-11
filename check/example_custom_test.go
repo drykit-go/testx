@@ -49,5 +49,5 @@ func Example_customChecker() {
 	// 404
 	// [{failed http response:
 	// exp status code to pass IntChecker
-	// got 404}]
+	// got explanation: status code: got bad http code: 404}]
 }
