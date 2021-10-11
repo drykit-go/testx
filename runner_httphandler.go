@@ -12,9 +12,9 @@ import (
 	"github.com/drykit-go/testx/internal/ioutil"
 )
 
-var _ HTTPHandlerRunner = (*handlerRunner)(nil)
+var _ HTTPHandlerRunner = (*httpHandlerRunner)(nil)
 
-type handlerRunner struct {
+type httpHandlerRunner struct {
 	baseRunner
 
 	hf http.HandlerFunc
@@ -22,13 +22,13 @@ type handlerRunner struct {
 	rr *httptest.ResponseRecorder
 	rq *http.Request
 
-	gotRequest *http.Request
-	response   *http.Response
-	duration   time.Duration
+	gotRequest  *http.Request
+	gotResponse *http.Response
+	gotDuration time.Duration
 }
 
-func (r *handlerRunner) WithRequest(request *http.Request) HTTPHandlerRunner {
-	return &handlerRunner{
+func (r *httpHandlerRunner) WithRequest(request *http.Request) HTTPHandlerRunner {
+	return &httpHandlerRunner{
 		baseRunner: r.baseRunner,
 		hf:         r.hf,
 		mw:         r.mw,
@@ -37,16 +37,16 @@ func (r *handlerRunner) WithRequest(request *http.Request) HTTPHandlerRunner {
 	}
 }
 
-func (r *handlerRunner) Duration(checks ...check.DurationChecker) HTTPHandlerRunner {
+func (r *httpHandlerRunner) Duration(checks ...check.DurationChecker) HTTPHandlerRunner {
 	r.addDurationChecks(
 		"handling duration",
-		func() gottype { return r.duration },
+		func() gottype { return r.gotDuration },
 		checks,
 	)
 	return r
 }
 
-func (r *handlerRunner) Request(checkers ...check.HTTPRequestChecker) HTTPHandlerRunner {
+func (r *httpHandlerRunner) Request(checkers ...check.HTTPRequestChecker) HTTPHandlerRunner {
 	for _, c := range checkers {
 		r.addCheck(baseCheck{
 			label:   "http request",
@@ -57,72 +57,68 @@ func (r *handlerRunner) Request(checkers ...check.HTTPRequestChecker) HTTPHandle
 	return r
 }
 
-func (r *handlerRunner) Response(checkers ...check.HTTPResponseChecker) HTTPHandlerRunner {
+func (r *httpHandlerRunner) Response(checkers ...check.HTTPResponseChecker) HTTPHandlerRunner {
 	for _, c := range checkers {
 		r.addCheck(baseCheck{
 			label:   "http response",
-			get:     func() gottype { return r.response },
+			get:     func() gottype { return r.gotResponse },
 			checker: checkconv.FromHTTPResponse(c),
 		})
 	}
 	return r
 }
 
-func (r *handlerRunner) Run(t *testing.T) {
+func (r *httpHandlerRunner) Run(t *testing.T) {
 	t.Helper()
-	r.dryRun()
+	r.setResults()
 	r.run(t)
 }
 
-func (r *handlerRunner) DryRun() HandlerResulter {
-	r.dryRun()
+func (r *httpHandlerRunner) DryRun() HandlerResulter {
+	r.setResults()
 	return handlerResults{
 		baseResults: r.baseResults(),
-		duration:    r.duration,
-		response:    r.response,
+		duration:    r.gotDuration,
+		response:    r.gotResponse,
 	}
 }
 
-func (r *handlerRunner) dryRun() {
+func (r *httpHandlerRunner) setResults() {
 	r.rr = httptest.NewRecorder()
 	if r.rq == nil {
 		r.rq = r.defaultRequest()
 	}
 
-	hf := r.mw(r.interceptRequest(r.hf))
-	r.hf = hf
-
-	main := func() {
-		hf(r.rr, r.rq)
-	}
-
-	r.duration = timeFunc(main)
-	r.response = r.rr.Result() //nolint:bodyclose
-	r.response.Header = r.rr.Header()
+	handler := r.mw(r.interceptRequest(r.hf))
+	r.gotDuration = timeFunc(func() {
+		handler(r.rr, r.rq)
+	})
+	r.gotResponse = r.rr.Result() //nolint:bodyclose
+	r.gotResponse.Header = r.rr.Header()
 }
 
-func (r *handlerRunner) defaultRequest() *http.Request {
+func (r *httpHandlerRunner) defaultRequest() *http.Request {
 	req, _ := http.NewRequest("GET", "/", nil)
 	return req
 }
 
-func newHandlerRunner(
+func newHTTPHandlerRunner(
 	hf http.HandlerFunc,
 	middlewares ...func(http.HandlerFunc) http.HandlerFunc,
 ) HTTPHandlerRunner {
-	runner := &handlerRunner{hf: hf}
-	runner.setMiddleware(middlewares...)
+	runner := &httpHandlerRunner{hf: hf}
+	runner.setMergedMiddlewares(middlewares...)
 	return runner
 }
 
-func (r *handlerRunner) interceptRequest(next http.HandlerFunc) http.HandlerFunc {
+func (r *httpHandlerRunner) interceptRequest(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		r.gotRequest = req.Clone(req.Context())
 		next(w, req)
 	}
 }
 
-func (r *handlerRunner) setMiddleware(middlewares ...func(http.HandlerFunc) http.HandlerFunc) {
+func (r *httpHandlerRunner) setMergedMiddlewares(middlewares ...func(http.HandlerFunc) http.HandlerFunc) {
 	r.mw = middleware.MergeRight(middlewares...)
 }
 
