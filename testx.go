@@ -9,6 +9,7 @@ import (
 	"github.com/drykit-go/cond"
 
 	"github.com/drykit-go/testx/check"
+	"github.com/drykit-go/testx/internal/httputil/middleware"
 )
 
 /*
@@ -53,15 +54,15 @@ type HTTPHandlerRunner interface {
 	// DryRun returns a HandlerResulter to access test results
 	// without running *testing.T.
 	DryRun() HandlerResulter
-	// ResponseHeader adds checkers on the response header.
-	ResponseHeader(...check.HTTPHeaderChecker) HTTPHandlerRunner
-	// ResponseHeader adds checkers on the response status.
-	ResponseStatus(...check.StringChecker) HTTPHandlerRunner
-	// ResponseHeader adds checkers on the response code.
-	ResponseCode(...check.IntChecker) HTTPHandlerRunner
-	// ResponseHeader adds checkers on the response body.
-	ResponseBody(...check.BytesChecker) HTTPHandlerRunner
-	// ResponseHeader adds checkers on the handling duration.
+	// WithRequest sets the input request to call the handler with.
+	// If not set, the following value is used as a default request:
+	//	defaultRequest := http.NewRequest("GET", "/", nil)
+	WithRequest(*http.Request) HTTPHandlerRunner
+	// Request adds checkers on the input request after the handler is called.
+	Request(...check.HTTPRequestChecker) HTTPHandlerRunner
+	// Response adds checkers on the written response.
+	Response(...check.HTTPResponseChecker) HTTPHandlerRunner
+	// Duration adds checkers on the handler's execution time;
 	Duration(...check.DurationChecker) HTTPHandlerRunner
 }
 
@@ -140,14 +141,20 @@ func Value(v interface{}) ValueRunner {
 
 // HTTPHandler returns a HandlerRunner to run tests on a http.HTTPHandler
 // response to given request.
-func HTTPHandler(h http.Handler, r *http.Request) HTTPHandlerRunner {
-	return newHandlerRunner(h.ServeHTTP, r)
+func HTTPHandler(
+	h http.Handler,
+	middlewares ...func(http.Handler) http.Handler,
+) HTTPHandlerRunner {
+	return newHTTPHandlerRunner(h.ServeHTTP, middleware.AsFuncs(middlewares...)...)
 }
 
 // HTTPHandlerFunc returns a HandlerRunner to run tests on a http.HTTPHandlerFunc
 // response to a given request.
-func HTTPHandlerFunc(hf http.HandlerFunc, r *http.Request) HTTPHandlerRunner {
-	return newHandlerRunner(hf, r)
+func HTTPHandlerFunc(
+	hf http.HandlerFunc,
+	middlewareFuncs ...func(http.HandlerFunc) http.HandlerFunc,
+) HTTPHandlerRunner {
+	return newHTTPHandlerRunner(hf, middlewareFuncs...)
 }
 
 // Table returns a TableRunner to run test cases on a func. By default,

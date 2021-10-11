@@ -8,6 +8,8 @@
 
 # testx/check
 
+Package `check` provides _checkers_ interfaces and implementations
+for `testx` test runners.
 
 ## Table of contents
 
@@ -49,7 +51,7 @@ Package `check` provides a collection of basic checkers for common types and kin
   <table>
     <thead>
       <tr>
-        <th>Go type or kind</th>
+        <th>Go type</th>
         <th>Checker provider</th>
       </tr>
     </thead>
@@ -79,9 +81,33 @@ Package `check` provides a collection of basic checkers for common types and kin
         <td><code>check.Duration</code></td>
       </tr>
       <tr>
+        <td><code>context.Context</code></td>
+        <td><code>check.Context</code></td>
+      </tr>
+      <tr>
         <td><code>http.Header</code></td>
         <td><code>check.HTTPHeader</code></td>
       </tr>
+      <tr>
+        <td><code>*http.Request</code></td>
+        <td><code>check.HTTPRequest</code></td>
+      </tr>
+      <tr>
+        <td><code>*http.Response</code></td>
+        <td><code>check.HTTPResponse</code></td>
+      </tr>
+      <tr>
+        <td><code>interface{}</code></td>
+        <td><code>check.Value</code></td>
+      </tr>
+    </tbody>
+    <thead>
+      <tr>
+        <th>Go kind</th>
+        <th>Checker provider</th>
+      </tr>
+    </thead>
+    <tbody>
       <tr>
         <td><code>slice</code></td>
         <td><code>check.Slice</code></td>
@@ -93,10 +119,6 @@ Package `check` provides a collection of basic checkers for common types and kin
       <tr>
         <td><code>struct</code></td>
         <td><code>check.Bool</code></td>
-      </tr>
-      <tr>
-        <td><code>interface{}</code></td>
-        <td><code>check.Value</code></td>
       </tr>
     </tbody>
   </table>

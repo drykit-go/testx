@@ -1,38 +1,49 @@
 package testx_test
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"testing"
+	"time"
 
 	testx "github.com/drykit-go/testx"
 	"github.com/drykit-go/testx/check"
 )
 
-func TestHandlerRunner(t *testing.T) {
+func TestHTTPHandlerRunner(t *testing.T) {
 	hf := func(w http.ResponseWriter, _ *http.Request) {
 		b, _ := json.Marshal(map[string]interface{}{"message": "Hello, World!"})
 		w.WriteHeader(200)
 		w.Write(b)
 	}
-	r, _ := http.NewRequest(http.MethodGet, "/", nil)
+	r, _ := http.NewRequestWithContext(
+		context.WithValue(context.Background(), "userID", 42), //nolint:revive,staticcheck // context-keys-type
+		http.MethodGet, "/", nil,
+	)
 
 	expBody := []byte(`{"message":"Hello, World!"}`)
 
 	t.Run("should pass", func(t *testing.T) {
-		res := testx.HTTPHandlerFunc(hf, r).
-			ResponseCode(check.Int.Is(200)).
-			ResponseBody(check.Bytes.SameJSON(expBody)).
+		res := testx.HTTPHandlerFunc(hf).WithRequest(r).
+			Duration(check.Duration.Under(100*time.Millisecond)).
+			Request(check.HTTPRequest.Context(check.Context.HasKeys("userID"))).
+			Response(
+				check.HTTPResponse.StatusCode(check.Int.Is(200)),
+				check.HTTPResponse.Body(check.Bytes.SameJSON(expBody)),
+			).
 			DryRun()
 
 		exp := handlerResults{
 			baseResults: baseResults{
 				passed:  true,
 				failed:  false,
-				nPassed: 2,
+				nPassed: 4,
 				nFailed: 0,
-				nChecks: 2,
+				nChecks: 4,
 				checks: []testx.CheckResult{
+					{Passed: true, Reason: ""},
+					{Passed: true, Reason: ""},
 					{Passed: true, Reason: ""},
 					{Passed: true, Reason: ""},
 				},
@@ -47,9 +58,12 @@ func TestHandlerRunner(t *testing.T) {
 	})
 
 	t.Run("should fail", func(t *testing.T) {
-		res := testx.HTTPHandlerFunc(hf, r).
-			ResponseCode(check.Int.Is(-1)).
-			ResponseBody(check.Bytes.SameJSON(expBody)).
+		res := testx.HTTPHandlerFunc(hf).WithRequest(r).
+			Request(check.HTTPRequest.Context(check.Context.HasKeys("abc"))).
+			Response(
+				check.HTTPResponse.StatusCode(check.Int.Is(-1)),
+				check.HTTPResponse.Body(check.Bytes.SameJSON(expBody)),
+			).
 			DryRun()
 
 		exp := handlerResults{
@@ -57,10 +71,11 @@ func TestHandlerRunner(t *testing.T) {
 				passed:  false,
 				failed:  true,
 				nPassed: 1,
-				nFailed: 1,
-				nChecks: 2,
+				nFailed: 2,
+				nChecks: 3,
 				checks: []testx.CheckResult{
-					{Passed: false, Reason: "response code:\nexp -1\ngot 200"},
+					{Passed: false, Reason: "http request:\nexp context to pass ContextChecker\ngot explanation: context:\nexp to have keys abc\ngot keys not set"},
+					{Passed: false, Reason: "http response:\nexp status code to pass IntChecker\ngot explanation: status code:\nexp -1\ngot 200"},
 					{Passed: true, Reason: ""},
 				},
 			},

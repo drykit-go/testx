@@ -49,18 +49,26 @@ More examples in file [example_value_test.go](./example_value_test.go).
 
 ### `HTTPHandlerRunner`
 
-`HTTPHandlerRunner` runs tests on a `http.Handler` or `http.HandlerFunc`
-to ensure they write an expected response given a `http.Request`.
+`HTTPHandlerRunner` runs tests on a `http.Handler` or `http.HandlerFunc`.
+It provides methods to perform checks:
+- on the input request (e.g. to ensure it has been attached an expected context
+  by some middleware)
+- on the written response (status code, body, header...)
+- on the execution time.
 
 ```go
 func TestHandleGetMovieByID(t *testing.T) {
-    r, _ := http.NewRequest("GET", "/movies/42", nil)
-    testx.HTTPHandlerFunc(GetMovieByID, r).
-        ResponseCode(check.Int.InRange(200, 299)).
-        ResponseBody(check.Byte.SameJSON(`{"id":42,"title":"Hello"}`)).
-        Duration(check.Duration.Under(10 * time.Millisecond)).
-        Run(t)
+	r, _ := http.NewRequest("GET", "/movies/42", nil)
+	testx.HTTPHandlerFunc(GetMovieByID, r).
+		Request(check.HTTPRequest.Context(check.Context.HasKeys("userID"))).
+		Response(
+			check.HTTPResponse.StatusCode(check.Int.InRange(200, 299)),
+			check.HTTPResponse.Body(check.Bytes.Contains([]byte(`"id":42`))),
+		).
+		Duration(check.Duration.Under(10 * time.Millisecond)).
+		Run(t)
 }
+
 ```
 
 More examples in file [example_httphandler_test.go](./example_httphandler_test.go).
