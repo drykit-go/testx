@@ -18,7 +18,10 @@ func (p httpResponseCheckerProvider) StatusCode(c IntChecker) HTTPResponseChecke
 		return c.Pass(code)
 	}
 	expl := func(label string, _ interface{}) string {
-		return p.explain(label, "status code to pass IntChecker", code)
+		return p.explainCheck(label,
+			"status code to pass IntChecker",
+			c.Explain("status code", code),
+		)
 	}
 	return NewHTTPResponseChecker(pass, expl)
 }
@@ -32,7 +35,10 @@ func (p httpResponseCheckerProvider) Status(c StringChecker) HTTPResponseChecker
 		return c.Pass(status)
 	}
 	expl := func(label string, _ interface{}) string {
-		return p.explain(label, "status to pass StringChecker", status)
+		return p.explain(label,
+			"status to pass StringChecker",
+			c.Explain("status", status),
+		)
 	}
 	return NewHTTPResponseChecker(pass, expl)
 }
