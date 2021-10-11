@@ -59,8 +59,7 @@ It provides methods to perform checks:
 ```go
 func TestHandleGetMovieByID(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/movies/42", nil)
-	testx.HTTPHandlerFunc(GetMovieByID).WithRequest(r).
-		Request(check.HTTPRequest.Context(check.Context.HasKeys("userID"))).
+	testx.HTTPHandlerFunc(HandleGetMovieByID).WithRequest(r).
 		Response(
 			check.HTTPResponse.StatusCode(check.Int.InRange(200, 299)),
 			check.HTTPResponse.Body(check.Bytes.Contains([]byte(`"id":42`))),
