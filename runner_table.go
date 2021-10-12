@@ -8,7 +8,6 @@ import (
 	"github.com/drykit-go/cond"
 
 	"github.com/drykit-go/testx/check"
-	"github.com/drykit-go/testx/checkconv"
 	"github.com/drykit-go/testx/internal/fmtexpl"
 	"github.com/drykit-go/testx/internal/reflectutil"
 )
@@ -16,7 +15,7 @@ import (
 var _ TableRunner = (*tableRunner)(nil)
 
 // Case represents a Table test case. It must be provided values for
-// Case.In and Case.Exp at least.
+// Case.In, and Case.Exp or Case.Pass at least.
 type Case struct {
 	// Lab is the label of the current case to be printed if the current
 	// case fails.
@@ -26,8 +25,11 @@ type Case struct {
 	In interface{}
 
 	// Exp is the value expected to be returned when calling the tested func.
-	// If Exp is a checker, the checker is run instead.
 	Exp interface{}
+
+	// Pass is a slice of check.ValueChecker that the return values of the
+	// tested func is expected to pass.
+	Pass []check.ValueChecker
 
 	// Not reverses the test check for an equality.
 	Not bool
@@ -98,13 +100,17 @@ func (r *tableRunner) DryRun() TableResulter {
 }
 
 func (r *tableRunner) Cases(cases []Case) TableRunner {
-	for _, c := range cases {
-		c := c
-		r.addCheck(baseCheck{
-			label:   c.Lab,
-			get:     func() gottype { return r.get(c.In) },
-			checker: r.makeChecker(c),
-		})
+	for _, tc := range cases {
+		tc := tc
+		get := func() gottype { return r.get(tc.In) }
+		if tc.Exp != nil {
+			r.addCheck(baseCheck{
+				label:   tc.Lab,
+				get:     get,
+				checker: r.makeChecker(tc),
+			})
+		}
+		r.addChecks(tc.Lab, get, tc.Pass, true)
 	}
 	return r
 }
@@ -158,11 +164,6 @@ func (r *tableRunner) validateConfig() error {
 }
 
 func (r *tableRunner) makeChecker(c Case) check.ValueChecker {
-	checker, ok := checkconv.Cast(c.Exp)
-	if ok {
-		return checker
-	}
-
 	pass := func(got interface{}) bool { return xor(deq(got, c.Exp), c.Not) }
 	expl := func(_ string, got interface{}) string {
 		expStr := fmt.Sprintf("%s%v", cond.String("not ", "", c.Not), c.Exp)

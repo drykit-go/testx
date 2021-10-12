@@ -7,6 +7,7 @@ import (
 
 	"github.com/drykit-go/testx"
 	"github.com/drykit-go/testx/check"
+	"github.com/drykit-go/testx/checkconv"
 )
 
 // Tests
@@ -65,8 +66,8 @@ func TestTableRunner(t *testing.T) {
 	t.Run("using check.IntChecker", func(t *testing.T) {
 		testx.Table(double, nil).
 			Cases([]testx.Case{
-				{In: 21, Exp: check.Int.Is(42)},
-				{In: -4, Exp: check.Int.InRange(-10, 0)},
+				{In: 21, Pass: checkconv.AssertMany(check.Int.Is(42))},
+				{In: -4, Pass: checkconv.AssertMany(check.Int.InRange(-10, 0))},
 			}).
 			Run(t)
 	})

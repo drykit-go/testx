@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/drykit-go/testx"
+	"github.com/drykit-go/testx/checkconv"
 )
 
 /*
@@ -41,10 +42,11 @@ func identityCustomType(v MyType) MyType {
 
 func Example_customCheckerUnknownType() {
 	checkIsValid := MyTypeValidityChecker{}
+	checkers, _ := checkconv.CastMany(checkIsValid)
 	results := testx.Table(identityCustomType, nil).
 		Cases([]testx.Case{
-			{In: MyType{ID: 0, Name: "yes"}, Exp: checkIsValid}, // pass
-			{In: MyType{ID: -1, Name: "no"}, Exp: checkIsValid}, // fail
+			{In: MyType{ID: 0, Name: "yes"}, Pass: checkers}, // pass
+			{In: MyType{ID: -1, Name: "no"}, Pass: checkers}, // fail
 		}).
 		DryRun()
 
