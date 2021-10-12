@@ -25,6 +25,16 @@ type Case struct {
 	In interface{}
 
 	// Exp is the value expected to be returned when calling the tested func.
+	// If Case.Exp == nil (not set), no check is added. This is a necessary
+	// behavior if one wants to use Case.Pass and not Case.Exp.
+	// To specifically check for a nil value, use ExpNil.
+	//
+	// 	testx.Table(myFunc, nil).Cases([]testx.Case{
+	//		{In: 123, Pass: checkers},    // Exp == nil, no Exp check added besides checkers
+	//		{In: 123},                    // Exp == nil, no check added
+	//		{In: 123, Exp: nil},          // Exp == nil, no check added
+	//		{In: 123, Exp: testx.ExpNil}, // expect nil value
+	//	})
 	Exp interface{}
 
 	// Pass is a slice of check.ValueChecker that the return values of the
@@ -164,9 +174,10 @@ func (r *tableRunner) validateConfig() error {
 }
 
 func (r *tableRunner) makeChecker(c Case) check.ValueChecker {
-	pass := func(got interface{}) bool { return xor(deq(got, c.Exp), c.Not) }
+	exp := cond.Value(nil, c.Exp, c.Exp == ExpNil)
+	pass := func(got interface{}) bool { return xor(deq(got, exp), c.Not) }
 	expl := func(_ string, got interface{}) string {
-		expStr := fmt.Sprintf("%s%v", cond.String("not ", "", c.Not), c.Exp)
+		expStr := fmt.Sprintf("%s%v", cond.String("not ", "", c.Not), exp)
 		return fmtexpl.FuncResult(r.label, c.Lab, c.In, expStr, got)
 	}
 	return check.NewValueChecker(pass, expl)
@@ -243,6 +254,18 @@ func (res tableResults) PassedLabel(label string) bool {
 	panic(fmt.Sprintf("TableResults: no test case with label %s", label))
 }
 
+/*
+	ExpNil
+*/
+
 func (res tableResults) FailedLabel(label string) bool {
 	return !res.PassedLabel(label)
 }
+
+type expNiler interface{ expNil() }
+
+type expNilerImpl struct{}
+
+func (expNilerImpl) expNil() {}
+
+var ExpNil expNiler = expNilerImpl{}

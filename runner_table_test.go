@@ -71,6 +71,25 @@ func TestTableRunner(t *testing.T) {
 			}).
 			Run(t)
 	})
+
+	t.Run("expect nil value", func(t *testing.T) {
+		runner := testx.Table(func(wantnil bool) interface{} {
+			if wantnil {
+				return nil
+			}
+			return 0
+		}, nil).Cases([]testx.Case{
+			{In: false, Exp: 0},
+			{In: true},                    // Exp == nil, no check added
+			{In: true, Exp: testx.ExpNil}, // expect nil value
+		})
+
+		runner.Run(t)
+
+		if n := runner.DryRun().NChecks(); n != 2 {
+			t.Errorf("exp 2 checks, got %d", n)
+		}
+	})
 }
 
 func TestTableRunnerResults(t *testing.T) {
