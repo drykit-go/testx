@@ -3,6 +3,7 @@ package testx
 import (
 	"fmt"
 	"log"
+	"strings"
 	"testing"
 
 	"github.com/drykit-go/cond"
@@ -15,7 +16,7 @@ import (
 var _ TableRunner = (*tableRunner)(nil)
 
 // Case represents a Table test case. It must be provided values for
-// Case.In, and Case.Exp or Case.Pass at least.
+// Case.In, and Case.Exp or Case.Not or Case.Pass at least.
 type Case struct {
 	// Lab is the label of the current case to be printed if the current
 	// case fails.
@@ -90,23 +91,42 @@ func (args Args) replaceAt(pos int, arg interface{}) Args {
 	return args
 }
 
+func (args Args) String() string {
+	argsStr := []string{}
+	for _, arg := range args {
+		argsStr = append(argsStr, fmt.Sprint(arg))
+	}
+	return strings.Join(argsStr, ", ")
+}
+
 type tableRunner struct {
 	baseRunner
 
-	label  string
 	config TableConfig
 	get    func(in interface{}) gottype
 
 	rfunc *reflectutil.Func
+	args  Args
 }
 
 func (r *tableRunner) Run(t *testing.T) {
 	t.Helper()
+	r.dryRun()
 	r.run(t)
 }
 
 func (r *tableRunner) DryRun() TableResulter {
+	r.dryRun()
 	return tableResults{baseResults: r.baseResults()}
+}
+
+func (r *tableRunner) dryRun() {
+	cond.PanicOnErr(r.validateConfig())
+
+	args, err := r.makeFixedArgs(r.rfunc, r.config)
+	cond.PanicOnErr(err)
+
+	r.setGetFunc(args)
 }
 
 func (r *tableRunner) Cases(cases []Case) TableRunner {
@@ -142,17 +162,9 @@ func (r *tableRunner) Cases(cases []Case) TableRunner {
 	return r
 }
 
-func (r *tableRunner) Config(cfg *TableConfig) TableRunner {
-	r.setConfig(cfg)
+func (r *tableRunner) Config(cfg TableConfig) TableRunner {
+	r.config = cfg
 	return r
-}
-
-func (r *tableRunner) setConfig(cfg *TableConfig) {
-	if cfg == nil {
-		r.config = TableConfig{}
-	} else {
-		r.config = *cfg
-	}
 }
 
 func (r *tableRunner) setRfunc(in interface{}) error {
@@ -174,7 +186,8 @@ func (r *tableRunner) setRfunc(in interface{}) error {
 func (r *tableRunner) setGetFunc(args Args) {
 	r.get = func(in interface{}) gottype {
 		pin, pout := r.config.InPos, r.config.OutPos
-		return r.rfunc.Call(args.replaceAt(pin, in))[pout]
+		r.args = args.replaceAt(pin, in)
+		return r.rfunc.Call(r.args)[pout]
 	}
 }
 
@@ -190,9 +203,9 @@ func (r *tableRunner) validateConfig() error {
 	return nil
 }
 
-func (r *tableRunner) makeFixedArgs() (Args, error) {
-	nparams := r.rfunc.Value.Type().NumIn()
-	nargs := len(r.config.FixedArgs)
+func (r *tableRunner) makeFixedArgs(rfunc *reflectutil.Func, cfg TableConfig) (Args, error) {
+	nparams := rfunc.Value.Type().NumIn()
+	nargs := len(cfg.FixedArgs)
 
 	fillskip := func(at int) Args {
 		args := make(Args, nparams)
@@ -202,35 +215,25 @@ func (r *tableRunner) makeFixedArgs() (Args, error) {
 				delta++
 				continue
 			}
-			args[i] = r.config.FixedArgs[i-delta]
+			args[i] = cfg.FixedArgs[i-delta]
 		}
 		return args
 	}
 
 	switch d := nparams - nargs; d {
 	case 0:
-		return r.config.FixedArgs, nil
+		return cfg.FixedArgs, nil
 	case 1:
-		return fillskip(r.config.InPos), nil
+		return fillskip(cfg.InPos), nil
 	default:
 		return nil, errTableRunnerConfigFixedArgs(d)
 	}
 }
 
-func newTableRunner(testedFunc interface{}, cfg *TableConfig) TableRunner {
-	r := tableRunner{}
-	r.setConfig(cfg)
-
+func newTableRunner(testedFunc interface{}) TableRunner {
+	r := &tableRunner{}
 	cond.PanicOnErr(r.setRfunc(testedFunc))
-	cond.PanicOnErr(r.validateConfig())
-
-	args, err := r.makeFixedArgs()
-	cond.PanicOnErr(err)
-
-	r.label = r.rfunc.Name
-	r.setGetFunc(args)
-
-	return &r
+	return r
 }
 
 /*
@@ -261,13 +264,13 @@ func (res tableResults) PassedLabel(label string) bool {
 	panic(fmt.Sprintf("TableResults: no test case with label %s", label))
 }
 
-/*
-	ExpNil
-*/
-
 func (res tableResults) FailedLabel(label string) bool {
 	return !res.PassedLabel(label)
 }
+
+/*
+	ExpNil
+*/
 
 type expNiler interface{ expNil() }
 

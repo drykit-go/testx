@@ -33,11 +33,11 @@ func TestTableRunner(t *testing.T) {
 	a0, a2 := expFixedArgs["a0"], expFixedArgs["a2"]
 
 	t.Run("single in single out", func(t *testing.T) {
-		testx.Table(evenSingle, nil).Cases(cases).Run(t)
+		testx.Table(evenSingle).Cases(cases).Run(t)
 	})
 
 	t.Run("single in multiple out", func(t *testing.T) {
-		testx.Table(evenMultipleOut, &testx.TableConfig{
+		testx.Table(evenMultipleOut).Config(testx.TableConfig{
 			OutPos: outPos,
 		}).
 			Cases(cases).
@@ -45,7 +45,7 @@ func TestTableRunner(t *testing.T) {
 	})
 
 	t.Run("multiple in single out", func(t *testing.T) {
-		testx.Table(evenMultipleIn, &testx.TableConfig{
+		testx.Table(evenMultipleIn).Config(testx.TableConfig{
 			InPos:     inPos,
 			FixedArgs: []interface{}{a0, a2}, // len(FixedArgs) == nparams-1
 		}).
@@ -54,7 +54,7 @@ func TestTableRunner(t *testing.T) {
 	})
 
 	t.Run("multiple in multiple out", func(t *testing.T) {
-		testx.Table(evenMultipleInOut, &testx.TableConfig{
+		testx.Table(evenMultipleInOut).Config(testx.TableConfig{
 			InPos:     inPos,
 			OutPos:    outPos,
 			FixedArgs: []interface{}{0: a0, 2: a2}, // len(FixedArgs) == nparams
@@ -64,7 +64,7 @@ func TestTableRunner(t *testing.T) {
 	})
 
 	t.Run("using check.IntChecker", func(t *testing.T) {
-		testx.Table(double, nil).
+		testx.Table(double).
 			Cases([]testx.Case{
 				{In: 21, Pass: checkconv.AssertMany(check.Int.Is(42))},
 				{In: -4, Pass: checkconv.AssertMany(check.Int.InRange(-10, 0))},
@@ -78,7 +78,7 @@ func TestTableRunner(t *testing.T) {
 				return nil
 			}
 			return 0
-		}, nil).Cases([]testx.Case{
+		}).Cases([]testx.Case{
 			{In: false, Exp: 0},
 			{In: true},                    // Exp == nil, no check added
 			{In: true, Exp: testx.ExpNil}, // expect nil value
@@ -92,7 +92,7 @@ func TestTableRunner(t *testing.T) {
 	})
 
 	t.Run("Case.Not checks", func(t *testing.T) {
-		results := testx.Table(func(n int) int { return n }, nil).
+		results := testx.Table(func(n int) int { return n }).
 			Cases([]testx.Case{
 				{In: 0, Not: []interface{}{-1, 1}}, // pass
 				{In: 0, Not: []interface{}{0}},     // fail
@@ -114,7 +114,7 @@ func TestTableRunner(t *testing.T) {
 func TestTableRunnerResults(t *testing.T) {
 	t.Run("pass", func(t *testing.T) {
 		res := testx.
-			Table(evenSingle, nil).
+			Table(evenSingle).
 			Cases([]testx.Case{
 				{In: 10, Exp: true, Lab: "even number"},
 				{In: 11, Exp: false, Lab: "odd number"},
@@ -144,7 +144,7 @@ func TestTableRunnerResults(t *testing.T) {
 
 	t.Run("fail", func(t *testing.T) {
 		res := testx.
-			Table(evenSingle, nil).
+			Table(evenSingle).
 			Cases([]testx.Case{
 				{In: 10, Exp: true, Lab: "even number"}, // pass
 				{In: -1, Exp: true, Lab: "odd number"},  // fail

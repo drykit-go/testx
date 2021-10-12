@@ -16,7 +16,7 @@ func ExampleTable_unadic() {
 
 	// func double has 1 parameter and 1 return value,
 	// hence no config is needed
-	testx.Table(double, nil).Cases([]testx.Case{
+	testx.Table(double).Cases([]testx.Case{
 		{In: 0.0, Exp: 0.0},
 		{In: -2.0, Exp: check.Float64.InRange(-5, -3)},
 	}).Run(t)
@@ -44,7 +44,7 @@ func ExampleTable_dyadic() {
 	// at position 1).
 	// We inject Case.In at position 1 (param y) and use a fixed value
 	// of 42.0 at position 0 (param x) for all cases.
-	testx.Table(divide, &testx.TableConfig{
+	testx.Table(divide).Config(testx.TableConfig{
 		// Positions start at 0
 		InPos:     1,                      // Case.In injected in param position 1 (y)
 		OutPos:    1,                      // Case.Exp compared to return value position 1 (error value)
