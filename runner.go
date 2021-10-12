@@ -14,9 +14,10 @@ type (
 	getfunc func() gottype
 
 	baseCheck struct {
-		label   string
-		get     getfunc
-		checker check.ValueChecker
+		label        string
+		explainLabel string
+		get          getfunc
+		checker      check.ValueChecker
 	}
 )
 
@@ -90,14 +91,20 @@ func (r *baseRunner) fail(t *testing.T, msg string) {
 
 func (r *baseRunner) baseResults() baseResults {
 	results := baseResults{}
-	for _, c := range r.checks {
-		got := c.get()
-		passed := c.checker.Pass(got)
-		reason := cond.String("", c.checker.Explain(c.label, got), passed)
+	for _, bc := range r.checks {
+		getExplain := func(bc baseCheck, got interface{}, passed bool) string {
+			if passed {
+				return ""
+			}
+			label := cond.DefaultString(bc.explainLabel, bc.label)
+			return bc.checker.Explain(label, got)
+		}
+		got := bc.get()
+		passed := bc.checker.Pass(got)
 		results.checks = append(results.checks, CheckResult{
 			Passed: passed,
-			Reason: reason,
-			label:  c.label,
+			Reason: getExplain(bc, got, passed),
+			label:  bc.label,
 		})
 		if !passed {
 			results.nFailed++

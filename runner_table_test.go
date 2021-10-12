@@ -90,6 +90,25 @@ func TestTableRunner(t *testing.T) {
 			t.Errorf("exp 2 checks, got %d", n)
 		}
 	})
+
+	t.Run("Case.Not checks", func(t *testing.T) {
+		results := testx.Table(func(n int) int { return n }, nil).
+			Cases([]testx.Case{
+				{In: 0, Not: []interface{}{-1, 1}}, // pass
+				{In: 0, Not: []interface{}{0}},     // fail
+			}).
+			DryRun()
+
+		if nc := results.NChecks(); nc != 2 {
+			t.Errorf("exp 2 checks, got %d", nc)
+		}
+		if results.FailedAt(0) {
+			t.Error("exp Case 0 to pass, got fail")
+		}
+		if results.PassedAt(1) {
+			t.Error("exp Case 1 to fail, got pass")
+		}
+	})
 }
 
 func TestTableRunnerResults(t *testing.T) {
@@ -142,8 +161,8 @@ func TestTableRunnerResults(t *testing.T) {
 				nChecks: 3,
 				checks: []testx.CheckResult{
 					{Passed: true, Reason: ""},
-					{Passed: false, Reason: "[odd number] testx_test.evenSingle(-1):\nexp true\ngot false"},
-					{Passed: false, Reason: "testx_test.evenSingle(-1):\nexp true\ngot false"},
+					{Passed: false, Reason: "Table.Cases[1] \"odd number\" testx_test.evenSingle(-1):\nexp true\ngot false"},
+					{Passed: false, Reason: "Table.Cases[2] testx_test.evenSingle(-1):\nexp true\ngot false"},
 				},
 			},
 			passedAt:    map[int]bool{0: true, 1: false, 2: false},

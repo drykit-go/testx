@@ -25,24 +25,24 @@ type Case struct {
 	In interface{}
 
 	// Exp is the value expected to be returned when calling the tested func.
-	// If Case.Exp == nil (not set), no check is added. This is a necessary
-	// behavior if one wants to use Case.Pass and not Case.Exp.
+	// If Case.Exp == nil (zero value), no check is added. This is a necessary
+	// behavior if one wants to use Case.Pass or Case.Not but not Case.Exp.
 	// To specifically check for a nil value, use ExpNil.
 	//
 	// 	testx.Table(myFunc, nil).Cases([]testx.Case{
-	//		{In: 123, Pass: checkers},    // Exp == nil, no Exp check added besides checkers
-	//		{In: 123},                    // Exp == nil, no check added
-	//		{In: 123, Exp: nil},          // Exp == nil, no check added
-	//		{In: 123, Exp: testx.ExpNil}, // expect nil value
-	//	})
+	// 		{In: 123, Pass: checkers},    // Exp == nil, no Exp check added besides checkers
+	// 		{In: 123},                    // Exp == nil, no check added
+	// 		{In: 123, Exp: nil},          // Exp == nil, no check added
+	// 		{In: 123, Exp: testx.ExpNil}, // expect nil value
+	// 	})
 	Exp interface{}
+
+	// Not is a slice of values expected not to be returned by the tested func.
+	Not []interface{}
 
 	// Pass is a slice of check.ValueChecker that the return values of the
 	// tested func is expected to pass.
 	Pass []check.ValueChecker
-
-	// Not reverses the test check for an equality.
-	Not bool
 }
 
 // TableConfig is an object of options allowing to configure a table runner.
@@ -110,17 +110,34 @@ func (r *tableRunner) DryRun() TableResulter {
 }
 
 func (r *tableRunner) Cases(cases []Case) TableRunner {
-	for _, tc := range cases {
+	for i, tc := range cases {
 		tc := tc
+
+		lab := fmtexpl.TableCaseLabel(r.rfunc.Name, tc.Lab, i, tc.In)
 		get := func() gottype { return r.get(tc.In) }
-		if tc.Exp != nil {
-			r.addCheck(baseCheck{
-				label:   tc.Lab,
-				get:     get,
-				checker: r.makeChecker(tc),
-			})
+
+		caseCheck := func(c check.ValueChecker) baseCheck {
+			return baseCheck{
+				label:        tc.Lab,
+				explainLabel: lab,
+				get:          get,
+				checker:      c,
+			}
 		}
-		r.addChecks(tc.Lab, get, tc.Pass, true)
+
+		// add Case.Exp check
+		if tc.Exp != nil {
+			exp := cond.Value(nil, tc.Exp, tc.Exp == ExpNil)
+			r.addCheck(caseCheck(check.Value.Is(exp)))
+		}
+
+		// add Case.Not checks
+		if len(tc.Not) != 0 {
+			r.addCheck(caseCheck(check.Value.Not(tc.Not...)))
+		}
+
+		// add Case.Pass checks
+		r.addChecks(lab, get, tc.Pass, true)
 	}
 	return r
 }
@@ -171,16 +188,6 @@ func (r *tableRunner) validateConfig() error {
 		return errTableRunnerConfigOutPos(r.rfunc.Name, pout, nout)
 	}
 	return nil
-}
-
-func (r *tableRunner) makeChecker(c Case) check.ValueChecker {
-	exp := cond.Value(nil, c.Exp, c.Exp == ExpNil)
-	pass := func(got interface{}) bool { return xor(deq(got, exp), c.Not) }
-	expl := func(_ string, got interface{}) string {
-		expStr := fmt.Sprintf("%s%v", cond.String("not ", "", c.Not), exp)
-		return fmtexpl.FuncResult(r.label, c.Lab, c.In, expStr, got)
-	}
-	return check.NewValueChecker(pass, expl)
 }
 
 func (r *tableRunner) makeFixedArgs() (Args, error) {
