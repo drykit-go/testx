@@ -94,9 +94,10 @@ func (args Args) replaceAt(pos int, arg interface{}) Args {
 func (args Args) String() string {
 	argsStr := []string{}
 	for _, arg := range args {
-		argsStr = append(argsStr, fmt.Sprint(arg))
+		argsStr = append(argsStr, fmt.Sprintf("%v", arg))
 	}
-	return strings.Join(argsStr, ", ")
+	str := strings.Join(argsStr, ", ")
+	return str
 }
 
 type tableRunner struct {
@@ -131,17 +132,19 @@ func (r *tableRunner) dryRun() {
 
 func (r *tableRunner) Cases(cases []Case) TableRunner {
 	for i, tc := range cases {
-		tc := tc
+		i, tc := i, tc
 
-		lab := fmtexpl.TableCaseLabel(r.rfunc.Name, tc.Lab, i, tc.In)
 		get := func() gottype { return r.get(tc.In) }
+		getLabel := func() string {
+			return fmtexpl.TableCaseLabel(r.rfunc.Name, i, tc.Lab, r.args)
+		}
 
 		caseCheck := func(c check.ValueChecker) baseCheck {
 			return baseCheck{
-				label:        tc.Lab,
-				explainLabel: lab,
-				get:          get,
-				checker:      c,
+				get:      get,
+				getLabel: getLabel,
+				label:    tc.Lab,
+				checker:  c,
 			}
 		}
 
@@ -157,7 +160,7 @@ func (r *tableRunner) Cases(cases []Case) TableRunner {
 		}
 
 		// add Case.Pass checks
-		r.addChecks(lab, get, tc.Pass, true)
+		r.addChecks(tc.Lab, get, tc.Pass, true)
 	}
 	return r
 }

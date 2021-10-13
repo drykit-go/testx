@@ -1,8 +1,10 @@
 package testx_test
 
 import (
+	"errors"
 	"log"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/drykit-go/testx"
@@ -109,6 +111,30 @@ func TestTableRunner(t *testing.T) {
 			t.Error("exp Case 1 to fail, got pass")
 		}
 	})
+
+	t.Run("test case labels", func(t *testing.T) {
+		results := testx.Table(divide).Config(testx.TableConfig{
+			InPos:     1,
+			OutPos:    1,
+			FixedArgs: testx.Args{42.0},
+		}).Cases([]testx.Case{
+			{In: 0.0, Exp: testx.ExpNil, Lab: "zeroth case"}, // fail
+			{In: 0.0, Exp: testx.ExpNil, Lab: "first case"},  // fail
+		}).DryRun()
+
+		expLabels := []string{
+			`Table.Cases[0] "zeroth case" testx_test.divide(42, 0)`,
+			`Table.Cases[1] "first case" testx_test.divide(42, 0)`,
+		}
+
+		for i, c := range results.Checks() {
+			got := c.Reason
+			exp := expLabels[i]
+			if !strings.HasPrefix(got, exp) {
+				t.Errorf("bad label output\nexp %s\ngot %s", got, exp)
+			}
+		}
+	})
 }
 
 func TestTableRunnerResults(t *testing.T) {
@@ -197,6 +223,13 @@ func evenMultipleInOut(a0 []byte, a1 int, a2 map[rune][][]float64) (string, inte
 
 func double(n int) int {
 	return 2 * n
+}
+
+func divide(a, b float64) (float64, error) {
+	if b == 0 {
+		return 0, errors.New("division by 0")
+	}
+	return a / b, nil
 }
 
 // Helpers

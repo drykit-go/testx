@@ -57,5 +57,5 @@ func Example_customCheckerUnknownType() {
 	// Output:
 	// true
 	// false
-	// [{passed} {failed Table.Cases[1] check_test.identityCustomType({-1 no}): got bad CustomType value: {-1 no}}]
+	// [{passed} {failed : got bad CustomType value: {-1 no}}]
 }

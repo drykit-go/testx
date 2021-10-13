@@ -37,11 +37,13 @@ func Pretty(label string, exp, got interface{}) string {
 // Examples:
 // 	`Table.Cases[2] isEven(42)`
 // 	`Table.Cases[2] "even number" isEven(42)`
-//
-// TODO: handle multiple func args/results (e.g. pass a getter
-// func() string, instead  of caseIn)
-func TableCaseLabel(fname, caseLab string, caseID int, caseIn interface{}) string {
-	fcall := fmt.Sprintf("%s(%v)", fname, caseIn)
+func TableCaseLabel(
+	fname string,
+	caseID int,
+	caseLab string,
+	args fmt.Stringer,
+) string {
+	fcall := fmt.Sprintf("%s(%v)", fname, args)
 	label := cond.String(fmt.Sprintf(` "%s"`, caseLab), "", caseLab != "")
 	return fmt.Sprintf("Table.Cases[%d]%s %s", caseID, label, fcall)
 }
