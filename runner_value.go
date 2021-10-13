@@ -24,18 +24,18 @@ func (r *valueRunner) DryRun() Resulter {
 
 func (r *valueRunner) Exp(exp interface{}) ValueRunner {
 	r.addCheck(baseCheck{
-		"value",
-		func() gottype { return r.value },
-		check.Value.Is(exp),
+		label:   "value",
+		get:     func() gottype { return r.value },
+		checker: check.Value.Is(exp),
 	})
 	return r
 }
 
 func (r *valueRunner) Not(values ...interface{}) ValueRunner {
 	r.addCheck(baseCheck{
-		"value",
-		func() gottype { return r.value },
-		check.Value.Not(values...),
+		label:   "value",
+		get:     func() gottype { return r.value },
+		checker: check.Value.Not(values...),
 	})
 	return r
 }

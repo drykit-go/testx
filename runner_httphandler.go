@@ -137,22 +137,22 @@ type handlerResults struct {
 
 var _ HandlerResulter = (*handlerResults)(nil)
 
-func (r handlerResults) ResponseHeader() http.Header {
-	return r.response.Header
+func (res handlerResults) ResponseHeader() http.Header {
+	return res.response.Header
 }
 
-func (r handlerResults) ResponseStatus() string {
-	return r.response.Status
+func (res handlerResults) ResponseStatus() string {
+	return res.response.Status
 }
 
-func (r handlerResults) ResponseCode() int {
-	return r.response.StatusCode
+func (res handlerResults) ResponseCode() int {
+	return res.response.StatusCode
 }
 
-func (r handlerResults) ResponseBody() []byte {
-	return ioutil.NopRead(&r.response.Body)
+func (res handlerResults) ResponseBody() []byte {
+	return ioutil.NopRead(&res.response.Body)
 }
 
-func (r handlerResults) ResponseDuration() time.Duration {
-	return r.duration
+func (res handlerResults) ResponseDuration() time.Duration {
+	return res.duration
 }

@@ -31,11 +31,19 @@ func Pretty(label string, exp, got interface{}) string {
 	return "❌ " + Default(label, exp, got)
 }
 
-// FuncResult computes and return an explain string for an output
-// from a func call.
-// TODO: handle multiple func args/results
-func FuncResult(fname, desc string, arg, exp, got interface{}) string {
-	fcall := fmt.Sprintf("%s(%v)", fname, arg)
-	label := cond.String("["+desc+"] "+fcall, fcall, desc != "")
-	return Default(label, exp, got)
+// TableCaseLabel returns the label for a testx.Table test case
+// in format: Case <caseID> "<caseLab>" <fname>(<caseIn>)
+//
+// Examples:
+// 	`Table.Cases[2] isEven(42)`
+// 	`Table.Cases[2] "even number" isEven(42)`
+func TableCaseLabel(
+	fname string,
+	caseID int,
+	caseLab string,
+	args fmt.Stringer,
+) string {
+	fcall := fmt.Sprintf("%s(%v)", fname, args)
+	label := cond.String(fmt.Sprintf(` "%s"`, caseLab), "", caseLab != "")
+	return fmt.Sprintf("Table.Cases[%d]%s %s", caseID, label, fcall)
 }

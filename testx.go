@@ -43,6 +43,7 @@ type TableRunner interface {
 	// DryRun returns a TableResulter to access test results
 	// without running *testing.T.
 	DryRun() TableResulter
+	Config(cfg TableConfig) TableRunner
 	// Cases adds test cases to be run on the tested func.
 	Cases(cases []Case) TableRunner
 }
@@ -160,6 +161,6 @@ func HTTPHandlerFunc(
 // Table returns a TableRunner to run test cases on a func. By default,
 // it works with funcs having a single input and output value. However,
 // with an appropriate config it is compatible with any func signature.
-func Table(testedFunc interface{}, cfg *TableConfig) TableRunner {
-	return newTableRunner(testedFunc, cfg)
+func Table(testedFunc interface{}) TableRunner {
+	return newTableRunner(testedFunc)
 }

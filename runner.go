@@ -3,8 +3,6 @@ package testx
 import (
 	"testing"
 
-	"github.com/drykit-go/cond"
-
 	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/checkconv"
 )
@@ -14,9 +12,10 @@ type (
 	getfunc func() gottype
 
 	baseCheck struct {
-		label   string
-		get     getfunc
-		checker check.ValueChecker
+		get      getfunc
+		getLabel func() string
+		label    string
+		checker  check.ValueChecker
 	}
 )
 
@@ -78,7 +77,7 @@ func (r *baseRunner) run(t *testing.T) {
 	for _, current := range r.checks {
 		got := current.get()
 		if !current.checker.Pass(got) {
-			r.fail(t, current.checker.Explain(current.label, got))
+			r.fail(t, r.explainCheck(current, got, false))
 		}
 	}
 }
@@ -88,22 +87,34 @@ func (r *baseRunner) fail(t *testing.T, msg string) {
 	t.Error(msg)
 }
 
+func (r *baseRunner) explainCheck(bc baseCheck, got interface{}, passed bool) string {
+	if passed {
+		return ""
+	}
+	var label string
+	if bc.getLabel != nil {
+		label = bc.getLabel()
+	} else {
+		label = bc.label
+	}
+	return bc.checker.Explain(label, got)
+}
+
 func (r *baseRunner) baseResults() baseResults {
-	results := baseResults{}
-	for _, c := range r.checks {
-		got := c.get()
-		passed := c.checker.Pass(got)
-		reason := cond.String("", c.checker.Explain(c.label, got), passed)
-		results.checks = append(results.checks, CheckResult{
+	res := baseResults{}
+	for _, bc := range r.checks {
+		got := bc.get()
+		passed := bc.checker.Pass(got)
+		res.checks = append(res.checks, CheckResult{
 			Passed: passed,
-			Reason: reason,
-			label:  c.label,
+			Reason: r.explainCheck(bc, got, passed),
+			label:  bc.label,
 		})
 		if !passed {
-			results.nFailed++
+			res.nFailed++
 		}
 	}
-	return results
+	return res
 }
 
 type baseResults struct {
@@ -111,26 +122,26 @@ type baseResults struct {
 	nFailed int
 }
 
-func (r baseResults) Checks() []CheckResult {
-	return r.checks
+func (res baseResults) Checks() []CheckResult {
+	return res.checks
 }
 
-func (r baseResults) Passed() bool {
-	return r.nFailed == 0
+func (res baseResults) Passed() bool {
+	return res.nFailed == 0
 }
 
-func (r baseResults) Failed() bool {
-	return !r.Passed()
+func (res baseResults) Failed() bool {
+	return !res.Passed()
 }
 
-func (r baseResults) NPassed() int {
-	return r.NChecks() - r.nFailed
+func (res baseResults) NPassed() int {
+	return res.NChecks() - res.nFailed
 }
 
-func (r baseResults) NFailed() int {
-	return r.nFailed
+func (res baseResults) NFailed() int {
+	return res.nFailed
 }
 
-func (r baseResults) NChecks() int {
-	return len(r.checks)
+func (res baseResults) NChecks() int {
+	return len(res.checks)
 }

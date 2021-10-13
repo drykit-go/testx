@@ -1,12 +1,15 @@
 package testx_test
 
 import (
+	"errors"
 	"log"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/drykit-go/testx"
 	"github.com/drykit-go/testx/check"
+	"github.com/drykit-go/testx/checkconv"
 )
 
 // Tests
@@ -32,11 +35,11 @@ func TestTableRunner(t *testing.T) {
 	a0, a2 := expFixedArgs["a0"], expFixedArgs["a2"]
 
 	t.Run("single in single out", func(t *testing.T) {
-		testx.Table(evenSingle, nil).Cases(cases).Run(t)
+		testx.Table(evenSingle).Cases(cases).Run(t)
 	})
 
 	t.Run("single in multiple out", func(t *testing.T) {
-		testx.Table(evenMultipleOut, &testx.TableConfig{
+		testx.Table(evenMultipleOut).Config(testx.TableConfig{
 			OutPos: outPos,
 		}).
 			Cases(cases).
@@ -44,7 +47,7 @@ func TestTableRunner(t *testing.T) {
 	})
 
 	t.Run("multiple in single out", func(t *testing.T) {
-		testx.Table(evenMultipleIn, &testx.TableConfig{
+		testx.Table(evenMultipleIn).Config(testx.TableConfig{
 			InPos:     inPos,
 			FixedArgs: []interface{}{a0, a2}, // len(FixedArgs) == nparams-1
 		}).
@@ -53,7 +56,7 @@ func TestTableRunner(t *testing.T) {
 	})
 
 	t.Run("multiple in multiple out", func(t *testing.T) {
-		testx.Table(evenMultipleInOut, &testx.TableConfig{
+		testx.Table(evenMultipleInOut).Config(testx.TableConfig{
 			InPos:     inPos,
 			OutPos:    outPos,
 			FixedArgs: []interface{}{0: a0, 2: a2}, // len(FixedArgs) == nparams
@@ -63,19 +66,81 @@ func TestTableRunner(t *testing.T) {
 	})
 
 	t.Run("using check.IntChecker", func(t *testing.T) {
-		testx.Table(double, nil).
+		testx.Table(double).
 			Cases([]testx.Case{
-				{In: 21, Exp: check.Int.Is(42)},
-				{In: -4, Exp: check.Int.InRange(-10, 0)},
+				{In: 21, Pass: checkconv.AssertMany(check.Int.Is(42))},
+				{In: -4, Pass: checkconv.AssertMany(check.Int.InRange(-10, 0))},
 			}).
 			Run(t)
+	})
+
+	t.Run("expect nil value", func(t *testing.T) {
+		runner := testx.Table(func(wantnil bool) interface{} {
+			if wantnil {
+				return nil
+			}
+			return 0
+		}).Cases([]testx.Case{
+			{In: false, Exp: 0},
+			{In: true},                    // Exp == nil, no check added
+			{In: true, Exp: testx.ExpNil}, // expect nil value
+		})
+
+		runner.Run(t)
+
+		if n := runner.DryRun().NChecks(); n != 2 {
+			t.Errorf("exp 2 checks, got %d", n)
+		}
+	})
+
+	t.Run("Case.Not checks", func(t *testing.T) {
+		results := testx.Table(func(n int) int { return n }).
+			Cases([]testx.Case{
+				{In: 0, Not: []interface{}{-1, 1}}, // pass
+				{In: 0, Not: []interface{}{0}},     // fail
+			}).
+			DryRun()
+
+		if nc := results.NChecks(); nc != 2 {
+			t.Errorf("exp 2 checks, got %d", nc)
+		}
+		if results.FailedAt(0) {
+			t.Error("exp Case 0 to pass, got fail")
+		}
+		if results.PassedAt(1) {
+			t.Error("exp Case 1 to fail, got pass")
+		}
+	})
+
+	t.Run("test case labels", func(t *testing.T) {
+		results := testx.Table(divide).Config(testx.TableConfig{
+			InPos:     1,
+			OutPos:    1,
+			FixedArgs: testx.Args{42.0},
+		}).Cases([]testx.Case{
+			{In: 0.0, Exp: testx.ExpNil, Lab: "zeroth case"}, // fail
+			{In: 0.0, Exp: testx.ExpNil, Lab: "first case"},  // fail
+		}).DryRun()
+
+		expLabels := []string{
+			`Table.Cases[0] "zeroth case" testx_test.divide(42, 0)`,
+			`Table.Cases[1] "first case" testx_test.divide(42, 0)`,
+		}
+
+		for i, c := range results.Checks() {
+			got := c.Reason
+			exp := expLabels[i]
+			if !strings.HasPrefix(got, exp) {
+				t.Errorf("bad label output\nexp %s\ngot %s", got, exp)
+			}
+		}
 	})
 }
 
 func TestTableRunnerResults(t *testing.T) {
 	t.Run("pass", func(t *testing.T) {
 		res := testx.
-			Table(evenSingle, nil).
+			Table(evenSingle).
 			Cases([]testx.Case{
 				{In: 10, Exp: true, Lab: "even number"},
 				{In: 11, Exp: false, Lab: "odd number"},
@@ -105,7 +170,7 @@ func TestTableRunnerResults(t *testing.T) {
 
 	t.Run("fail", func(t *testing.T) {
 		res := testx.
-			Table(evenSingle, nil).
+			Table(evenSingle).
 			Cases([]testx.Case{
 				{In: 10, Exp: true, Lab: "even number"}, // pass
 				{In: -1, Exp: true, Lab: "odd number"},  // fail
@@ -122,8 +187,8 @@ func TestTableRunnerResults(t *testing.T) {
 				nChecks: 3,
 				checks: []testx.CheckResult{
 					{Passed: true, Reason: ""},
-					{Passed: false, Reason: "[odd number] testx_test.evenSingle(-1):\nexp true\ngot false"},
-					{Passed: false, Reason: "testx_test.evenSingle(-1):\nexp true\ngot false"},
+					{Passed: false, Reason: "Table.Cases[1] \"odd number\" testx_test.evenSingle(-1):\nexp true\ngot false"},
+					{Passed: false, Reason: "Table.Cases[2] testx_test.evenSingle(-1):\nexp true\ngot false"},
 				},
 			},
 			passedAt:    map[int]bool{0: true, 1: false, 2: false},
@@ -158,6 +223,13 @@ func evenMultipleInOut(a0 []byte, a1 int, a2 map[rune][][]float64) (string, inte
 
 func double(n int) int {
 	return 2 * n
+}
+
+func divide(a, b float64) (float64, error) {
+	if b == 0 {
+		return 0, errors.New("division by 0")
+	}
+	return a / b, nil
 }
 
 // Helpers
