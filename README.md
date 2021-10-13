@@ -58,14 +58,16 @@ It provides methods to perform checks:
 
 ```go
 func TestHandleGetMovieByID(t *testing.T) {
-	r, _ := http.NewRequest("GET", "/movies/42", nil)
-	testx.HTTPHandlerFunc(HandleGetMovieByID).WithRequest(r).
-		Response(
-			check.HTTPResponse.StatusCode(check.Int.InRange(200, 299)),
-			check.HTTPResponse.Body(check.Bytes.Contains([]byte(`"id":42`))),
-		).
-		Duration(check.Duration.Under(10 * time.Millisecond)).
-		Run(t)
+    r, _ := http.NewRequest("GET", "/movies/42", nil)
+    // Note: WithRequest can be omitted if the input request is not relevant.
+    // In that case it defaults to http.NewRequest("GET", "/", nil).
+    testx.HTTPHandlerFunc(HandleGetMovieByID).WithRequest(r).
+        Response(
+            check.HTTPResponse.StatusCode(check.Int.InRange(200, 299)),
+            check.HTTPResponse.Body(check.Bytes.Contains([]byte(`"id":42`))),
+        ).
+        Duration(check.Duration.Under(10 * time.Millisecond)).
+        Run(t)
 }
 ```
 
@@ -81,7 +83,7 @@ For unadic functions (1 parameter, 1 return value), its usage is straightforward
 func isEven(n int) { return n&1 == 0 }
 
 func TestIsEven(t *testing.T) {
-    testx.Table(isEven, nil).Cases([]testx.Case{
+    testx.Table(isEven).Cases([]testx.Case{
         {In: 0, Exp: true},
         {In: 1, Exp: false},
         {In: -1, Exp: false},

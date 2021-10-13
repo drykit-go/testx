@@ -73,7 +73,7 @@ testx.
             check.Int.InRange(41, 43),
             check.Int.Not(-1),
             check.Int.GTE(99),
-        ),
+        )...,
     ).
     Run(t)
 )
@@ -116,6 +116,8 @@ There is a fundamental difference between `Assert` and `Cast` implementations:
     )
   }
   ```
+  This is faster, but requires the input checker to implement one of the native
+  `check.<Type>Checker` interfaces.
 
 - `Cast` uses **reflection** to determinate whether a checker is valid and call
 its methods in the resulting checker. As a consequence it is slower than
