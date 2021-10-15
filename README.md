@@ -1,3 +1,23 @@
+<p align="center">    
+  <a href="https://github.com/drykit-go/testx/releases">
+    <img alt="Latest version" src="https://img.shields.io/github/v/tag/drykit-go/testx?label=release">
+  </a>
+  <a href="https://pkg.go.dev/github.com/drykit-go/testx">
+    <img alt="Go Reference" src="https://pkg.go.dev/badge/github.com/drykit-go/testx.svg" />
+  </a>
+  <a href="https://goreportcard.com/report/github.com/drykit-go/testx">
+    <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/drykit-go/testx" />
+  </a>
+</p>
+<p align="center">
+  <a href="https://circleci.com/gh/circleci/circleci-docs">
+    <img alt="CircleCI" src="https://circleci.com/gh/circleci/circleci-docs.svg?style=shield" />
+  </a>
+  <a href="https://codecov.io/gh/drykit-go/testx">
+    <img alt="Codecov" src="https://codecov.io/gh/drykit-go/testx/branch/main/graph/badge.svg?token=XZRUXJDFJE"/>
+  </a>
+</p>
+
 <table align="center">
 	<tr>
 		<td>testx</td>
