@@ -122,13 +122,6 @@ func (r *httpHandlerRunner) setMergedMiddlewares(middlewares ...func(http.Handle
 	r.mw = middleware.MergeRight(middlewares...)
 }
 
-func Adapt(hf http.HandlerFunc, adapters ...func(http.HandlerFunc) http.HandlerFunc) http.HandlerFunc {
-	for _, adapter := range adapters {
-		hf = adapter(hf)
-	}
-	return hf
-}
-
 type handlerResults struct {
 	baseResults
 	duration time.Duration
