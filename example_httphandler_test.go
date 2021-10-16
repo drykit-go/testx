@@ -43,7 +43,7 @@ func ExampleHTTPHandlerFunc() {
 	})
 }
 
-func ExampleHTTPHandlerFunc_middleware() {
+func ExampleHTTPHandler_middlewares() {
 	// withLongProcess middleware processes something for 100 milliseconds.
 	withLongProcess := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

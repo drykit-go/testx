@@ -67,7 +67,10 @@ func TestGet42(t *testing.T) {
 }
 ```
 
-More examples in file [example_value_test.go](./example_value_test.go).
+Related examples:
+
+- [ValueRunner](https://pkg.go.dev/github.com/drykit-go/testx#example-ValueRunner)
+- [ValueRunner-DryRun](https://pkg.go.dev/github.com/drykit-go/testx#example-ValueRunner-DryRun)
 
 ### `HTTPHandlerRunner`
 
@@ -93,7 +96,11 @@ func TestHandleGetMovieByID(t *testing.T) {
 }
 ```
 
-More examples in file [example_httphandler_test.go](./example_httphandler_test.go).
+Related examples:
+
+- [HTTPHandlerFunc](https://pkg.go.dev/github.com/drykit-go/testx#example-HTTPHandlerFunc)
+- [HTTPHandlerFunc-DryRun](https://pkg.go.dev/github.com/drykit-go/testx#example-HTTPHandlerFunc-DryRun)
+- [HTTPHandler-Middlewares](https://pkg.go.dev/github.com/drykit-go/testx#example-HTTPHandler-Middlewares)
 
 ### `TableRunner`
 
@@ -117,9 +124,12 @@ func TestIsEven(t *testing.T) {
 Note that `TableRunner` supports any function type (any parameters number,
 any return values numbers). If the tested function is non-unadic, it requires
 an additional configuration to know where to inject `Case.In` and which
-return value to compare `Case.Exp` with.
+return value to compare `Case.Exp` with (see examples below)
 
-See file [example_table_test.go](./example_table_test.go) for detailed examples.
+Related examples:
+
+- [Table-Unadic](https://pkg.go.dev/github.com/drykit-go/testx#example-Table-Unadic)
+- [Table-Dyadic](https://pkg.go.dev/github.com/drykit-go/testx#example-Table-Dyadic)
 
 ## Running tests
 
@@ -163,7 +173,10 @@ type Resulter interface {
 }
 ```
 
-See [ExampleValueRunner_dryRun](./example_value_test.go) example.
+Related examples:
+
+- [ValueRunner-DryRun](https://pkg.go.dev/github.com/drykit-go/testx#example-ValueRunner-DryRun)
+- [HTTPHandlerFunc-DryRun](https://pkg.go.dev/github.com/drykit-go/testx#example-HTTPHandlerFunc-DryRun)
 
 
 ## Further documentation
@@ -173,6 +186,6 @@ See [ExampleValueRunner_dryRun](./example_value_test.go) example.
 - Package `check` 📄 [Readme](./check/README.md)
   > Package `check` provides extensible and customizable checkers to perform checks on typed values.
 
-- Package `check` 📄 [Readme](./checkconv/README.md)
+- Package `checkconv` 📄 [Readme](./checkconv/README.md)
   > Package `checkconv` provides conversion utilities to convert any typed checker to a `check.ValueChecker`
   

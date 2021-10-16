@@ -53,52 +53,108 @@ Package `check` provides a collection of basic checkers for common types and kin
       <tr>
         <th>Go type</th>
         <th>Checker provider</th>
+        <th>Interface</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td><code>bool</code></td>
         <td><code>check.Bool</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#BoolCheckerProvider">
+            <code>TypeCheckerProvider</code>
+          </a>
+        </td>
       </tr>
       <tr>
         <td><code>int</code></td>
         <td><code>check.Int</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#IntCheckerProvider">
+            <code>IntCheckerProvider</code>
+          </a>
+        </td>
       </tr>
       <tr>
         <td><code>float64</code></td>
         <td><code>check.Float64</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#Float64CheckerProvider">
+            <code>Float64CheckerProvider</code>
+          </a>
+        </td>
       </tr>
       <tr>
         <td><code>string</code></td>
         <td><code>check.String</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#StringCheckerProvider">
+            <code>StringCheckerProvider</code>
+          </a>
+        </td>
       </tr>
       <tr>
         <td><code>[]byte</code></td>
         <td><code>check.Bytes</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#BytesCheckerProvider">
+            <code>BytesCheckerProvider</code>
+          </a>
+        </td>
       </tr>
       <tr>
         <td><code>time.Duration</code></td>
         <td><code>check.Duration</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#DurationCheckerProvider">
+            <code>DurationCheckerProvider</code>
+          </a>
+        </td>
       </tr>
       <tr>
         <td><code>context.Context</code></td>
         <td><code>check.Context</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#ContextCheckerProvider">
+            <code>ContextCheckerProvider</code>
+          </a>
+        </td>
       </tr>
       <tr>
         <td><code>http.Header</code></td>
         <td><code>check.HTTPHeader</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#HTTPHeaderCheckerProvider">
+            <code>HTTPHeaderCheckerProvider</code>
+          </a>
+        </td>
       </tr>
       <tr>
         <td><code>*http.Request</code></td>
         <td><code>check.HTTPRequest</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#HTTPRequestCheckerProvider">
+            <code>HTTPRequestCheckerProvider</code>
+          </a>
+        </td>
       </tr>
       <tr>
         <td><code>*http.Response</code></td>
         <td><code>check.HTTPResponse</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#HTTPResponseCheckerProvider">
+            <code>HTTPResponseCheckerProvider</code>
+          </a>
+        </td>
       </tr>
       <tr>
         <td><code>interface{}</code></td>
         <td><code>check.Value</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#ValueCheckerProvider">
+            <code>ValueCheckerProvider</code>
+          </a>
+        </td>
       </tr>
     </tbody>
     <thead>
@@ -111,20 +167,33 @@ Package `check` provides a collection of basic checkers for common types and kin
       <tr>
         <td><code>slice</code></td>
         <td><code>check.Slice</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#SliceCheckerProvider">
+            <code>SliceCheckerProvider</code>
+          </a>
+        </td>
       </tr>
       <tr>
         <td><code>map</code></td>
         <td><code>check.Map</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#MapCheckerProvider">
+            <code>MapCheckerProvider</code>
+          </a>
+        </td>
       </tr>
       <tr>
         <td><code>struct</code></td>
         <td><code>check.Bool</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#StructCheckerProvider">
+            <code>StructCheckerProvider</code>
+          </a>
+        </td>
       </tr>
     </tbody>
   </table>
 </details>
-
-To acknowledge the available checkers for each provider, see their respective interfaces in file [providers.go](./providers.go)
 
 ## Custom checkers
 
@@ -136,9 +205,9 @@ There are 2 ways to extend a provided checker.
 
 #### Using a `New` function
 
-With every `Type` covered by this package comes a `New<Type>Checker` function.
+With every `<Type>` covered by this package comes a `New<Type>Checker` function.
 
-It takes a `PassFunc` for the corresponding type (`func(Type) bool`)
+It takes a `PassFunc` for the corresponding type (`func(got Type) bool`)
 and an `ExplainFunc`, then returns a checker for that type.
 
 ```go
@@ -156,6 +225,10 @@ func Test42IsEven(t *testing.T) {
         Run(t)
 }
 ```
+
+Related examples:
+
+- [NewIntChecker](https://pkg.go.dev/github.com/drykit-go/testx/check#example-package-NewIntChecker)
 
 #### Using `check.Value.Custom`
 
@@ -184,15 +257,17 @@ You may also want custom checkers for your own local types, like `User`.
 
 Luckily, because _checkers_ are interfaces, nothing prevents you
 from creating them.  
-In practice, any type that implements `Pass` and `Explain` can be recognized
-as a valid checker and used in `testx` runners via `checkconv.Cast`.
+In practice, any type that implements `func Pass(got Type) bool`
+and `Explainer` interface is recognized as a valid checker and
+can be used for `testx` runners via `checkconv.Cast`.
 
-For some practical examples, see:
+Related examples:
 
-- [example_custom_unknown_test.go](./example_custom_unknown_test.go):
+- [CustomChecker](https://pkg.go.dev/github.com/drykit-go/testx/check#example-package-CustomChecker):
+  implementation of a custom checker that implements `IntChecker`
+- [CustomCheckerUnknownType](https://pkg.go.dev/github.com/drykit-go/testx/check#example-package-CustomCheckerUnknownType):
   implementation of a custom checker for a local type `MyType` struct
-
-- [example_custom_closures_test.go](./example_custom_closures_test.go):
+- [CustomCheckerClosures](https://pkg.go.dev/github.com/drykit-go/testx/check#example-package-CustomCheckerClosures):
   advanced implementation of a parameterized custom checker
   for uncovered type `complex128`, using closures.
 
