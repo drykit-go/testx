@@ -1,12 +1,12 @@
 <p align="center">    
-  <a href="https://github.com/drykit-go/testx/releases">
-    <img alt="Latest version" src="https://img.shields.io/github/v/tag/drykit-go/testx?label=release">
-  </a>
-  <a href="https://pkg.go.dev/github.com/drykit-go/testx">
+  <a href="https://pkg.go.dev/github.com/drykit-go/testx#section-documentation">
     <img alt="Go Reference" src="https://pkg.go.dev/badge/github.com/drykit-go/testx.svg" />
   </a>
   <a href="https://goreportcard.com/report/github.com/drykit-go/testx">
     <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/drykit-go/testx" />
+  </a>
+  <a href="https://github.com/drykit-go/testx/releases">
+    <img alt="Latest version" src="https://img.shields.io/github/v/tag/drykit-go/testx?label=release">
   </a>
 </p>
 <p align="center">
@@ -40,8 +40,7 @@ of unit tests and reduce boilerplate.
 - [Running tests](#running-tests)
   - [Method `Run`](#method-run)
   - [Method `DryRun`](#method-dryrun)
-- [Package `check`](#package-check)
-- [Package `checkconv`](#package-checkconv)
+- [Further documentation](#further-documentation)
 
 ## Runners
 
@@ -58,9 +57,12 @@ of unit tests and reduce boilerplate.
 ```go
 func TestGet42(t *testing.T) {
     testx.Value(Get42()).
-        Exp(42).
-        Not(3, "hello").
-        Pass(checkconv.FromInt(check.Int.InRange(41, 43))).
+        Exp(42).                       // expect 42
+        Not(3, "hello").               // expect not 3 nor "hello"
+        Pass(checkconv.AssertMany(     // expect to pass input checkers:
+            check.Int.InRange(41, 43), //     expect in range [41:43]
+            // ...
+        )...).
         Run(t)
 }
 ```
@@ -156,24 +158,21 @@ type Resulter interface {
     NChecks() int
     // NPassed returns the number of checks that passed.
     NPassed() int
-    // NPassed returns the number of checks that failed.
+    // NFailed returns the number of checks that failed.
     NFailed() int
 }
 ```
 
 See [ExampleValueRunner_dryRun](./example_value_test.go) example.
 
-## Package `check`
 
-As you may have noticed from the previous examples, `testx` runners heavily
-rely on _checkers_ defined in package `check`.
+## Further documentation
 
-> Package `check` provides extensible and customizable checkers to perform checks on typed values.
+- [Go package documentation](https://pkg.go.dev/github.com/drykit-go/testx#section-documentation)
 
-📚 [Package `check` README](./check/README.md)
+- Package `check` 📄 [Readme](./check/README.md)
+  > Package `check` provides extensible and customizable checkers to perform checks on typed values.
 
-## Package `checkconv`
-
-> Package `checkconv` provides conversion utilities to convert any typed checker to a `check.ValueChecker`
-
-📚 [Package `checkconv` README](./checkconv/README.md)
+- Package `check` 📄 [Readme](./checkconv/README.md)
+  > Package `checkconv` provides conversion utilities to convert any typed checker to a `check.ValueChecker`
+  
