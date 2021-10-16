@@ -12,18 +12,17 @@ import (
 	Example: implementation of a custom checker
 */
 
-// HTTPCodeChecker is a custom checker that implements IntChecker interface.
-// In consequence in can be used in any function that requires an IntChecker
-// or a less specific checker.
-type HTTPCodeChecker struct{}
+// StatusOKChecker is a custom checker that implements IntChecker interface.
+// In consequence in can be used in any function that accepts an IntChecker.
+type StatusOKChecker struct{}
 
 // Pass satisfies IntPasser interface.
-func (c HTTPCodeChecker) Pass(got int) bool {
-	return (got <= 200 && got < 300) || got == 304
+func (c StatusOKChecker) Pass(got int) bool {
+	return (got >= 200 && got < 300) || got == 304
 }
 
 // Explain satisfies Explainer interface.
-func (c HTTPCodeChecker) Explain(label string, got interface{}) string {
+func (c StatusOKChecker) Explain(label string, got interface{}) string {
 	return fmt.Sprintf("%s: got bad http code: %v", label, got)
 }
 
@@ -36,18 +35,19 @@ func Example_customChecker() {
 	request, _ := http.NewRequest("GET", "/", nil)
 
 	results := testx.HTTPHandlerFunc(HandleNotFound).WithRequest(request).
-		// HTTPResponseCode is a valid IntChecker
-		Response(check.HTTPResponse.StatusCode(HTTPCodeChecker{})).
+		// check.HTTPResponse.StatusCode accepts an IntChecker,
+		// StatusOKChecker statisfies IntChecker interface.
+		Response(check.HTTPResponse.StatusCode(StatusOKChecker{})).
 		DryRun()
 
 	fmt.Println(results.Passed())
 	fmt.Println(results.ResponseCode())
-	fmt.Println(results.Checks())
+	fmt.Println(results.Checks()[0].Reason)
 
 	// Output:
 	// false
 	// 404
-	// [{failed http response:
+	// http response:
 	// exp status code to pass IntChecker
-	// got explanation: status code: got bad http code: 404}]
+	// got explanation: status code: got bad http code: 404
 }
