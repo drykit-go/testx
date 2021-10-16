@@ -1,3 +1,5 @@
+<h1 align="center">testx/check</h1>
+
 <table align="center">
 	<tr>
 		<td><a href="../README.md">testx</a></td>
@@ -5,8 +7,6 @@
 		<td><a href="../checkconv/README.md">testx/checkconv</a></td>
 	</tr>
 </table>
-
-# testx/check
 
 Package `check` provides _checkers_ interfaces and implementations
 for `testx` test runners.
@@ -238,7 +238,7 @@ func Test42IsEven(t *testing.T) {
         "even int",
         func(got interface{}) bool {
           gotInt, ok := got.(int)
-          ok && got&1 == 0
+          return ok && got&1 == 0
         },
       )
 

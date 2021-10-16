@@ -1,3 +1,4 @@
+<h1 align="center">testx/checkconv</h1>
 <table align="center">
   <tr>
     <td><a href="../README.md">testx</a></td>
@@ -5,8 +6,6 @@
     <td>testx/checkconv</td>
   </tr>
 </table>
-
-# testx/checkconv
 
 Package `checkconv` provides conversion utilities to convert any typed checker to a `check.ValueChecker`
 

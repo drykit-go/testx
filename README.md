@@ -1,3 +1,12 @@
+<h1 align="center">testx</h1>
+<table align="center">
+	<tr>
+		<td>testx</td>
+		<td><a href="./check/README.md">testx/check</a></td>
+		<td><a href="./checkconv/README.md">testx/checkconv</a></td>
+	</tr>
+</table>
+
 <p align="center">    
   <a href="https://pkg.go.dev/github.com/drykit-go/testx#section-documentation">
     <img alt="Go Reference" src="https://pkg.go.dev/badge/github.com/drykit-go/testx.svg" /></a>
@@ -11,16 +20,6 @@
   <a href="https://codecov.io/gh/drykit-go/testx">
     <img alt="Codecov" src="https://codecov.io/gh/drykit-go/testx/branch/main/graph/badge.svg?token=XZRUXJDFJE"/></a>
 </p>
-
-<table align="center">
-	<tr>
-		<td>testx</td>
-		<td><a href="./check/README.md">testx/check</a></td>
-		<td><a href="./checkconv/README.md">testx/checkconv</a></td>
-	</tr>
-</table>
-
-# testx
 
 Package `testx` provides test runners to accelerate the writing
 of unit tests and reduce boilerplate.
@@ -42,7 +41,7 @@ of unit tests and reduce boilerplate.
 
 - `ValueRunner` runs tests on a single value.
 - `HTTPHandlerRunner` runs tests on http handlers and middlewares.
-- `TableRunner` runs tests on a single function with a series of test cases.
+- `TableRunner` runs a series of test cases on a single function.
 
 ### `ValueRunner`
 
