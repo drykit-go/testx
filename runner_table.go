@@ -49,7 +49,6 @@ type Case struct {
 // TableConfig is an object of options allowing to configure a table runner.
 // It allows to test functions having multiple input parameters or multiple
 // return values.
-
 type TableConfig struct {
 	// InPos is the nth parameter in which In value is injected.
 	// It is required if the tested func accepts multiple parameters.
@@ -81,6 +80,7 @@ type TableConfig struct {
 	FixedArgs Args
 }
 
+// Args is an alias to []interface{}.
 type Args []interface{}
 
 func (args Args) replaceAt(pos int, arg interface{}) Args {

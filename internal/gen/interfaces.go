@@ -13,6 +13,9 @@ import (
 	"github.com/drykit-go/testx/internal/gen/serialize"
 )
 
+// ProvidersMetaData is a representation of the parsed doc for providers files
+// in package check.
+// It is meant to be used as a data source for template providers.gotmpl.
 type ProvidersMetaData struct {
 	Interfaces []metatype.Interface
 	Vars       []metatype.Var

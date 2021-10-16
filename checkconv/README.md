@@ -137,7 +137,7 @@ Cast functions serve the same purpose as Assert functions:
 they wrap the given checker in a `check.ValueChecker`.
 The difference is that it works with _any_ type that implement
 a checker interface (`Pass(T) bool` and `Explain(string, interface{} string`)
-while Assert functions are restricted to the types covered in package `check`.
+while Assert functions are restricted to the types defined in package `check`.
 
 ### `Assert` vs `Cast`
 

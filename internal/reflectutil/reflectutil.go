@@ -5,6 +5,7 @@ import (
 	"reflect"
 )
 
+// AnyKind is a kind that is interpreted as any kind.
 const AnyKind reflect.Kind = 27
 
 // IsZero returns true if v is a zero value.

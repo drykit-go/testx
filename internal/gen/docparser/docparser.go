@@ -4,6 +4,22 @@ import (
 	"strings"
 )
 
+// ParseDocLines reads the rawdoc got from go/doc parsing,
+// adds a leading "// " to each line, applies the replacements,
+// and returns a slice of strings for each line.
+// The result can then be conveniently used in a go template.
+//
+// Example:
+// 	ParseDocLines(
+// 		"myFunc does this.\nIt is cool.\n",
+// 		map[string]string{"myFunc": "MyFunc", "cool": "nice"}
+// 	)
+//
+// 	// Output
+// 	[]string{
+// 		"// MyFunc does this.",
+// 		"// It is nice.",
+// 	}
 func ParseDocLines(rawdoc string, repl map[string]string) []string {
 	lines := []string{}
 	if rawdoc == "" {

@@ -21,6 +21,29 @@ type config struct {
 	data           interface{}
 }
 
+// Types generates checkers declarations in packages check and checkconv
+// for each type defined in var `types`. It should be run every time this
+// list is modified.
+//
+// For instance, the following entry:
+// 	{N: "Int", T: "int"},
+// generates the following declarations:
+//
+// 	// file check/check.go
+// 	type IntPassFunc func(got int) bool
+// 	type IntPasser interface { Pass(got int) bool }
+// 	type IntChecker interface { IntPasser; Explainer }
+//
+// 	// file check/checkers.go
+// 	type intChecker struct { ... }
+// 	func (c intChecker) Pass(got int) bool { ... }
+// 	func NewIntChecker(passFunc IntPassFunc, explainFunc ExplainFunc) IntChecker { ... }
+//
+// 	// file checkconv/assert.go
+// 	func FromInt(c check.IntChecker) check.ValueChecker { ... }
+// 	// also adds a case in checkconv.Assert:
+// 		case check.IntChecker:
+// 			return FromInt(c)
 func Types(tpl, out string) error {
 	return generate(config{
 		name:     "types",
@@ -31,6 +54,10 @@ func Types(tpl, out string) error {
 	})
 }
 
+// Interfaces generates the public interfaces for checker providers
+// implementations in package check (provider_*.go files). It should be run
+// every time their API is modified (method signature change, doc comment,
+// new method, method removal, ...)
 func Interfaces(tpl, out string) error {
 	data, err := computeInterfaces()
 	if err != nil {
