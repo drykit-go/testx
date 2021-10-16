@@ -146,7 +146,7 @@ to access the stored results:
 ```go
 // Resulter provides methods to read test results after a dry run.
 type Resulter interface {
-    // Check returns a slice of CheckResults listing the runned checks
+    // Checks returns a slice of CheckResults listing the runned checks
     Checks() []CheckResult
     // Passed returns true if all checks passed.
     Passed() bool

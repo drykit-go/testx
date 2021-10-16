@@ -75,7 +75,7 @@ type HTTPHandlerRunner interface {
 
 // Resulter provides methods to read test results after a dry run.
 type Resulter interface {
-	// Check returns a slice of CheckResults listing the runned checks
+	// Checks returns a slice of CheckResults listing the runned checks
 	Checks() []CheckResult
 	// Passed returns true if all checks passed.
 	Passed() bool
@@ -85,7 +85,7 @@ type Resulter interface {
 	NChecks() int
 	// NPassed returns the number of checks that passed.
 	NPassed() int
-	// NPassed returns the number of checks that failed.
+	// NFailed returns the number of checks that failed.
 	NFailed() int
 }
 
@@ -111,11 +111,11 @@ type TableResulter interface {
 	Resulter
 	// PassedAt returns true if the ith test case passed.
 	PassedAt(index int) bool
-	// PassedAt returns true if the ith test case failed.
+	// FailedAT returns true if the ith test case failed.
 	FailedAt(index int) bool
-	// PassedAt returns true if the test case with matching label passed.
+	// PassedLabel returns true if the test case with matching label passed.
 	PassedLabel(label string) bool
-	// PassedAt returns true if the test case with matching label failed.
+	// FailedLabel returns true if the test case with matching label failed.
 	FailedLabel(label string) bool
 }
 
