@@ -150,8 +150,6 @@ linters:
   fast: false
 
 issues:
-  exclude:
-    - "should have comment or be unexported"
   exclude-rules:
     - path: _test\.go
       linters:
