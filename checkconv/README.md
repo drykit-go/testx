@@ -1,3 +1,4 @@
+<h1 align="center">testx/checkconv</h1>
 <table align="center">
   <tr>
     <td><a href="../README.md">testx</a></td>
@@ -6,20 +7,67 @@
   </tr>
 </table>
 
-# testx/checkconv
-
 Package `checkconv` provides conversion utilities to convert any typed checker to a `check.ValueChecker`
 
 ## Table of contents
 
-- [`From` functions](#from-functions)
-- [`Assert` functions](#assert-functions)
-- [`Cast` functions](#cast-functions)
+- [Why convert checkers](#why-convert-checkers)
+- [Available functions](#from-functions)
+  - [`From` functions](#from-functions)
+  - [`Assert` functions](#assert-functions)
+  - [`Cast` functions](#cast-functions)
 - [`Assert` vs `Cast`](#assert-vs-cast)
   - [Should I use `Assert` or `Cast`](#should-i-use-assert-or-cast)
 
+## Why convert checkers
 
-### From functions
+Some runners from `testx` have methods that require generic checkers as parameters,
+such as `testx.ValueRunner.Pass`:
+
+```go
+type ValueRunner interface {
+    // Pass adds checkers on the tested value.
+    Pass(checkers ...check.ValueChecker) ValueRunner
+    // ...
+}
+```
+
+These methods theorically accept any checker, either from package `check`
+or locally implemented with custom types.
+
+However, without a language support for generic types,
+package `check` cannot provide a generic checker interface because
+they have distinct signatures for method `Pass(got T) bool`.
+
+```go
+// What we need:
+type GenericChecker[T any] interface {
+    Pass(got T) bool
+    Explainer
+}
+
+// What we have:
+type IntChecker interface {
+    Pass(got int) bool
+    Explainer
+}
+type StringChecker interface {
+    Pass(got string) bool
+    Explainer
+}
+```
+
+As a consequence, there is no way to combine `IntChecker` and `StringChecker`
+into a generic `Checker` interface.
+For that reason, we use `check.ValueChecker` checker (checker on type `interface{}`),
+because it can wrap any checker type.
+
+That's what this package provides: functions to wrap any typed checker
+into a generic `check.ValueChecker`.
+
+## Available functions
+
+### `From` functions
 
 `From<Type>` functions return a generic `check.ValueChecker` that wraps
 the input `check.<Type>Checker`.
@@ -88,7 +136,7 @@ Cast functions serve the same purpose as Assert functions:
 they wrap the given checker in a `check.ValueChecker`.
 The difference is that it works with _any_ type that implement
 a checker interface (`Pass(T) bool` and `Explain(string, interface{} string`)
-while Assert functions are restricted to the types covered in package `check`.
+while Assert functions are restricted to the types defined in package `check`.
 
 ### `Assert` vs `Cast`
 

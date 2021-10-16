@@ -122,13 +122,6 @@ func (r *httpHandlerRunner) setMergedMiddlewares(middlewares ...func(http.Handle
 	r.mw = middleware.MergeRight(middlewares...)
 }
 
-func Adapt(hf http.HandlerFunc, adapters ...func(http.HandlerFunc) http.HandlerFunc) http.HandlerFunc {
-	for _, adapter := range adapters {
-		hf = adapter(hf)
-	}
-	return hf
-}
-
 type handlerResults struct {
 	baseResults
 	duration time.Duration
@@ -156,3 +149,15 @@ func (res handlerResults) ResponseBody() []byte {
 func (res handlerResults) ResponseDuration() time.Duration {
 	return res.duration
 }
+
+/*
+	NopHandler
+*/
+
+// NopHandler is a http handler that does nothing.
+// It can be used for convenient middleware testing:
+// 	testx.HTTPHandler(testx.NopHandler,
+//		middleware1,
+// 		middleware2,
+// 	).Request(...).Run(t)
+var NopHandler http.HandlerFunc = func(_ http.ResponseWriter, _ *http.Request) {}

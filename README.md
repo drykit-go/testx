@@ -1,23 +1,4 @@
-<p align="center">    
-  <a href="https://github.com/drykit-go/testx/releases">
-    <img alt="Latest version" src="https://img.shields.io/github/v/tag/drykit-go/testx?label=release">
-  </a>
-  <a href="https://pkg.go.dev/github.com/drykit-go/testx">
-    <img alt="Go Reference" src="https://pkg.go.dev/badge/github.com/drykit-go/testx.svg" />
-  </a>
-  <a href="https://goreportcard.com/report/github.com/drykit-go/testx">
-    <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/drykit-go/testx" />
-  </a>
-</p>
-<p align="center">
-  <a href="https://circleci.com/gh/circleci/circleci-docs">
-    <img alt="CircleCI" src="https://circleci.com/gh/circleci/circleci-docs.svg?style=shield" />
-  </a>
-  <a href="https://codecov.io/gh/drykit-go/testx">
-    <img alt="Codecov" src="https://codecov.io/gh/drykit-go/testx/branch/main/graph/badge.svg?token=XZRUXJDFJE"/>
-  </a>
-</p>
-
+<h1 align="center">testx</h1>
 <table align="center">
 	<tr>
 		<td>testx</td>
@@ -26,7 +7,19 @@
 	</tr>
 </table>
 
-# testx
+<p align="center">    
+  <a href="https://pkg.go.dev/github.com/drykit-go/testx#section-documentation">
+    <img alt="Go Reference" src="https://pkg.go.dev/badge/github.com/drykit-go/testx.svg" /></a>
+  <a href="https://goreportcard.com/report/github.com/drykit-go/testx">
+    <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/drykit-go/testx" /></a>
+  <a href="https://github.com/drykit-go/testx/releases">
+    <img alt="Latest version" src="https://img.shields.io/github/v/tag/drykit-go/testx?label=release"></a>
+  <br/>
+  <a href="https://circleci.com/gh/circleci/circleci-docs">
+    <img alt="CircleCI" src="https://circleci.com/gh/circleci/circleci-docs.svg?style=shield" /></a>
+  <a href="https://codecov.io/gh/drykit-go/testx">
+    <img alt="Codecov" src="https://codecov.io/gh/drykit-go/testx/branch/main/graph/badge.svg?token=XZRUXJDFJE"/></a>
+</p>
 
 Package `testx` provides test runners to accelerate the writing
 of unit tests and reduce boilerplate.
@@ -40,16 +33,15 @@ of unit tests and reduce boilerplate.
 - [Running tests](#running-tests)
   - [Method `Run`](#method-run)
   - [Method `DryRun`](#method-dryrun)
-- [Package `check`](#package-check)
-- [Package `checkconv`](#package-checkconv)
+- [Further documentation](#further-documentation)
 
 ## Runners
 
 `testx` provides 3 types of runners:
 
 - `ValueRunner` runs tests on a single value.
-- `HTTPHandlerRunner` runs tests on types `http.Handler` and `http.HandlerFunc`.
-- `TableRunner` runs tests on a single function with a series of test cases.
+- `HTTPHandlerRunner` runs tests on http handlers and middlewares.
+- `TableRunner` runs a series of test cases on a single function.
 
 ### `ValueRunner`
 
@@ -58,18 +50,24 @@ of unit tests and reduce boilerplate.
 ```go
 func TestGet42(t *testing.T) {
     testx.Value(Get42()).
-        Exp(42).
-        Not(3, "hello").
-        Pass(checkconv.FromInt(check.Int.InRange(41, 43))).
+        Exp(42).                       // expect 42
+        Not(3, "hello").               // expect not 3 nor "hello"
+        Pass(checkconv.AssertMany(     // expect to pass input checkers:
+            check.Int.InRange(41, 43), //     expect in range [41:43]
+            // ...
+        )...).
         Run(t)
 }
 ```
 
-More examples in file [example_value_test.go](./example_value_test.go).
+Related examples:
+
+- [ValueRunner](https://pkg.go.dev/github.com/drykit-go/testx#example-ValueRunner)
+- [ValueRunner-DryRun](https://pkg.go.dev/github.com/drykit-go/testx#example-ValueRunner-DryRun)
 
 ### `HTTPHandlerRunner`
 
-`HTTPHandlerRunner` runs tests on a `http.Handler` or `http.HandlerFunc`.
+`HTTPHandlerRunner` runs tests on http handlers and middlewares.
 It provides methods to perform checks:
 - on the input request (e.g. to ensure it has been attached an expected context
   by some middleware)
@@ -91,7 +89,11 @@ func TestHandleGetMovieByID(t *testing.T) {
 }
 ```
 
-More examples in file [example_httphandler_test.go](./example_httphandler_test.go).
+Related examples:
+
+- [HTTPHandlerFunc](https://pkg.go.dev/github.com/drykit-go/testx#example-HTTPHandlerFunc)
+- [HTTPHandlerFunc-DryRun](https://pkg.go.dev/github.com/drykit-go/testx#example-HTTPHandlerFunc-DryRun)
+- [HTTPHandler-Middlewares](https://pkg.go.dev/github.com/drykit-go/testx#example-HTTPHandler-Middlewares)
 
 ### `TableRunner`
 
@@ -115,9 +117,12 @@ func TestIsEven(t *testing.T) {
 Note that `TableRunner` supports any function type (any parameters number,
 any return values numbers). If the tested function is non-unadic, it requires
 an additional configuration to know where to inject `Case.In` and which
-return value to compare `Case.Exp` with.
+return value to compare `Case.Exp` with (see examples below)
 
-See file [example_table_test.go](./example_table_test.go) for detailed examples.
+Related examples:
+
+- [Table-Unadic](https://pkg.go.dev/github.com/drykit-go/testx#example-Table-Unadic)
+- [Table-Dyadic](https://pkg.go.dev/github.com/drykit-go/testx#example-Table-Dyadic)
 
 ## Running tests
 
@@ -146,7 +151,7 @@ to access the stored results:
 ```go
 // Resulter provides methods to read test results after a dry run.
 type Resulter interface {
-    // Check returns a slice of CheckResults listing the runned checks
+    // Checks returns a slice of CheckResults listing the runned checks
     Checks() []CheckResult
     // Passed returns true if all checks passed.
     Passed() bool
@@ -156,24 +161,24 @@ type Resulter interface {
     NChecks() int
     // NPassed returns the number of checks that passed.
     NPassed() int
-    // NPassed returns the number of checks that failed.
+    // NFailed returns the number of checks that failed.
     NFailed() int
 }
 ```
 
-See [ExampleValueRunner_dryRun](./example_value_test.go) example.
+Related examples:
 
-## Package `check`
+- [ValueRunner-DryRun](https://pkg.go.dev/github.com/drykit-go/testx#example-ValueRunner-DryRun)
+- [HTTPHandlerFunc-DryRun](https://pkg.go.dev/github.com/drykit-go/testx#example-HTTPHandlerFunc-DryRun)
 
-As you may have noticed from the previous examples, `testx` runners heavily
-rely on _checkers_ defined in package `check`.
 
-> Package `check` provides extensible and customizable checkers to perform checks on typed values.
+## Further documentation
 
-📚 [Package `check` README](./check/README.md)
+- [Go package documentation](https://pkg.go.dev/github.com/drykit-go/testx#section-documentation)
 
-## Package `checkconv`
+- Package `check` 📄 [Readme](./check/README.md)
+  > Package `check` provides extensible and customizable checkers to perform checks on typed values.
 
-> Package `checkconv` provides conversion utilities to convert any typed checker to a `check.ValueChecker`
-
-📚 [Package `checkconv` README](./checkconv/README.md)
+- Package `checkconv` 📄 [Readme](./checkconv/README.md)
+  > Package `checkconv` provides conversion utilities to convert any typed checker to a `check.ValueChecker`
+  
