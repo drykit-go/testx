@@ -43,24 +43,51 @@ func ExampleHTTPHandlerFunc() {
 	})
 }
 
-func TestExampleHTTPHandlerFunc_middleware(t *testing.T) {
-	var expCtxKey interface{} = "userID"
+func ExampleHTTPHandlerFunc_middleware() {
+	// withLongProcess middleware processes something for 100 milliseconds.
+	withLongProcess := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			time.Sleep(100 * time.Millisecond)
+			next.ServeHTTP(w, r)
+		})
+	}
 
-	// authenticate is a middleware that sets a userID to the request context.
-	authenticate := func(next http.HandlerFunc) http.HandlerFunc {
-		return func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), expCtxKey, 42)
-			next(w, r.WithContext(ctx))
+	// withContextValue middleware attaches the input key-val pair
+	// to the request context.
+	withContextValue := func(key, val interface{}) func(http.Handler) http.Handler {
+		return func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				ctx := context.WithValue(r.Context(), key, val)
+				next.ServeHTTP(w, r.WithContext(ctx))
+			})
 		}
 	}
 
-	t.Run("middleware authenticate", func(t *testing.T) {
-		testx.HTTPHandlerFunc(MyHTTPHandler, authenticate).
-			Request(
-				check.HTTPRequest.Context(check.Context.HasKeys(expCtxKey)),
-			).
-			Run(t)
-	})
+	// withContentType middleware sets the response header Content-Type
+	// to contentType.
+	withContentType := func(contentType string) func(http.Handler) http.Handler {
+		return func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", contentType)
+				next.ServeHTTP(w, r)
+			})
+		}
+	}
+
+	results := testx.HTTPHandler(testx.NopHandler, // We can use NopHandler in this context.
+		withLongProcess,
+		withContextValue("userID", 42),
+		withContentType("application/json"),
+	).
+		Duration(check.Duration.Over(100 * time.Millisecond)).
+		Request(check.HTTPRequest.Context(check.Context.HasKeys("userID"))).
+		Response(check.HTTPResponse.Header(check.HTTPHeader.HasValue("application/json"))).
+		DryRun()
+
+	fmt.Println(results.Passed())
+
+	// Output:
+	// true
 }
 
 func ExampleHTTPHandlerFunc_dryRun() {
