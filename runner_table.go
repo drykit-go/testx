@@ -281,4 +281,7 @@ type expNilerImpl struct{}
 
 func (expNilerImpl) expNil() {}
 
+// ExpNil is a value indicating that nil is an expected value.
+// It is meant to be used as a Case.Exp value in a TableRunner
+// test.
 var ExpNil expNiler = expNilerImpl{}

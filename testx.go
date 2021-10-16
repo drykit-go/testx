@@ -43,6 +43,8 @@ type TableRunner interface {
 	// DryRun returns a TableResulter to access test results
 	// without running *testing.T.
 	DryRun() TableResulter
+	// Config sets TableRunner configuration to cfg for non-unadic
+	// tested functions.
 	Config(cfg TableConfig) TableRunner
 	// Cases adds test cases to be run on the tested func.
 	Cases(cases []Case) TableRunner
