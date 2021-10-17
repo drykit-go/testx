@@ -74,7 +74,7 @@ func ExampleHTTPHandler_middlewares() {
 		}
 	}
 
-	results := testx.HTTPHandler(testx.NopHandler, // We can use NopHandler in this context.
+	results := testx.HTTPHandler(nil, // We can use a nil handler for middleware tests
 		withLongProcess,
 		withContextValue("userID", 42),
 		withContentType("application/json"),

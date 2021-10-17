@@ -149,7 +149,7 @@ func HTTPHandler(
 	middlewares ...func(http.Handler) http.Handler,
 ) HTTPHandlerRunner {
 	return newHTTPHandlerRunner(
-		h.ServeHTTP,
+		httpconv.SafeHandler(h).ServeHTTP,
 		httpconv.MiddlewareFuncs(middlewares...)...,
 	)
 }
@@ -160,7 +160,10 @@ func HTTPHandlerFunc(
 	hf http.HandlerFunc,
 	middlewareFuncs ...func(http.HandlerFunc) http.HandlerFunc,
 ) HTTPHandlerRunner {
-	return newHTTPHandlerRunner(hf, middlewareFuncs...)
+	return newHTTPHandlerRunner(
+		httpconv.SafeHandlerFunc(hf),
+		middlewareFuncs...,
+	)
 }
 
 // Table returns a TableRunner to run test cases on a func. By default,

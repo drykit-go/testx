@@ -149,15 +149,3 @@ func (res handlerResults) ResponseBody() []byte {
 func (res handlerResults) ResponseDuration() time.Duration {
 	return res.duration
 }
-
-/*
-	NopHandler
-*/
-
-// NopHandler is a http handler that does nothing.
-// It can be used for convenient middleware testing:
-// 	testx.HTTPHandler(testx.NopHandler,
-//		middleware1,
-// 		middleware2,
-// 	).Request(...).Run(t)
-var NopHandler http.HandlerFunc = func(_ http.ResponseWriter, _ *http.Request) {}
