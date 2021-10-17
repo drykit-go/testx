@@ -26,11 +26,8 @@ func (r *baseRunner) addCheck(bc baseCheck) {
 	r.checks = append(r.checks, bc)
 }
 
-func (r *baseRunner) addChecks(label string, get getfunc, checkers []check.ValueChecker, safe bool) {
+func (r *baseRunner) addChecks(label string, get getfunc, checkers []check.ValueChecker) {
 	for _, c := range checkers {
-		if !safe && !checkconv.IsChecker(c) {
-			panic("invalid checker provided to MustPass")
-		}
 		r.addCheck(baseCheck{label: label, get: get, checker: c})
 	}
 }

@@ -41,7 +41,7 @@ func (r *valueRunner) Not(values ...interface{}) ValueRunner {
 }
 
 func (r *valueRunner) Pass(checkers ...check.ValueChecker) ValueRunner {
-	r.addChecks("value", func() gottype { return r.value }, checkers, false)
+	r.addChecks("value", func() gottype { return r.value }, checkers)
 	return r
 }
 
