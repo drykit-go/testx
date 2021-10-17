@@ -8,7 +8,7 @@ import (
 
 	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/checkconv"
-	"github.com/drykit-go/testx/internal/httputil/middleware"
+	"github.com/drykit-go/testx/internal/httpconv"
 	"github.com/drykit-go/testx/internal/ioutil"
 )
 
@@ -119,7 +119,7 @@ func (r *httpHandlerRunner) interceptRequest(next http.HandlerFunc) http.Handler
 }
 
 func (r *httpHandlerRunner) setMergedMiddlewares(middlewares ...func(http.HandlerFunc) http.HandlerFunc) {
-	r.mw = middleware.MergeRight(middlewares...)
+	r.mw = httpconv.Merge(middlewares...)
 }
 
 type handlerResults struct {
@@ -149,15 +149,3 @@ func (res handlerResults) ResponseBody() []byte {
 func (res handlerResults) ResponseDuration() time.Duration {
 	return res.duration
 }
-
-/*
-	NopHandler
-*/
-
-// NopHandler is a http handler that does nothing.
-// It can be used for convenient middleware testing:
-// 	testx.HTTPHandler(testx.NopHandler,
-//		middleware1,
-// 		middleware2,
-// 	).Request(...).Run(t)
-var NopHandler http.HandlerFunc = func(_ http.ResponseWriter, _ *http.Request) {}

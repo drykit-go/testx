@@ -9,7 +9,7 @@ import (
 	"github.com/drykit-go/cond"
 
 	"github.com/drykit-go/testx/check"
-	"github.com/drykit-go/testx/internal/httputil/middleware"
+	"github.com/drykit-go/testx/internal/httpconv"
 )
 
 /*
@@ -148,7 +148,10 @@ func HTTPHandler(
 	h http.Handler,
 	middlewares ...func(http.Handler) http.Handler,
 ) HTTPHandlerRunner {
-	return newHTTPHandlerRunner(h.ServeHTTP, middleware.AsFuncs(middlewares...)...)
+	return newHTTPHandlerRunner(
+		httpconv.SafeHandler(h).ServeHTTP,
+		httpconv.MiddlewareFuncs(middlewares...)...,
+	)
 }
 
 // HTTPHandlerFunc returns a HandlerRunner to run tests on a http.HTTPHandlerFunc
@@ -157,7 +160,10 @@ func HTTPHandlerFunc(
 	hf http.HandlerFunc,
 	middlewareFuncs ...func(http.HandlerFunc) http.HandlerFunc,
 ) HTTPHandlerRunner {
-	return newHTTPHandlerRunner(hf, middlewareFuncs...)
+	return newHTTPHandlerRunner(
+		httpconv.SafeHandlerFunc(hf),
+		middlewareFuncs...,
+	)
 }
 
 // Table returns a TableRunner to run test cases on a func. By default,
