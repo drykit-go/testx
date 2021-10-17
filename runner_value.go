@@ -22,27 +22,29 @@ func (r *valueRunner) DryRun() Resulter {
 	return r.baseResults()
 }
 
-func (r *valueRunner) Exp(exp interface{}) ValueRunner {
-	r.addCheck(baseCheck{
-		label:   "value",
-		get:     func() gottype { return r.value },
-		checker: check.Value.Is(exp),
-	})
+func (r *valueRunner) Exp(value interface{}) ValueRunner {
+	r.addValueCheck(check.Value.Is(value))
 	return r
 }
 
 func (r *valueRunner) Not(values ...interface{}) ValueRunner {
-	r.addCheck(baseCheck{
-		label:   "value",
-		get:     func() gottype { return r.value },
-		checker: check.Value.Not(values...),
-	})
+	r.addValueCheck(check.Value.Not(values...))
 	return r
 }
 
 func (r *valueRunner) Pass(checkers ...check.ValueChecker) ValueRunner {
-	r.addChecks("value", func() gottype { return r.value }, checkers, false)
+	for _, c := range checkers {
+		r.addValueCheck(c)
+	}
 	return r
+}
+
+func (r *valueRunner) addValueCheck(c check.ValueChecker) {
+	r.addCheck(baseCheck{
+		label:   "value",
+		get:     func() gottype { return r.value },
+		checker: c,
+	})
 }
 
 func newValueRunner(v interface{}) ValueRunner {

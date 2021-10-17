@@ -160,7 +160,7 @@ func (r *tableRunner) Cases(cases []Case) TableRunner {
 		}
 
 		// add Case.Pass checks
-		r.addChecks(tc.Lab, get, tc.Pass, true)
+		r.addChecks(tc.Lab, get, tc.Pass)
 	}
 	return r
 }

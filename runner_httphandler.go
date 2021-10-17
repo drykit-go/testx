@@ -37,12 +37,14 @@ func (r *httpHandlerRunner) WithRequest(request *http.Request) HTTPHandlerRunner
 	}
 }
 
-func (r *httpHandlerRunner) Duration(checks ...check.DurationChecker) HTTPHandlerRunner {
-	r.addDurationChecks(
-		"handling duration",
-		func() gottype { return r.gotDuration },
-		checks,
-	)
+func (r *httpHandlerRunner) Duration(checkers ...check.DurationChecker) HTTPHandlerRunner {
+	for _, c := range checkers {
+		r.addCheck(baseCheck{
+			label:   "handling duration",
+			get:     func() gottype { return r.gotDuration },
+			checker: checkconv.FromDuration(c),
+		})
+	}
 	return r
 }
 
