@@ -1,4 +1,4 @@
-package middleware_test
+package httpconv_test
 
 import (
 	"net/http"
@@ -6,10 +6,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/drykit-go/testx/internal/httputil/middleware"
+	"github.com/drykit-go/testx/internal/httpconv"
 )
 
-func TestMergeRight(t *testing.T) {
+func TestMerge(t *testing.T) {
 	results := []int{}
 
 	appendResultsMiddleware := func(n int) func(next http.HandlerFunc) http.HandlerFunc {
@@ -21,7 +21,7 @@ func TestMergeRight(t *testing.T) {
 		}
 	}
 
-	mergedMiddleware := middleware.MergeRight(
+	mergedMiddleware := httpconv.Merge(
 		appendResultsMiddleware(1),
 		appendResultsMiddleware(2),
 		appendResultsMiddleware(3),
@@ -35,7 +35,7 @@ func TestMergeRight(t *testing.T) {
 	}
 }
 
-func TestAsFuncs(t *testing.T) {
+func TestMiddlewareFuncs(t *testing.T) {
 	results := []int{}
 
 	appendResultsMiddleware := func(n int) func(next http.Handler) http.Handler {
@@ -47,7 +47,7 @@ func TestAsFuncs(t *testing.T) {
 		}
 	}
 
-	middlewareFuncs := middleware.AsFuncs(
+	middlewareFuncs := httpconv.MiddlewareFuncs(
 		appendResultsMiddleware(1),
 		appendResultsMiddleware(2),
 		appendResultsMiddleware(3),

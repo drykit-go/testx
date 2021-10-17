@@ -8,7 +8,7 @@ import (
 
 	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/checkconv"
-	"github.com/drykit-go/testx/internal/httputil/middleware"
+	"github.com/drykit-go/testx/internal/httpconv"
 	"github.com/drykit-go/testx/internal/ioutil"
 )
 
@@ -119,7 +119,7 @@ func (r *httpHandlerRunner) interceptRequest(next http.HandlerFunc) http.Handler
 }
 
 func (r *httpHandlerRunner) setMergedMiddlewares(middlewares ...func(http.HandlerFunc) http.HandlerFunc) {
-	r.mw = middleware.MergeRight(middlewares...)
+	r.mw = httpconv.Merge(middlewares...)
 }
 
 type handlerResults struct {
