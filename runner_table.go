@@ -66,17 +66,17 @@ type TableConfig struct {
 	// Let nparams the number of parameters of the tested func, len(FixedArgs)
 	// must equal nparams or nparams - 1.
 	//
-	// The following examples produce the same result:
+	// The two following TableConfig produce the same result:
 	//
-	// 	testx.Table(myFunc).Config(
+	// 	testx.Table(myFunc).Config(testx.TableConfig{
 	// 		InPos: 1
 	// 		FixedArgs: []interface{"myArg0", "myArg2"} // len(FixedArgs) == 2
-	// 	)
+	// 	})
 	//
-	// 	testx.Table(myFunc).Config(
+	// 	testx.Table(myFunc).Config(testx.TableConfig{
 	// 		InPos: 1
 	// 		FixedArgs: []interface{0: "myArg0", 2: "myArg2"} // len(FixedArgs) == 3
-	// 	)
+	// 	})
 	FixedArgs Args
 }
 

@@ -111,7 +111,7 @@ type TableResulter interface {
 	Resulter
 	// PassedAt returns true if the ith test case passed.
 	PassedAt(index int) bool
-	// FailedAT returns true if the ith test case failed.
+	// FailedAt returns true if the ith test case failed.
 	FailedAt(index int) bool
 	// PassedLabel returns true if the test case with matching label passed.
 	PassedLabel(label string) bool
