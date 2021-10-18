@@ -17,23 +17,14 @@ var _ HTTPHandlerRunner = (*httpHandlerRunner)(nil)
 type httpHandlerRunner struct {
 	baseRunner
 
-	hf http.HandlerFunc
-	mw func(http.HandlerFunc) http.HandlerFunc
-	rr *httptest.ResponseRecorder
-	rq *http.Request
-
-	gotRequest  *http.Request
-	gotResponse *http.Response
-	gotDuration time.Duration
+	in  httpHandlerRunnerInput
+	got httpHandlerRunnerResults
 }
 
 func (r *httpHandlerRunner) WithRequest(request *http.Request) HTTPHandlerRunner {
 	return &httpHandlerRunner{
 		baseRunner: r.baseRunner,
-		hf:         r.hf,
-		mw:         r.mw,
-		rr:         httptest.NewRecorder(),
-		rq:         request,
+		in:         r.in.withRequest(request),
 	}
 }
 
@@ -41,7 +32,7 @@ func (r *httpHandlerRunner) Duration(checkers ...check.DurationChecker) HTTPHand
 	for _, c := range checkers {
 		r.addCheck(baseCheck{
 			label:   "handling duration",
-			get:     func() gottype { return r.gotDuration },
+			get:     func() gottype { return r.got.duration },
 			checker: checkconv.FromDuration(c),
 		})
 	}
@@ -52,7 +43,7 @@ func (r *httpHandlerRunner) Request(checkers ...check.HTTPRequestChecker) HTTPHa
 	for _, c := range checkers {
 		r.addCheck(baseCheck{
 			label:   "http request",
-			get:     func() gottype { return r.gotRequest },
+			get:     func() gottype { return r.got.request },
 			checker: checkconv.FromHTTPRequest(c),
 		})
 	}
@@ -63,7 +54,7 @@ func (r *httpHandlerRunner) Response(checkers ...check.HTTPResponseChecker) HTTP
 	for _, c := range checkers {
 		r.addCheck(baseCheck{
 			label:   "http response",
-			get:     func() gottype { return r.gotResponse },
+			get:     func() gottype { return r.got.response },
 			checker: checkconv.FromHTTPResponse(c),
 		})
 	}
@@ -78,25 +69,23 @@ func (r *httpHandlerRunner) Run(t *testing.T) {
 
 func (r *httpHandlerRunner) DryRun() HandlerResulter {
 	r.setResults()
-	return handlerResults{
-		baseResults: r.dryRun(),
-		duration:    r.gotDuration,
-		response:    r.gotResponse,
-	}
+	results := r.got
+	results.baseResults = r.dryRun()
+	return results
 }
 
 func (r *httpHandlerRunner) setResults() {
-	r.rr = httptest.NewRecorder()
-	if r.rq == nil {
-		r.rq = r.defaultRequest()
+	rr := httptest.NewRecorder()
+	if r.in.rq == nil {
+		r.in.rq = r.defaultRequest()
 	}
 
-	handler := r.mw(r.interceptRequest(r.hf))
-	r.gotDuration = timeFunc(func() {
-		handler(r.rr, r.rq)
+	handler := r.in.mw(r.interceptRequest(r.in.hf))
+	r.got.duration = timeFunc(func() {
+		handler(rr, r.in.rq)
 	})
-	r.gotResponse = r.rr.Result() //nolint:bodyclose
-	r.gotResponse.Header = r.rr.Header()
+	r.got.response = rr.Result() //nolint:bodyclose
+	r.got.response.Header = rr.Header()
 }
 
 func (r *httpHandlerRunner) defaultRequest() *http.Request {
@@ -108,46 +97,57 @@ func newHTTPHandlerRunner(
 	hf http.HandlerFunc,
 	middlewares ...func(http.HandlerFunc) http.HandlerFunc,
 ) HTTPHandlerRunner {
-	runner := &httpHandlerRunner{hf: hf}
+	runner := &httpHandlerRunner{in: httpHandlerRunnerInput{hf: hf}}
 	runner.setMergedMiddlewares(middlewares...)
 	return runner
 }
 
 func (r *httpHandlerRunner) interceptRequest(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		r.gotRequest = req.Clone(req.Context())
+		r.got.request = req.Clone(req.Context())
 		next(w, req)
 	}
 }
 
 func (r *httpHandlerRunner) setMergedMiddlewares(middlewares ...func(http.HandlerFunc) http.HandlerFunc) {
-	r.mw = httpconv.Merge(middlewares...)
+	r.in.mw = httpconv.Merge(middlewares...)
 }
 
-type handlerResults struct {
+type httpHandlerRunnerInput struct {
+	hf http.HandlerFunc
+	mw func(http.HandlerFunc) http.HandlerFunc
+	rq *http.Request
+}
+
+func (in httpHandlerRunnerInput) withRequest(rq *http.Request) httpHandlerRunnerInput {
+	return httpHandlerRunnerInput{hf: in.hf, mw: in.mw, rq: rq}
+}
+
+type httpHandlerRunnerResults struct {
 	baseResults
-	duration time.Duration
+	request  *http.Request
 	response *http.Response
+	duration time.Duration
 }
 
-var _ HandlerResulter = (*handlerResults)(nil)
+var _ HandlerResulter = (*httpHandlerRunnerResults)(nil)
 
-func (res handlerResults) ResponseHeader() http.Header {
+func (res httpHandlerRunnerResults) ResponseHeader() http.Header {
 	return res.response.Header
 }
 
-func (res handlerResults) ResponseStatus() string {
+func (res httpHandlerRunnerResults) ResponseStatus() string {
 	return res.response.Status
 }
 
-func (res handlerResults) ResponseCode() int {
+func (res httpHandlerRunnerResults) ResponseCode() int {
 	return res.response.StatusCode
 }
 
-func (res handlerResults) ResponseBody() []byte {
+func (res httpHandlerRunnerResults) ResponseBody() []byte {
 	return ioutil.NopRead(&res.response.Body)
 }
 
-func (res handlerResults) ResponseDuration() time.Duration {
+func (res httpHandlerRunnerResults) ResponseDuration() time.Duration {
 	return res.duration
 }
