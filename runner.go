@@ -42,7 +42,7 @@ func (r *baseRunner) run(t *testing.T) {
 	}
 }
 
-func (r *baseRunner) baseResults() baseResults {
+func (r *baseRunner) dryRun() baseResults {
 	res := baseResults{}
 	for _, bc := range r.checks {
 		got := bc.get()

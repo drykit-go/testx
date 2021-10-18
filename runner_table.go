@@ -118,7 +118,7 @@ func (r *tableRunner) Run(t *testing.T) {
 
 func (r *tableRunner) DryRun() TableResulter {
 	r.setGetFunc()
-	return tableResults{baseResults: r.baseResults()}
+	return tableResults{baseResults: r.dryRun()}
 }
 
 func (r *tableRunner) setGetFunc() {

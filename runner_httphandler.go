@@ -79,7 +79,7 @@ func (r *httpHandlerRunner) Run(t *testing.T) {
 func (r *httpHandlerRunner) DryRun() HandlerResulter {
 	r.setResults()
 	return handlerResults{
-		baseResults: r.baseResults(),
+		baseResults: r.dryRun(),
 		duration:    r.gotDuration,
 		response:    r.gotResponse,
 	}
