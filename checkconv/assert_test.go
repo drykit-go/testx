@@ -8,6 +8,7 @@ import (
 
 	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/checkconv"
+	"github.com/drykit-go/testx/internal/testutil"
 )
 
 func TestAssert(t *testing.T) {
@@ -40,14 +41,14 @@ func TestAssert(t *testing.T) {
 	})
 
 	t.Run("unknown checker type", func(t *testing.T) {
-		defer assertPanic(t, "assert from unknown checker type")
+		defer testutil.AssertPanic(t, "assert from unknown checker type")
 		checkconv.Assert(validCheckerFloat32{})
 	})
 
 	t.Run("invalid checkers", func(t *testing.T) {
 		for _, badChecker := range badCheckers {
 			func() {
-				defer assertPanic(t, "assert from unknown checker type")
+				defer testutil.AssertPanic(t, "assert from unknown checker type")
 				checkconv.Assert(badChecker)
 			}()
 		}
@@ -116,20 +117,10 @@ func TestAssertMany(t *testing.T) {
 	})
 
 	t.Run("custom checkers unknown type", func(t *testing.T) {
-		defer assertPanic(t, "assert from unknown checker type")
+		defer testutil.AssertPanic(t, "assert from unknown checker type")
 		unknownCheckers := []interface{}{validCheckerFloat32{}}
 		checkconv.AssertMany(unknownCheckers...)
 	})
-}
-
-func assertPanic(t *testing.T, expMessage string) {
-	t.Helper()
-	r := recover()
-	if r == nil {
-		t.Errorf("expected to panic but did not")
-	} else if r != expMessage {
-		t.Errorf("bad panic message:\nexp %s\ngot %s", expMessage, r)
-	}
 }
 
 func ctxDone() context.Context {
