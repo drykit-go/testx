@@ -75,6 +75,10 @@ var goodCheckers = []interface{}{
 	validCheckerInterface{},
 }
 
+func validExplainFunc(_ string, _ interface{}) string {
+	return "ok"
+}
+
 // isEven is a dummy passFunc for custom checkers
 func isEven(n int) bool { return n&1 == 0 }
 

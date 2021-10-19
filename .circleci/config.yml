@@ -19,6 +19,7 @@ jobs:
             go env -w GOPRIVATE="github.com/drykit-go/*"
             go mod download
             go get -v golang.org/x/tools/cmd/goimports
+            go get -v github.com/ory/go-acc
 
       - save_cache:
           key: go-mod-v4-{{ checksum "go.sum" }}
@@ -39,7 +40,7 @@ jobs:
       - run:
           name: Run unit tests
           command: |
-            go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+            make test-cov
 
       - run:
           name: Send test coverage results
