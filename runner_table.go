@@ -181,10 +181,10 @@ func (r *tableRunner) setRfunc(in interface{}) error {
 	}
 	ftype := rfunc.Value.Type()
 	if ftype.NumIn() == 0 {
-		return fmt.Errorf("Table(%s): %w", rfunc.Name, ErrTableRunnerFuncNumIn)
+		return fmt.Errorf("Table(%s): %w", rfunc.Name, errTableRunnerFuncNumIn)
 	}
 	if ftype.NumOut() == 0 {
-		return fmt.Errorf("Table(%s): %w", rfunc.Name, ErrTableRunnerFuncNumOut)
+		return fmt.Errorf("Table(%s): %w", rfunc.Name, errTableRunnerFuncNumOut)
 	}
 	r.rfunc = rfunc
 	return nil
