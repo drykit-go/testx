@@ -28,6 +28,10 @@ lint:
 tests:
 	@go test ./...
 
+.PHONY: test-cov
+test-cov: # Unit tests with coverage, excluding gen-related files
+	@go-acc --ignore cmd/gen,internal/gen ./...
+
 TEST_FUNC=^.*$$
 ifdef t
 TEST_FUNC=$(t)
