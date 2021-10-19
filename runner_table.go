@@ -112,22 +112,26 @@ type tableRunner struct {
 
 func (r *tableRunner) Run(t *testing.T) {
 	t.Helper()
-	r.dryRun()
+	r.setGetFunc()
 	r.run(t)
 }
 
 func (r *tableRunner) DryRun() TableResulter {
-	r.dryRun()
-	return tableResults{baseResults: r.baseResults()}
+	r.setGetFunc()
+	return tableResults{baseResults: r.dryRun()}
 }
 
-func (r *tableRunner) dryRun() {
+func (r *tableRunner) setGetFunc() {
 	cond.PanicOnErr(r.validateConfig())
 
 	args, err := r.makeFixedArgs(r.rfunc, r.config)
 	cond.PanicOnErr(err)
 
-	r.setGetFunc(args)
+	r.get = func(in interface{}) gottype {
+		pin, pout := r.config.InPos, r.config.OutPos
+		r.args = args.replaceAt(pin, in)
+		return r.rfunc.Call(r.args)[pout]
+	}
 }
 
 func (r *tableRunner) Cases(cases []Case) TableRunner {
@@ -184,14 +188,6 @@ func (r *tableRunner) setRfunc(in interface{}) error {
 	}
 	r.rfunc = rfunc
 	return nil
-}
-
-func (r *tableRunner) setGetFunc(args Args) {
-	r.get = func(in interface{}) gottype {
-		pin, pout := r.config.InPos, r.config.OutPos
-		r.args = args.replaceAt(pin, in)
-		return r.rfunc.Call(r.args)[pout]
-	}
 }
 
 func (r *tableRunner) validateConfig() error {

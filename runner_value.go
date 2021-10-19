@@ -19,7 +19,7 @@ func (r *valueRunner) Run(t *testing.T) {
 }
 
 func (r *valueRunner) DryRun() Resulter {
-	return r.baseResults()
+	return r.dryRun()
 }
 
 func (r *valueRunner) Exp(value interface{}) ValueRunner {

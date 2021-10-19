@@ -42,9 +42,21 @@ func (r *baseRunner) run(t *testing.T) {
 	}
 }
 
-func (r *baseRunner) fail(t *testing.T, msg string) {
-	t.Helper()
-	t.Error(msg)
+func (r *baseRunner) dryRun() baseResults {
+	res := baseResults{}
+	for _, bc := range r.checks {
+		got := bc.get()
+		passed := bc.checker.Pass(got)
+		res.checks = append(res.checks, CheckResult{
+			Passed: passed,
+			Reason: r.explainCheck(bc, got, passed),
+			label:  bc.label,
+		})
+		if !passed {
+			res.nFailed++
+		}
+	}
+	return res
 }
 
 func (r *baseRunner) explainCheck(bc baseCheck, got interface{}, passed bool) string {
@@ -60,21 +72,9 @@ func (r *baseRunner) explainCheck(bc baseCheck, got interface{}, passed bool) st
 	return bc.checker.Explain(label, got)
 }
 
-func (r *baseRunner) baseResults() baseResults {
-	res := baseResults{}
-	for _, bc := range r.checks {
-		got := bc.get()
-		passed := bc.checker.Pass(got)
-		res.checks = append(res.checks, CheckResult{
-			Passed: passed,
-			Reason: r.explainCheck(bc, got, passed),
-			label:  bc.label,
-		})
-		if !passed {
-			res.nFailed++
-		}
-	}
-	return res
+func (r *baseRunner) fail(t *testing.T, msg string) {
+	t.Helper()
+	t.Error(msg)
 }
 
 type baseResults struct {
