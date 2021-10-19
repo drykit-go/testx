@@ -93,7 +93,7 @@ testx.
 - `AssertMany(checkers ...interface{}) []check.ValueChecker`
 
 Assert functions basically return `From<Type>(inputChecker)`
-if that `From<Type>` function exist for the input checker.
+if that `From<Type>` function exists for the input checker.
 Else, it panics.
 
 ```go

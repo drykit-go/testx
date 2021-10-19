@@ -21,11 +21,12 @@
     <img alt="Codecov" src="https://codecov.io/gh/drykit-go/testx/branch/main/graph/badge.svg?token=XZRUXJDFJE"/></a>
 </p>
 
-Package `testx` provides test runners to accelerate the writing
-of unit tests and reduce boilerplate.
+`testx` is a Go testing library that provides test runners to write reliable
+and expressive unit tests effortlessly, with minimal boilerplate.
 
 ## Table of contents
 
+- [Installation](#installation)
 - [Runners](#runners)
   - [`ValueRunner`](#valuerunner)
   - [`HTTPHandlerRunner`](#httphandlerrunner)
@@ -34,6 +35,12 @@ of unit tests and reduce boilerplate.
   - [Method `Run`](#method-run)
   - [Method `DryRun`](#method-dryrun)
 - [Further documentation](#further-documentation)
+
+## Installation
+
+```sh
+go get -u github.com/drykit-go/testx
+```
 
 ## Runners
 
