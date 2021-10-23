@@ -9,14 +9,7 @@ import (
 )
 
 // mapCheckerProvider provides checks on kind map.
-type mapCheckerProvider struct{ baseCheckerProvider }
-
-// SameJSON checks the gotten map and the target value
-// result in the same JSON.
-// It panics if any error occurs in the marshaling process.
-func (mapCheckerProvider) SameJSON(tar interface{}) ValueChecker {
-	return Value.SameJSON(tar)
-}
+type mapCheckerProvider struct{ valueCheckerProvider }
 
 // Len checks the gotten map passes the given IntChecker.
 func (p mapCheckerProvider) Len(c IntChecker) ValueChecker {
