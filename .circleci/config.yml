@@ -12,13 +12,13 @@ commands:
       - checkout
       - restore_cache:
           keys:
-            - go-mod-v4-{{ checksum "go.sum" }}
+            - go-mod-v4-{{ checksum "go.sum" }}-{{ .Environment.CACHE_VERSION }}
       - run:
           name: Install dependencies
           command: |
             go mod download
       - save_cache:
-          key: go-mod-v4-{{ checksum "go.sum" }}
+          key: go-mod-v4-{{ checksum "go.sum" }}-{{ .Environment.CACHE_VERSION }}
           paths:
             - "/go/pkg/mod"
 
@@ -31,51 +31,50 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - golangci-lint-<< parameters.version >>
-            - golangci-lint-
+            - golangci-lint-<< parameters.version >>-{{ .Environment.CACHE_VERSION }}
+            - golangci-lint-{{ .Environment.CACHE_VERSION }}
       - run:
           name: Install golangci-lint
           command: |
-            command -v $(go env GOPATH)/bin/golangci-lint && echo "Skipping golangci-lint installation" && exit
-            curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin << parameters.version >>
+            command -v /go/bin/golangci-lint && echo "Skipping golangci-lint installation" && exit
+            curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b /go/bin << parameters.version >>
       - save_cache:
-          key: golangci-lint-<< parameters.version >>
+          key: golangci-lint-<< parameters.version >>-{{ .Environment.CACHE_VERSION }}
           paths:
-            - $(go env GOPATH)/bin/golangci-lint
+            - /go/bin/golangci-lint
 
   setup-coverage:
     description: Set up coverage
     steps:
       - restore_cache:
           keys:
-            - go-acc
+            - go-acc-{{ .Environment.CACHE_VERSION }}
       - run:
           name: Install go-acc
           command: |
-            command -v $(go env GOPATH)/bin/go-acc && echo "Skipping go-acc installation" && exit
+            command -v /go/bin/go-acc && echo "Skipping go-acc installation" && exit
             go get -v github.com/ory/go-acc
       - save_cache:
-          key: go-acc
+          key: go-acc-{{ .Environment.CACHE_VERSION }}
           paths:
-            - $(go env GOPATH)/bin/go-acc
-
+            - /go/bin/go-acc
 
   setup-gen:
     description: Set up gen
     steps:
       - restore_cache:
           keys:
-            - goimports
+            - goimports-{{ .Environment.CACHE_VERSION }}
       - run:
           name: Install goimports
           command: |
-            command -v $(go env GOPATH)/bin/goimports && echo "Skipping go-acc installation" && exit
+            command -v /go/bin/goimports && echo "Skipping go-acc installation" && exit
             go get -v golang.org/x/tools/cmd/goimports
 
       - save_cache:
-          key: goimports
+          key: goimports-{{ .Environment.CACHE_VERSION }}
           paths:
-            - $(go env GOPATH)/bin/goimports
+            - /go/bin/goimports 
 
 jobs:
   lint:
