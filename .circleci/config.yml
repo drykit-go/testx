@@ -1,48 +1,127 @@
 version: 2.1
 
-jobs:
-  build:
+aliases:
+  defaults: &defaults
     working_directory: ~/testx
     docker:
       - image: circleci/golang:1.16.5
+
+commands:
+  setup:
     steps:
       - checkout
-
       - restore_cache:
           keys:
             - go-mod-v4-{{ checksum "go.sum" }}
-
       - run:
-          name: Set up environment
+          name: Install dependencies
           command: |
-            git config --global url."ssh://git@github.com".insteadOf "https://github.com"
-            go env -w GOPRIVATE="github.com/drykit-go/*"
             go mod download
-            go get -v golang.org/x/tools/cmd/goimports
-            go get -v github.com/ory/go-acc
-
       - save_cache:
           key: go-mod-v4-{{ checksum "go.sum" }}
           paths:
             - "/go/pkg/mod"
 
+  setup-lint:
+    description: Set up lint
+    parameters:
+      version:
+        type: string
+        default: v1.40.1
+    steps:
+      - restore_cache:
+          keys:
+            - golangci-lint-<< parameters.version >>
+            - golangci-lint-
       - run:
-          name: Run code gen
+          name: Install golangci-lint
           command: |
-            make gen
+            command -v $(go env GOPATH)/bin/golangci-lint && echo "Skipping golangci-lint installation" && exit
+            curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin << parameters.version >>
+      - save_cache:
+          key: golangci-lint-<< parameters.version >>
+          paths:
+            - $(go env GOPATH)/bin/golangci-lint
 
+  setup-coverage:
+    description: Set up coverage
+    steps:
+      - restore_cache:
+          keys:
+            - go-acc
+      - run:
+          name: Install go-acc
+          command: |
+            command -v $(go env GOPATH)/bin/go-acc && echo "Skipping go-acc installation" && exit
+            go get -v github.com/ory/go-acc
+      - save_cache:
+          key: go-acc
+          paths:
+            - $(go env GOPATH)/bin/go-acc
+
+
+  setup-gen:
+    description: Set up gen
+    steps:
+      - restore_cache:
+          keys:
+            - goimports
+      - run:
+          name: Install goimports
+          command: |
+            command -v $(go env GOPATH)/bin/goimports && echo "Skipping go-acc installation" && exit
+            go get -v golang.org/x/tools/cmd/goimports
+
+      - save_cache:
+          key: goimports
+          paths:
+            - $(go env GOPATH)/bin/goimports
+
+jobs:
+  lint:
+    <<: *defaults
+    steps:
+      - setup
+      - setup-lint
       - run:
           name: Run linters
           command: |
-            curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin v1.40.1
             make lint
 
+  test:
+    <<: *defaults
+    steps:
+      - setup
+      - setup-coverage
       - run:
           name: Run unit tests
           command: |
             make test-cov
-
       - run:
           name: Send test coverage results
           command: |
             bash <(curl -s https://codecov.io/bash)
+
+  gen:
+    <<: *defaults
+    steps:
+      - setup
+      - setup-gen
+      - setup-lint
+      - run:
+          name: Run code gen
+          command: |
+            make gen
+      - run:
+          name: Check generated code
+          command: |
+            make lint tests
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - lint
+      - test
+      - gen
+
