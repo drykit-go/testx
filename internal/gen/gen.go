@@ -22,8 +22,8 @@ type config struct {
 }
 
 // Types generates checkers declarations in packages check and checkconv
-// for each type defined in var `types`. It should be run every time this
-// list is modified.
+// for each type defined in var `checkertypes`. It should be run every time
+// that list is modified.
 //
 // For instance, the following entry:
 // 	{N: "Int", T: "int"},
@@ -50,7 +50,7 @@ func Types(tpl, out string) error {
 		tpl:      tpl,
 		out:      out,
 		tplFuncs: tplFuncs,
-		data:     types,
+		data:     checkertypes,
 	})
 }
 
