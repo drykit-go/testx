@@ -16,7 +16,7 @@ import (
 	Runners interfaces
 */
 
-// Runner provides a method Run to perform various tests.
+// Runner provides a method Run that runs a test.
 type Runner interface {
 	// Run runs a test and fails it if a check does not pass.
 	Run(t *testing.T)
@@ -36,32 +36,33 @@ type ValueRunner interface {
 	Pass(checkers ...check.ValueChecker) ValueRunner
 }
 
-// TableRunner provides methods to perform tests on a given func
-// using a slice of Case.
+// TableRunner provides methods to run a series of test cases
+// on a single function.
 type TableRunner interface {
 	Runner
 	// DryRun returns a TableResulter to access test results
 	// without running *testing.T.
 	DryRun() TableResulter
-	// Config sets TableRunner configuration to cfg for non-unadic
-	// tested functions.
+	// Config sets configures the TableRunner for functions of multiple
+	// parameters or multiple return values.
 	Config(cfg TableConfig) TableRunner
 	// Cases adds test cases to be run on the tested func.
 	Cases(cases []Case) TableRunner
 }
 
-// HTTPHandlerRunner provides methods to perform tests on a http.Handler
-// or http.HandlerFunc.
+// HTTPHandlerRunner provides methods to run tests on http handlers
+// and middlewares.
 type HTTPHandlerRunner interface {
 	Runner
 	// DryRun returns a HandlerResulter to access test results
 	// without running *testing.T.
 	DryRun() HandlerResulter
 	// WithRequest sets the input request to call the handler with.
-	// If not set, the following value is used as a default request:
-	//	defaultRequest := http.NewRequest("GET", "/", nil)
+	// If not set, the following default request is used:
+	//	http.NewRequest("GET", "/", nil)
 	WithRequest(*http.Request) HTTPHandlerRunner
-	// Request adds checkers on the input request after the handler is called.
+	// Request adds checkers on the resulting request,
+	// after the last middleware is called and before the handler is called.
 	Request(...check.HTTPRequestChecker) HTTPHandlerRunner
 	// Response adds checkers on the written response.
 	Response(...check.HTTPResponseChecker) HTTPHandlerRunner
@@ -124,7 +125,7 @@ type CheckResult struct {
 	// Passed is true if the current check passed
 	Passed bool
 	// Reason is the string output of a failed test as returned by a
-	// check.Explainer, typically in format "expect X, got Y".
+	// check.Explainer, typically in format "exp X, got Y".
 	Reason string
 	label  string
 }
@@ -142,8 +143,8 @@ func Value(v interface{}) ValueRunner {
 	return newValueRunner(v)
 }
 
-// HTTPHandler returns a HandlerRunner to run tests on a http.HTTPHandler
-// response to given request.
+// HTTPHandler returns a HandlerRunner to run tests on http handlers
+// and middlewares.
 func HTTPHandler(
 	h http.Handler,
 	middlewares ...func(http.Handler) http.Handler,
@@ -154,8 +155,8 @@ func HTTPHandler(
 	)
 }
 
-// HTTPHandlerFunc returns a HandlerRunner to run tests on a http.HTTPHandlerFunc
-// response to a given request.
+// HTTPHandlerFunc returns a HandlerRunner to run tests on http handlers
+// and middlewares.
 func HTTPHandlerFunc(
 	hf http.HandlerFunc,
 	middlewareFuncs ...func(http.HandlerFunc) http.HandlerFunc,
@@ -167,8 +168,8 @@ func HTTPHandlerFunc(
 }
 
 // Table returns a TableRunner to run test cases on a func. By default,
-// it works with funcs having a single input and output value. However,
-// with an appropriate config it is compatible with any func signature.
+// it works with funcs having a single input and output value.
+// Use TableRunner.Config to configure it for a more complex functions.
 func Table(testedFunc interface{}) TableRunner {
 	return newTableRunner(testedFunc)
 }

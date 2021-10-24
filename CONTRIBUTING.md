@@ -113,11 +113,11 @@ with various arguments.
 
 Run this command each time:
 
-- you declare a new checker type (in file `internal/gen/types`)
+- you declare a new checker type (in file `internal/gen/types.go`)
 - you implement a new `check.<Type>CheckerProvider` or update one
 in a way that changes its public interface, which includes:
   - Adding/removing a method
-  - Changing a method signature (a param name change counts)
+  - Changing a method signature (a parameter name change counts)
   - Editing a doc comment for a method
 
 ### Implementing a new checker provider

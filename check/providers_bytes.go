@@ -35,8 +35,8 @@ func (p bytesCheckerProvider) Not(values ...[]byte) BytesChecker {
 	return NewBytesChecker(pass, expl)
 }
 
-// SameJSON checks the gotten []byte and the target returns
-// the same JSON object.
+// SameJSON checks the gotten []byte and the target read as the same
+// JSON value, ignoring formatting and keys order.
 func (p bytesCheckerProvider) SameJSON(tar []byte) BytesChecker {
 	var decGot, decTar interface{}
 	pass := func(got []byte) bool {

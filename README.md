@@ -106,7 +106,7 @@ Related examples:
 
 `TableRunner` runs a series of test cases on a single function.
 
-For unadic functions (1 parameter, 1 return value), its usage is straightforward:
+For monadic functions (1 parameter, 1 return value), its usage is straightforward:
 
 ```go
 func isEven(n int) { return n&1 == 0 }
@@ -122,13 +122,13 @@ func TestIsEven(t *testing.T) {
 ```
 
 Note that `TableRunner` supports any function type (any parameters number,
-any return values numbers). If the tested function is non-unadic, it requires
+any return values numbers). If the tested function is non-monadic, it requires
 an additional configuration to know where to inject `Case.In` and which
 return value to compare `Case.Exp` with (see examples below)
 
 Related examples:
 
-- [Table-Unadic](https://pkg.go.dev/github.com/drykit-go/testx#example-Table-Unadic)
+- [Table-Monadic](https://pkg.go.dev/github.com/drykit-go/testx#example-Table-Monadic)
 - [Table-Dyadic](https://pkg.go.dev/github.com/drykit-go/testx#example-Table-Dyadic)
 
 ## Running tests

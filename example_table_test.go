@@ -9,7 +9,7 @@ import (
 	"github.com/drykit-go/testx/checkconv"
 )
 
-func ExampleTable_unadic() {
+func ExampleTable_monadic() {
 	t := &testing.T{} // ignore: emulating a testing context
 
 	// double is the func to be tested.

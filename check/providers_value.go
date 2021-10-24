@@ -66,7 +66,7 @@ func (p valueCheckerProvider) NotZero() ValueChecker {
 }
 
 // SameJSON checks the gotten value and the target value
-// produce the same JSON, ignoring the keys order.
+// produce the same JSON, ignoring formatting and keys order.
 // It panics if any error occurs in the marshaling process.
 func (p valueCheckerProvider) SameJSON(tar interface{}) ValueChecker {
 	var gotDec, tarDec interface{}

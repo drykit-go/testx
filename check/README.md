@@ -219,8 +219,7 @@ func Test42IsEven(t *testing.T) {
         },
       )
 
-    testx.
-        Value(42).
+    testx.Value(42).
         Pass(checkconv.FromInt(checkIsEven)).
         Run(t)
 }
@@ -242,8 +241,7 @@ func Test42IsEven(t *testing.T) {
         },
       )
 
-    testx.
-        Value(42).
+    testx.Value(42).
         Pass(checkIsEven).
         Run(t)
 }
@@ -255,8 +253,9 @@ At some point you may need a checker for a type that is not (yet?) covered
 by `check`, such as `float32` or `complex128`.  
 You may also want custom checkers for your own local types, like `User`.  
 
-Luckily, because _checkers_ are interfaces, nothing prevents you
-from creating them.  
+Fortunately, because _checkers_ are interfaces, it is easy to implement
+a custom checker for any type.
+
 In practice, any type that implements `func Pass(got Type) bool`
 and `Explainer` interface is recognized as a valid checker and
 can be used for `testx` runners via `checkconv.Cast`.
@@ -278,3 +277,4 @@ feel free to contribute!
 
 - [📋 File an issue](https://github.com/drykit-go/testx/issues/new)
 - [🔀 Open a Pull request](https://github.com/drykit-go/testx/pulls)
+- [💬 Open a discussion](https://github.com/drykit-go/testx/discussions/new)
