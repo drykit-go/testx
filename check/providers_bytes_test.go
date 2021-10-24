@@ -101,6 +101,16 @@ func TestBytesCheckerProvider(t *testing.T) {
 			assertFailBytesChecker(t, "AsMap", c, sub)
 		}()
 	})
+
+	t.Run("AsString pass", func(t *testing.T) {
+		c := check.Bytes.AsString(check.String.Is(string(b)))
+		assertPassBytesChecker(t, "AsString", c, b)
+	})
+
+	t.Run("AsString fail", func(t *testing.T) {
+		c := check.Bytes.AsString(check.String.Is(string(diff)))
+		assertFailBytesChecker(t, "AsString", c, b)
+	})
 }
 
 // Helpers
