@@ -2,6 +2,7 @@ package check
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 )
 
@@ -83,6 +84,48 @@ func (p bytesCheckerProvider) NotContains(subslice []byte) BytesChecker {
 		return p.explainNot(label,
 			fmt.Sprintf("to contain subslice %v", subslice),
 			got,
+		)
+	}
+	return NewBytesChecker(pass, expl)
+}
+
+// AsMap checks the gotten []byte passes the given mapChecker
+// once json-unmarshaled to a map[string]interface{}.
+// It fails if it is not a valid JSON.
+func (p bytesCheckerProvider) AsMap(mapChecker ValueChecker) BytesChecker {
+	var m map[string]interface{}
+	var goterr error
+	pass := func(got []byte) bool {
+		goterr = json.NewDecoder(bytes.NewReader(got)).Decode(&m)
+		return goterr == nil && mapChecker.Pass(m)
+	}
+	expl := func(label string, _ interface{}) string {
+		if goterr != nil {
+			return p.explain(label,
+				"to pass MapChecker",
+				fmt.Sprintf("marshaling error: %s", goterr),
+			)
+		}
+		return p.explainCheck(label,
+			"to pass MapChecker",
+			mapChecker.Explain("unmarshaled json", m),
+		)
+	}
+	return NewBytesChecker(pass, expl)
+}
+
+// AsString checks the gotten []byte passes the given StringChecker
+// once converted to a string.
+func (p bytesCheckerProvider) AsString(c StringChecker) BytesChecker {
+	var s string
+	pass := func(got []byte) bool {
+		s = string(got)
+		return c.Pass(s)
+	}
+	expl := func(label string, got interface{}) string {
+		return p.explainCheck(label,
+			"to pass StringChecker",
+			c.Explain("converted bytes", s),
 		)
 	}
 	return NewBytesChecker(pass, expl)

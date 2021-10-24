@@ -25,7 +25,7 @@ func TestNopRead(t *testing.T) {
 
 	t.Run("panic on read err", func(t *testing.T) {
 		r := io.NopCloser(readErrorer{})
-		defer testutil.AssertPanic(t, "read error: oh hi Marc")
+		defer testutil.AssertPanicMessage(t, "read error: oh hi Marc")
 		ioutil.NopRead(&r)
 	})
 }

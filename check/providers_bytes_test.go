@@ -83,6 +83,29 @@ func TestBytesCheckerProvider(t *testing.T) {
 		c = check.Bytes.NotContains(b)
 		assertFailBytesChecker(t, "NotContains", c, b)
 	})
+
+	t.Run("AsMap pass", func(t *testing.T) {
+		c := check.Bytes.AsMap(check.Map.HasKeys("id"))
+		assertPassBytesChecker(t, "AsMap", c, b)
+		assertPassBytesChecker(t, "AsMap", c, eqJSON)
+	})
+
+	t.Run("AsMap fail", func(t *testing.T) {
+		c := check.Bytes.AsMap(check.Map.HasKeys("id", "nomatch"))
+		assertFailBytesChecker(t, "AsMap", c, b)
+		c = check.Bytes.AsMap(check.Map.HasKeys("id"))
+		assertFailBytesChecker(t, "AsMap", c, sub)
+	})
+
+	t.Run("AsString pass", func(t *testing.T) {
+		c := check.Bytes.AsString(check.String.Is(string(b)))
+		assertPassBytesChecker(t, "AsString", c, b)
+	})
+
+	t.Run("AsString fail", func(t *testing.T) {
+		c := check.Bytes.AsString(check.String.Is(string(diff)))
+		assertFailBytesChecker(t, "AsString", c, b)
+	})
 }
 
 // Helpers
