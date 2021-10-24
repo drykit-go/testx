@@ -28,8 +28,8 @@ type (
 		Not(values ...[]byte) BytesChecker
 		// NotContains checks the gotten []byte contains a spcific subslice.
 		NotContains(subslice []byte) BytesChecker
-		// SameJSON checks the gotten []byte and the target returns
-		// the same JSON object.
+		// SameJSON checks the gotten []byte and the target read as the same
+		// JSON value, ignoring formatting and keys order.
 		SameJSON(tar []byte) BytesChecker
 	}
 
@@ -247,7 +247,7 @@ type (
 		// meaning it has been initialized.
 		NotZero() ValueChecker
 		// SameJSON checks the gotten value and the target value
-		// produce the same JSON, ignoring the keys order.
+		// produce the same JSON, ignoring formatting and keys order.
 		// It panics if any error occurs in the marshaling process.
 		SameJSON(tar interface{}) ValueChecker
 	}
