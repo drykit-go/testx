@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/drykit-go/testx/check"
+	"github.com/drykit-go/testx/internal/testutil"
 )
 
 func TestBytesCheckerProvider(t *testing.T) {
@@ -82,6 +83,23 @@ func TestBytesCheckerProvider(t *testing.T) {
 		assertFailBytesChecker(t, "NotContains", c, b)
 		c = check.Bytes.NotContains(b)
 		assertFailBytesChecker(t, "NotContains", c, b)
+	})
+
+	t.Run("AsMap pass", func(t *testing.T) {
+		c := check.Bytes.AsMap(check.Map.HasKeys("id"))
+		assertPassBytesChecker(t, "AsMap", c, b)
+		assertPassBytesChecker(t, "AsMap", c, eqJSON)
+	})
+
+	t.Run("AsMap fail", func(t *testing.T) {
+		c := check.Bytes.AsMap(check.Map.HasKeys("id", "nomatch"))
+		assertFailBytesChecker(t, "AsMap", c, b)
+
+		func() {
+			c := check.Bytes.AsMap(check.Map.HasKeys("id"))
+			defer testutil.AssertPanic(t)
+			assertFailBytesChecker(t, "AsMap", c, sub)
+		}()
 	})
 }
 
