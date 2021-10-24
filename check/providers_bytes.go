@@ -91,17 +91,21 @@ func (p bytesCheckerProvider) NotContains(subslice []byte) BytesChecker {
 
 // AsMap checks the gotten []byte passes the given mapChecker
 // once json-unmarshaled to a map[string]interface{}.
-// It panics if it is not a valid JSON.
+// It fails if it is not a valid JSON.
 func (p bytesCheckerProvider) AsMap(mapChecker ValueChecker) BytesChecker {
 	var m map[string]interface{}
+	var goterr error
 	pass := func(got []byte) bool {
-		err := json.NewDecoder(bytes.NewReader(got)).Decode(&m)
-		if err != nil {
-			panic(fmt.Sprintf("Bytes.AsMap: marshaling error: %s", err))
-		}
-		return mapChecker.Pass(m)
+		goterr = json.NewDecoder(bytes.NewReader(got)).Decode(&m)
+		return goterr == nil && mapChecker.Pass(m)
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, _ interface{}) string {
+		if goterr != nil {
+			return p.explain(label,
+				"to pass MapChecker",
+				fmt.Sprintf("marshaling error: %s", goterr),
+			)
+		}
 		return p.explainCheck(label,
 			"to pass MapChecker",
 			mapChecker.Explain("unmarshaled json", m),
