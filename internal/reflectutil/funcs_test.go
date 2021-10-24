@@ -57,3 +57,10 @@ func TestNewFunc(t *testing.T) {
 		}
 	})
 }
+
+func TestFunc_Call(t *testing.T) {
+	f, _ := reflectutil.NewFunc(validFunc)
+	if got, exp := f.Call([]interface{}{42})[0], 42; got != exp {
+		t.Errorf("exp %v, got %v", exp, got)
+	}
+}
