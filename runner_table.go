@@ -31,42 +31,47 @@ type Case struct {
 	// To specifically check for a nil value, use ExpNil.
 	//
 	// 	testx.Table(myFunc, nil).Cases([]testx.Case{
-	// 		{In: 123, Pass: checkers},    // Exp == nil, no Exp check added besides checkers
-	// 		{In: 123},                    // Exp == nil, no check added
-	// 		{In: 123, Exp: nil},          // Exp == nil, no check added
-	// 		{In: 123, Exp: testx.ExpNil}, // expect nil value
+	// 		{In: 123, Pass: checkers},    // Exp == nil, no Exp check added
+	// 		{In: 123},                    // Exp == nil, no Exp check added
+	// 		{In: 123, Exp: nil},          // Exp == nil, no Exp check added
+	// 		{In: 123, Exp: testx.ExpNil}, // Exp == ExpNil, expect nil value
 	// 	})
 	Exp interface{}
 
 	// Not is a slice of values expected not to be returned by the tested func.
 	Not []interface{}
 
-	// Pass is a slice of check.ValueChecker that the return values of the
+	// Pass is a slice of check.ValueChecker that the return value of the
 	// tested func is expected to pass.
 	Pass []check.ValueChecker
 }
 
-// TableConfig is an object of options allowing to configure a table runner.
-// It allows to test functions having multiple input parameters or multiple
+// TableConfig is configuration object for TableRunner.
+// It allows to test functions having multiple parameters or multiple
 // return values.
+// Its zero value is a valid config for functions of 1 parameter
+// and 1 return value, so it can be omitted in that case.
 type TableConfig struct {
-	// InPos is the nth parameter in which In value is injected.
+	// InPos is the nth parameter in which Case.In value is injected,
+	// starting at 0.
 	// It is required if the tested func accepts multiple parameters.
 	// Default is 0.
 	InPos int
 
-	// OutPos is the nth output value that is tested against Case.Exp.
+	// OutPos is the nth return value that is tested against Case.Exp,
+	// starting at 0.
 	// It is required if the tested func returns multiple values.
 	// Default is 0.
 	OutPos int
 
 	// FixedArgs is a slice of arguments to be injected into the tested func.
+	// Its values are fixed for all cases.
 	// It is required if the tested func accepts multiple parameters.
 	//
 	// Let nparams the number of parameters of the tested func, len(FixedArgs)
 	// must equal nparams or nparams - 1.
 	//
-	// The two following TableConfig produce the same result:
+	// The following configurations produce the same result:
 	//
 	// 	testx.Table(myFunc).Config(testx.TableConfig{
 	// 		InPos: 1
