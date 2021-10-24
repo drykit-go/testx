@@ -1,11 +1,11 @@
-// Package checkconv provides functions to convert typed checks
+// Package checkconv provides functions to convert typed checkers
 // into generic ones.
 package checkconv
 
 {{range . -}}
 {{if ne .N "Value" }}
-// From{{.N}} returns a new check.ValueChecker from the given {{.N}} checker.
-// It can be used to facilitate checkers usage by test runners.
+// From{{.N}} returns a check.ValueChecker that wraps the given
+// check.{{.N}}Checker, so it can be used as a generic checker.
 func From{{.N}}(c check.{{.N}}Checker) check.ValueChecker {
 	return check.NewValueChecker(
 		func(got interface{}) bool { return c.Pass(got.({{.T}})) },
@@ -15,8 +15,9 @@ func From{{.N}}(c check.{{.N}}Checker) check.ValueChecker {
 {{end}}
 {{end}}
 
-// Assert takes a known typed checker (such as check.IntChecker)
-// and returns its as a check.ValueChecker.
+// Assert returns a check.ValueChecker that wraps the given
+// check.<Type>Checker (such as check.IntChecker).
+//
 // It panics if checker is not a known checker type. For instance,
 // a custom checker that implements check.IntChecker will be successfully
 // converted, while a valid implementation of an unknown interface,
@@ -38,8 +39,11 @@ func Assert(knownChecker interface{}) check.ValueChecker {
 	}
 }
 
-// AssertMany converts the given known checkers as described by Assert,
-// and returns them as a slice of check.ValueChecker.
+// AssertMany returns a slice of check.ValueChecker that wrap the given
+// check.<Type>Checkers (such as check.IntChecker).
+//
+// It panics if any checker is not a known checker type. See Assert
+// for further documentation.
 func AssertMany(knownCheckers ...interface{}) []check.ValueChecker {
 	valueCheckers := []check.ValueChecker{}
 	for _, c := range knownCheckers {
