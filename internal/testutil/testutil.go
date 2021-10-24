@@ -2,19 +2,37 @@ package testutil
 
 import "testing"
 
-// AssertPanic fails t if the calling func does not panic
+// AssertPanicMessage fails t if the calling func does not panic
 // with the expected message. It must be called with defer:
 //
 // 	func TestFuncThatPanics(t *testing.T) {
-// 		defer testutil.AssertPanic(t, "oops, I panicked")
+// 		defer testutil.AssertPanicMessage(t, "oops, I panicked")
 // 		FuncThatPanics()
 // 	}
-func AssertPanic(t *testing.T, expMessage string) {
+func AssertPanicMessage(t *testing.T, expMessage string) {
 	t.Helper()
 	r := recover()
-	if r == nil {
+	assertPanicked(t, r, expMessage, true)
+}
+
+// AssertPanic fails t if the calling func does not panic.
+// It must be called with defer:
+//
+// 	func TestFuncThatPanics(t *testing.T) {
+// 		defer testutil.AssertPanic(t)
+// 		FuncThatPanics()
+// 	}
+func AssertPanic(t *testing.T) {
+	t.Helper()
+	r := recover()
+	assertPanicked(t, r, "", false)
+}
+
+func assertPanicked(t *testing.T, rec interface{}, msg string, checkmsg bool) {
+	t.Helper()
+	if rec == nil {
 		t.Error("expected to panic but did not")
-	} else if r != expMessage {
-		t.Errorf("bad panic message:\nexp %s\ngot %s", expMessage, r)
+	} else if checkmsg && rec != msg {
+		t.Errorf("bad panic message:\nexp %s\ngot %s", msg, rec)
 	}
 }

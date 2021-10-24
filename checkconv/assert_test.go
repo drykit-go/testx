@@ -41,14 +41,14 @@ func TestAssert(t *testing.T) {
 	})
 
 	t.Run("unknown checker type", func(t *testing.T) {
-		defer testutil.AssertPanic(t, "assert from unknown checker type")
+		defer testutil.AssertPanicMessage(t, "assert from unknown checker type")
 		checkconv.Assert(validCheckerFloat32{})
 	})
 
 	t.Run("invalid checkers", func(t *testing.T) {
 		for _, badChecker := range badCheckers {
 			func() {
-				defer testutil.AssertPanic(t, "assert from unknown checker type")
+				defer testutil.AssertPanicMessage(t, "assert from unknown checker type")
 				checkconv.Assert(badChecker)
 			}()
 		}
@@ -117,7 +117,7 @@ func TestAssertMany(t *testing.T) {
 	})
 
 	t.Run("custom checkers unknown type", func(t *testing.T) {
-		defer testutil.AssertPanic(t, "assert from unknown checker type")
+		defer testutil.AssertPanicMessage(t, "assert from unknown checker type")
 		unknownCheckers := []interface{}{validCheckerFloat32{}}
 		checkconv.AssertMany(unknownCheckers...)
 	})
