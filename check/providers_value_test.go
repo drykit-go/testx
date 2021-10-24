@@ -12,39 +12,46 @@ func TestValueCheckerProvider(t *testing.T) {
 	}
 
 	var (
-		v      = Thing{"hi"}
+		vorig  = Thing{"hi"}
 		vsame  = Thing{"hi"}
-		vempty = Thing{}
+		vzero  = Thing{}
 		badval = Thing{"hello"}
 		badtyp = struct{ Name string }{"hi"}
 
 		emptyMap   map[int]bool
 		emptySlice []float32
 
-		zeros   = []interface{}{0, "", 0i + 0, vempty, emptyMap, emptySlice}
-		nozeros = []interface{}{1, "hi", 0i + 1, v, map[int]bool{}, []float32{}}
+		zeros   = []interface{}{0, "", 0i + 0, vzero, emptyMap, emptySlice}
+		nozeros = []interface{}{1, "hi", 0i + 1, vorig, map[int]bool{}, []float32{}}
+
+		isInt = func(got interface{}) bool {
+			_, ok := got.(int)
+			return ok
+		}
+		intValue    = 42
+		stringValue = "hi"
 	)
 
 	t.Run("Is pass", func(t *testing.T) {
 		c := check.Value.Is(vsame)
-		assertPassValueChecker(t, "Is", c, v)
+		assertPassValueChecker(t, "Is", c, vorig)
 	})
 
 	t.Run("Is fail", func(t *testing.T) {
 		c := check.Value.Is(badval)
-		assertFailValueChecker(t, "Is", c, v)
+		assertFailValueChecker(t, "Is", c, vorig)
 		c = check.Value.Is(badtyp)
-		assertFailValueChecker(t, "Is", c, v)
+		assertFailValueChecker(t, "Is", c, vorig)
 	})
 
 	t.Run("Not pass", func(t *testing.T) {
 		c := check.Value.Not(badval, badtyp)
-		assertPassValueChecker(t, "Not", c, v)
+		assertPassValueChecker(t, "Not", c, vorig)
 	})
 
 	t.Run("Not fail", func(t *testing.T) {
 		c := check.Value.Not(badval, vsame, badtyp)
-		assertFailValueChecker(t, "Not", c, v)
+		assertFailValueChecker(t, "Not", c, vorig)
 	})
 
 	t.Run("IsZero pass", func(t *testing.T) {
@@ -73,6 +80,32 @@ func TestValueCheckerProvider(t *testing.T) {
 		for _, z := range zeros {
 			assertFailValueChecker(t, "NotZero", c, z)
 		}
+	})
+
+	t.Run("Custom pass", func(t *testing.T) {
+		c := check.Value.Custom("", isInt)
+		assertPassValueChecker(t, "Custom", c, intValue)
+	})
+
+	t.Run("Custom fail", func(t *testing.T) {
+		c := check.Value.Custom("", isInt)
+		assertFailValueChecker(t, "Custom", c, stringValue)
+	})
+
+	t.Run("SameJSON pass", func(t *testing.T) {
+		mapequiv := map[string]interface{}{
+			"Name": "hi",
+		}
+		c := check.Value.SameJSON(mapequiv)
+		assertPassValueChecker(t, "SameJSON", c, vorig)
+	})
+
+	t.Run("SameJSON fail", func(t *testing.T) {
+		mapdiff := map[string]interface{}{
+			"Name": "bad",
+		}
+		c := check.Value.SameJSON(mapdiff)
+		assertFailValueChecker(t, "SameJSON", c, vorig)
 	})
 }
 

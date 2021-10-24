@@ -15,42 +15,6 @@ type structTest struct {
 func TestStructCheckerProvider(t *testing.T) {
 	s := structTest{Name: "Marcel Patulacci", Age: 42}
 
-	t.Run("SameJSON pass", func(t *testing.T) {
-		m := map[string]interface{}{"Name": "Marcel Patulacci", "Age": 42}
-		c := check.Struct.SameJSON(m)
-		assertPassStructChecker(t, "SameJSON", c, s)
-	})
-
-	t.Run("SameJSON fail", func(t *testing.T) {
-		m := map[string]interface{}{"Name": "Robert Robichet", "Age": 42}
-		c := check.Struct.SameJSON(m)
-		assertFailStructChecker(t, "SameJSON", c, s)
-	})
-
-	t.Run("IsZero pass", func(t *testing.T) {
-		s := structTest{}
-		c := check.Struct.IsZero()
-		assertPassStructChecker(t, "IsZero", c, s)
-	})
-
-	t.Run("IsZero fail", func(t *testing.T) {
-		s := structTest{Age: -1}
-		c := check.Struct.IsZero()
-		assertFailStructChecker(t, "IsZero", c, s)
-	})
-
-	t.Run("NotZero pass", func(t *testing.T) {
-		s := structTest{Age: -1}
-		c := check.Struct.NotZero()
-		assertPassStructChecker(t, "NotZero", c, s)
-	})
-
-	t.Run("NotZero fail", func(t *testing.T) {
-		s := structTest{}
-		c := check.Struct.NotZero()
-		assertFailStructChecker(t, "NotZero", c, s)
-	})
-
 	t.Run("FieldsEqual pass", func(t *testing.T) {
 		c := check.Struct.FieldsEqual("Marcel Patulacci", []string{"Name"})
 		assertPassStructChecker(t, "FieldsEqual", c, s)

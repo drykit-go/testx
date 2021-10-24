@@ -24,32 +24,6 @@ func TestMapCheckerProvider(t *testing.T) {
 		assertFailMapChecker(t, "Len", c, m)
 	})
 
-	t.Run("SameJSON pass", func(t *testing.T) {
-		c := check.Map.SameJSON(struct {
-			Name    string   `json:"name"`
-			Age     int      `json:"age"`
-			Friends []string `json:"friends"`
-		}{
-			Name:    "Marcel Patulacci",
-			Age:     42,
-			Friends: []string{"Robert Robichet", "Jean-Pierre Avidol"},
-		})
-		assertPassMapChecker(t, "SameJSON", c, m)
-	})
-
-	t.Run("SameJSON fail", func(t *testing.T) {
-		c := check.Map.SameJSON(struct {
-			Name    string   `json:"name"`
-			Age     int      `json:"age"`
-			Friends []string `json:"friends"`
-		}{
-			Name:    "Marcel Patulacci",
-			Age:     42,
-			Friends: []string{"Robert Robichet"},
-		})
-		assertFailMapChecker(t, "SameJSON", c, m)
-	})
-
 	t.Run("HasKeys pass", func(t *testing.T) {
 		c := check.Map.HasKeys("name", "friends")
 		assertPassMapChecker(t, "HasKeys", c, m)
