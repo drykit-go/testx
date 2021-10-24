@@ -2,6 +2,7 @@ package checkconv_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/checkconv"
@@ -22,20 +23,20 @@ func BenchmarkIsChecker(b *testing.B) {
 }
 
 func BenchmarkAssert(b *testing.B) {
-	b.Run("check.BytesChecker first_case", func(b *testing.B) {
-		c := check.Bytes.Is([]byte{0})
+	b.Run("check.BoolChecker first_case", func(b *testing.B) {
+		c := check.Bool.Is(true)
 		for i := 0; i < b.N; i++ {
 			checkconv.Assert(c)
 		}
 	})
-	b.Run("check.IntChecker midway_case", func(b *testing.B) {
-		c := check.Int.Is(0)
+	b.Run("check.DurationChecker midway_case", func(b *testing.B) {
+		c := check.Duration.Over(time.Second)
 		for i := 0; i < b.N; i++ {
 			checkconv.Assert(c)
 		}
 	})
-	b.Run("check.HTTPHeaderChecker last_case", func(b *testing.B) {
-		c := check.HTTPHeader.HasKey("")
+	b.Run("check.HTTPResponseChecker last_case", func(b *testing.B) {
+		c := check.HTTPResponse.Body(check.Bytes.Is([]byte{0}))
 		for i := 0; i < b.N; i++ {
 			checkconv.Assert(c)
 		}
