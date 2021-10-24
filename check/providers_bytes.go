@@ -110,6 +110,23 @@ func (p bytesCheckerProvider) AsMap(mapChecker ValueChecker) BytesChecker {
 	return NewBytesChecker(pass, expl)
 }
 
+// AsString checks the gotten []byte passes the given StringChecker
+// once converted to a string.
+func (p bytesCheckerProvider) AsString(c StringChecker) BytesChecker {
+	var s string
+	pass := func(got []byte) bool {
+		s = string(got)
+		return c.Pass(s)
+	}
+	expl := func(label string, got interface{}) string {
+		return p.explainCheck(label,
+			"to pass StringChecker",
+			c.Explain("converted bytes", s),
+		)
+	}
+	return NewBytesChecker(pass, expl)
+}
+
 func (bytesCheckerProvider) eq(a, b []byte) bool {
 	return bytes.Equal(a, b)
 }
