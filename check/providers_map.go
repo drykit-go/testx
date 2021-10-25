@@ -15,7 +15,7 @@ type mapCheckerProvider struct{ valueCheckerProvider }
 func (p mapCheckerProvider) Len(c IntChecker) ValueChecker {
 	var gotlen int
 	pass := func(got interface{}) bool {
-		reflectutil.PanicOnUnexpectedKind(got, reflect.Map)
+		reflectutil.MustBeOfKind(got, reflect.Map)
 		gotlen = reflect.ValueOf(got).Len()
 		return c.Pass(gotlen)
 	}
@@ -32,7 +32,7 @@ func (p mapCheckerProvider) Len(c IntChecker) ValueChecker {
 func (p mapCheckerProvider) HasKeys(keys ...interface{}) ValueChecker {
 	var missing []string
 	pass := func(got interface{}) bool {
-		reflectutil.PanicOnUnexpectedKind(got, reflect.Map)
+		reflectutil.MustBeOfKind(got, reflect.Map)
 		for _, expk := range keys {
 			if _, found := p.get(got, expk); !found {
 				missing = append(missing, fmt.Sprint(expk))
@@ -50,7 +50,7 @@ func (p mapCheckerProvider) HasKeys(keys ...interface{}) ValueChecker {
 func (p mapCheckerProvider) HasNotKeys(keys ...interface{}) ValueChecker {
 	var badKeys []string
 	pass := func(got interface{}) bool {
-		reflectutil.PanicOnUnexpectedKind(got, reflect.Map)
+		reflectutil.MustBeOfKind(got, reflect.Map)
 		for _, expk := range keys {
 			if _, found := p.get(got, expk); found {
 				badKeys = append(badKeys, fmt.Sprint(expk))
@@ -68,7 +68,7 @@ func (p mapCheckerProvider) HasNotKeys(keys ...interface{}) ValueChecker {
 func (p mapCheckerProvider) HasValues(values ...interface{}) ValueChecker {
 	var missing []string
 	pass := func(got interface{}) bool {
-		reflectutil.PanicOnUnexpectedKind(got, reflect.Map)
+		reflectutil.MustBeOfKind(got, reflect.Map)
 		for _, expv := range values {
 			if !p.hasValue(got, expv) {
 				missing = append(missing, fmt.Sprint(expv))
@@ -86,7 +86,7 @@ func (p mapCheckerProvider) HasValues(values ...interface{}) ValueChecker {
 func (p mapCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
 	var badValues []string
 	pass := func(got interface{}) bool {
-		reflectutil.PanicOnUnexpectedKind(got, reflect.Map)
+		reflectutil.MustBeOfKind(got, reflect.Map)
 		for _, badv := range values {
 			if p.hasValue(got, badv) {
 				badValues = append(badValues, fmt.Sprint(badv))
@@ -106,7 +106,7 @@ func (p mapCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
 func (p mapCheckerProvider) CheckValues(c ValueChecker, keys ...interface{}) ValueChecker { //nolint: gocognit // TODO: refactor
 	var badEntries []string
 	pass := func(got interface{}) bool {
-		reflectutil.PanicOnUnexpectedKind(got, reflect.Map)
+		reflectutil.MustBeOfKind(got, reflect.Map)
 		if len(keys) == 0 {
 			p.walk(got, func(gotk, gotv interface{}) {
 				if !c.Pass(gotv) {
