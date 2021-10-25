@@ -103,12 +103,12 @@ func (p bytesCheckerProvider) AsMap(mapChecker ValueChecker) BytesChecker {
 		if goterr != nil {
 			return p.explain(label,
 				"to pass MapChecker",
-				fmt.Sprintf("marshaling error: %s", goterr),
+				fmt.Sprintf("error: %s", goterr),
 			)
 		}
 		return p.explainCheck(label,
 			"to pass MapChecker",
-			mapChecker.Explain("unmarshaled json", m),
+			mapChecker.Explain("json map", m),
 		)
 	}
 	return NewBytesChecker(pass, expl)
