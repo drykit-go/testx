@@ -38,3 +38,39 @@ func TestBaseCheckerProvider_sameJSON(t *testing.T) {
 		}
 	})
 }
+
+func TestBaseCheckerProvider_sameJSONProduced(t *testing.T) {
+	var (
+		orig = struct {
+			ID   int    `json:"id"`
+			Name string `json:"name"`
+		}{ID: 42, Name: "Marcel Patulacci"}
+		same = map[string]interface{}{"id": 42, "name": "Marcel Patulacci"}
+		diff = map[string]interface{}{"id": 42, "name": "Robert Robichet"}
+	)
+
+	t.Run("same json produced", func(t *testing.T) {
+		var x, y map[string]interface{}
+		if !(baseCheckerProvider{}).sameJSONProduced(orig, same, &x, &y) {
+			t.Error("exp true, got false", x, y)
+		}
+	})
+
+	t.Run("diff json produced", func(t *testing.T) {
+		var x, y map[string]interface{}
+		if (baseCheckerProvider{}).sameJSONProduced(orig, diff, &x, &y) {
+			t.Error("exp false, got true")
+		}
+	})
+
+	t.Run("bad input", func(t *testing.T) {
+		var x, y map[string]interface{}
+		badinput := make(chan int)
+		defer testutil.AssertPanicMessage(t,
+			"json: unsupported type: chan int",
+		)
+		if (baseCheckerProvider{}).sameJSONProduced(orig, badinput, &x, &y) {
+			t.Error("exp false, got true")
+		}
+	})
+}
