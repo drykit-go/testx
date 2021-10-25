@@ -1,7 +1,7 @@
 package reflectutil
 
 import (
-	"log"
+	"fmt"
 	"reflect"
 )
 
@@ -44,9 +44,9 @@ func MustBeOfKind(v interface{}, exp reflect.Kind) {
 
 func mustBeOfKind(v reflect.Value, k reflect.Kind) {
 	if v.Kind() != k {
-		log.Panicf(
-			"expect %s kind as input, got %s",
-			k.String(), v.String(),
-		)
+		panic(fmt.Sprintf(
+			"expect kind %s, got %s",
+			k.String(), v.Kind().String(),
+		))
 	}
 }
