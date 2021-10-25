@@ -114,7 +114,7 @@ func (p sliceCheckerProvider) CheckValues(c ValueChecker, filters ...func(i int,
 // hasValue returns true if slice has a value equal to expv.
 func (p sliceCheckerProvider) hasValue(slice, expv interface{}) bool {
 	return p.walkUntil(slice, nil, func(_ int, v interface{}) bool {
-		return deq(v, expv)
+		return p.deq(v, expv)
 	})
 }
 

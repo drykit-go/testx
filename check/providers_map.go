@@ -133,10 +133,10 @@ func (p mapCheckerProvider) CheckValues(c ValueChecker, keys ...interface{}) Val
 }
 
 // get returns gotmap[key] and a bool representing whether a match is found.
-func (mapCheckerProvider) get(gotmap, key interface{}) (interface{}, bool) {
+func (p mapCheckerProvider) get(gotmap, key interface{}) (interface{}, bool) {
 	iter := reflect.ValueOf(gotmap).MapRange()
 	for iter.Next() {
-		if k := iter.Key().Interface(); deq(k, key) {
+		if k := iter.Key().Interface(); p.deq(k, key) {
 			return iter.Value().Interface(), true
 		}
 	}
@@ -144,10 +144,10 @@ func (mapCheckerProvider) get(gotmap, key interface{}) (interface{}, bool) {
 }
 
 // hasValue returns true if gotmap matches the specified value.
-func (mapCheckerProvider) hasValue(gotmap, value interface{}) bool {
+func (p mapCheckerProvider) hasValue(gotmap, value interface{}) bool {
 	iter := reflect.ValueOf(gotmap).MapRange()
 	for iter.Next() {
-		if gotv := iter.Value().Interface(); deq(gotv, value) {
+		if gotv := iter.Value().Interface(); p.deq(gotv, value) {
 			return true
 		}
 	}

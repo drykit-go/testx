@@ -22,7 +22,7 @@ func (p structCheckerProvider) FieldsEqual(exp interface{}, fields []string) Val
 		for _, f := range fields {
 			// panic hasard: field must exist and be exported
 			gotf := gotv.FieldByName(f).Interface()
-			if !deq(gotf, exp) {
+			if !p.deq(gotf, exp) {
 				badFields = append(badFields, fmt.Sprintf(".%s=%v", f, gotf))
 			}
 		}

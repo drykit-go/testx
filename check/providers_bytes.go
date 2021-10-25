@@ -41,7 +41,7 @@ func (p bytesCheckerProvider) Not(values ...[]byte) BytesChecker {
 func (p bytesCheckerProvider) SameJSON(tar []byte) BytesChecker {
 	var decGot, decTar interface{}
 	pass := func(got []byte) bool {
-		return sameJSON(got, tar, &decGot, &decTar)
+		return p.sameJSON(got, tar, &decGot, &decTar)
 	}
 	expl := func(label string, got interface{}) string {
 		return p.explain(label,
