@@ -1,6 +1,7 @@
 package reflectutil_test
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/drykit-go/testx/internal/reflectutil"
@@ -32,4 +33,16 @@ func TestIsZero(t *testing.T) {
 			}
 		}
 	})
+}
+
+func TestCallUnwrap(t *testing.T) {
+	swap := func(x, y float64) (float64, float64) {
+		return y, x
+	}
+	fval := reflect.ValueOf(swap)
+	got := reflectutil.CallUnwrap(fval, []interface{}{-1., 1.})
+	exp := []interface{}{1., -1.}
+	if !reflect.DeepEqual(got, exp) {
+		t.Errorf("unexpected output: exp %v, got %v", exp, got)
+	}
 }
