@@ -1,6 +1,7 @@
 package check_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -9,10 +10,15 @@ import (
 
 func TestDurationCheckerProvider(t *testing.T) {
 	const (
-		d    = 1 * time.Second
-		less = d - time.Millisecond
-		more = d + time.Millisecond
+		d        = 1 * time.Second
+		less     = d - time.Millisecond
+		more     = d + time.Millisecond
+		moremore = more + time.Millisecond
 	)
+
+	ms := func(d time.Duration) int64 {
+		return d.Milliseconds()
+	}
 
 	t.Run("Under pass", func(t *testing.T) {
 		c := check.Duration.Under(more)
@@ -21,9 +27,20 @@ func TestDurationCheckerProvider(t *testing.T) {
 
 	t.Run("Under fail", func(t *testing.T) {
 		c := check.Duration.Under(less)
-		assertFailDurationChecker(t, "Under", c, d)
+		assertFailDurationChecker(t, "Under", c, d,
+			makeExpl(
+				fmt.Sprintf("under %dms", ms(less)),
+				fmt.Sprintf("%dms", ms(d)),
+			),
+		)
+
 		c = check.Duration.Under(d)
-		assertFailDurationChecker(t, "Under", c, d)
+		assertFailDurationChecker(t, "Under", c, d,
+			makeExpl(
+				fmt.Sprintf("under %dms", ms(d)),
+				fmt.Sprintf("%dms", ms(d)),
+			),
+		)
 	})
 
 	t.Run("Over pass", func(t *testing.T) {
@@ -33,9 +50,20 @@ func TestDurationCheckerProvider(t *testing.T) {
 
 	t.Run("Over fail", func(t *testing.T) {
 		c := check.Duration.Over(more)
-		assertFailDurationChecker(t, "Over", c, d)
+		assertFailDurationChecker(t, "Over", c, d,
+			makeExpl(
+				fmt.Sprintf("over %dms", ms(more)),
+				fmt.Sprintf("%dms", ms(d)),
+			),
+		)
+
 		c = check.Duration.Over(d)
-		assertFailDurationChecker(t, "Over", c, d)
+		assertFailDurationChecker(t, "Over", c, d,
+			makeExpl(
+				fmt.Sprintf("over %dms", ms(d)),
+				fmt.Sprintf("%dms", ms(d)),
+			),
+		)
 	})
 
 	t.Run("InRange pass", func(t *testing.T) {
@@ -47,15 +75,25 @@ func TestDurationCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("InRange fail", func(t *testing.T) {
-		c := check.Duration.InRange(more, more+time.Millisecond)
-		assertFailDurationChecker(t, "InRange", c, d)
+		c := check.Duration.InRange(more, moremore)
+		assertFailDurationChecker(t, "InRange", c, d,
+			makeExpl(
+				fmt.Sprintf("in range [%dms:%dms]", ms(more), ms(moremore)),
+				fmt.Sprintf("%dms", ms(d)),
+			),
+		)
 
 		c = check.Duration.InRange(more, less)
-		assertFailDurationChecker(t, "InRange", c, d)
+		assertFailDurationChecker(t, "InRange", c, d,
+			makeExpl(
+				fmt.Sprintf("in range [%dms:%dms]", ms(more), ms(less)),
+				fmt.Sprintf("%dms", ms(d)),
+			),
+		)
 	})
 
 	t.Run("OutRange pass", func(t *testing.T) {
-		c := check.Duration.OutRange(more, more+time.Millisecond)
+		c := check.Duration.OutRange(more, moremore)
 		assertPassDurationChecker(t, "OutRange", c, d)
 
 		c = check.Duration.OutRange(more, less)
@@ -64,10 +102,20 @@ func TestDurationCheckerProvider(t *testing.T) {
 
 	t.Run("OutRange fail", func(t *testing.T) {
 		c := check.Duration.OutRange(less, more)
-		assertFailDurationChecker(t, "OutRange", c, d)
+		assertFailDurationChecker(t, "OutRange", c, d,
+			makeExpl(
+				fmt.Sprintf("not in range [%dms:%dms]", ms(less), ms(more)),
+				fmt.Sprintf("%dms", ms(d)),
+			),
+		)
 
 		c = check.Duration.OutRange(d, d)
-		assertFailDurationChecker(t, "OutRange", c, d)
+		assertFailDurationChecker(t, "OutRange", c, d,
+			makeExpl(
+				fmt.Sprintf("not in range [%dms:%dms]", ms(d), ms(d)),
+				fmt.Sprintf("%dms", ms(d)),
+			),
+		)
 	})
 }
 
@@ -80,10 +128,13 @@ func assertPassDurationChecker(t *testing.T, method string, c check.DurationChec
 	}
 }
 
-func assertFailDurationChecker(t *testing.T, method string, c check.DurationChecker, d time.Duration) {
+func assertFailDurationChecker(t *testing.T, method string, c check.DurationChecker, d time.Duration, expexpl string) {
 	t.Helper()
 	if c.Pass(d) {
 		failDurationCheckerTest(t, false, method, d, c.Explain)
+	}
+	if expexpl != "" {
+		assertGoodExplain(t, c, d, expexpl)
 	}
 }
 
