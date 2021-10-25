@@ -9,14 +9,7 @@ import (
 )
 
 // sliceCheckerProvider provides checks on kind slice.
-type sliceCheckerProvider struct{ baseCheckerProvider }
-
-// SameJSON checks the gotten slice and the target value
-// produce the same JSON.
-// It panics if any error occurs in the marshaling process.
-func (sliceCheckerProvider) SameJSON(tar interface{}) ValueChecker {
-	return Value.SameJSON(tar)
-}
+type sliceCheckerProvider struct{ valueCheckerProvider }
 
 // Len checks the length of the gotten slice passes the given IntChecker.
 func (p sliceCheckerProvider) Len(c IntChecker) ValueChecker {

@@ -30,21 +30,6 @@ func TestSliceCheckerProvider(t *testing.T) {
 		assertFailSliceChecker(t, "Cap", c, s)
 	})
 
-	t.Run("SameJSON pass", func(t *testing.T) {
-		same := make([]interface{}, len(s))
-		copy(same, s)
-		c := check.Slice.SameJSON(s)
-		assertPassSliceChecker(t, "SameJSON", c, s)
-	})
-
-	t.Run("SameJSON fail", func(t *testing.T) {
-		diff := make([]interface{}, len(s))
-		copy(diff, s)
-		diff[3] = []float32{1.618}
-		c := check.Slice.SameJSON(diff)
-		assertFailSliceChecker(t, "SameJSON", c, s)
-	})
-
 	t.Run("HasValues pass", func(t *testing.T) {
 		c := check.Slice.HasValues("hello", 42, []float32{3.14})
 		assertPassSliceChecker(t, "HasValues", c, s)
