@@ -1,6 +1,9 @@
 package testutil
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 // AssertPanicMessage fails t if the calling func does not panic
 // with the expected message. It must be called with defer:
@@ -32,7 +35,9 @@ func assertPanicked(t *testing.T, rec interface{}, msg string, checkmsg bool) {
 	t.Helper()
 	if rec == nil {
 		t.Error("expected to panic but did not")
-	} else if checkmsg && rec != msg {
+		return
+	}
+	if checkmsg && msg != fmt.Sprint(rec) {
 		t.Errorf("bad panic message:\nexp %s\ngot %s", msg, rec)
 	}
 }
