@@ -17,7 +17,7 @@ type structCheckerProvider struct{ valueCheckerProvider }
 func (p structCheckerProvider) FieldsEqual(exp interface{}, fields []string) ValueChecker {
 	var badFields []string
 	pass := func(got interface{}) bool {
-		reflectutil.PanicOnUnexpectedKind(got, reflect.Struct)
+		reflectutil.MustBeOfKind(got, reflect.Struct)
 		gotv := reflect.ValueOf(got)
 		for _, f := range fields {
 			// panic hasard: field must exist and be exported
@@ -43,7 +43,7 @@ func (p structCheckerProvider) FieldsEqual(exp interface{}, fields []string) Val
 func (p structCheckerProvider) CheckFields(c ValueChecker, fields []string) ValueChecker {
 	var badFields []string
 	pass := func(got interface{}) bool {
-		reflectutil.PanicOnUnexpectedKind(got, reflect.Struct)
+		reflectutil.MustBeOfKind(got, reflect.Struct)
 		gotv := reflect.ValueOf(got)
 		for _, f := range fields {
 			// panic hasard: field must exist and be exported

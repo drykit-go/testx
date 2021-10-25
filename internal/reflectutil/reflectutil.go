@@ -1,7 +1,7 @@
 package reflectutil
 
 import (
-	"log"
+	"fmt"
 	"reflect"
 )
 
@@ -37,16 +37,16 @@ func UnwrapValues(wrapped []reflect.Value) (values []interface{}) {
 	return
 }
 
-// PanicOnUnexpectedKind panics if v's kind is not exp.
-func PanicOnUnexpectedKind(v interface{}, exp reflect.Kind) {
-	panicOnUnexpectedKind(reflect.ValueOf(v), exp)
+// MustBeOfKind panics if v's kind is not exp.
+func MustBeOfKind(v interface{}, exp reflect.Kind) {
+	mustBeOfKind(reflect.ValueOf(v), exp)
 }
 
-func panicOnUnexpectedKind(v reflect.Value, k reflect.Kind) {
+func mustBeOfKind(v reflect.Value, k reflect.Kind) {
 	if v.Kind() != k {
-		log.Panicf(
-			"expect %s kind as input, got %s",
-			k.String(), v.String(),
-		)
+		panic(fmt.Sprintf(
+			"expect kind %s, got %s",
+			k.String(), v.Kind().String(),
+		))
 	}
 }

@@ -22,7 +22,7 @@ func (sliceCheckerProvider) SameJSON(tar interface{}) ValueChecker {
 func (p sliceCheckerProvider) Len(c IntChecker) ValueChecker {
 	var gotlen int
 	pass := func(got interface{}) bool {
-		reflectutil.PanicOnUnexpectedKind(got, reflect.Slice)
+		reflectutil.MustBeOfKind(got, reflect.Slice)
 		gotlen = reflect.ValueOf(got).Len()
 		return c.Pass(gotlen)
 	}
@@ -39,7 +39,7 @@ func (p sliceCheckerProvider) Len(c IntChecker) ValueChecker {
 func (p sliceCheckerProvider) Cap(c IntChecker) ValueChecker {
 	var gotcap int
 	pass := func(got interface{}) bool {
-		reflectutil.PanicOnUnexpectedKind(got, reflect.Slice)
+		reflectutil.MustBeOfKind(got, reflect.Slice)
 		gotcap = reflect.ValueOf(got).Cap()
 		return c.Pass(gotcap)
 	}
@@ -56,7 +56,7 @@ func (p sliceCheckerProvider) Cap(c IntChecker) ValueChecker {
 func (p sliceCheckerProvider) HasValues(values ...interface{}) ValueChecker {
 	var missing []string
 	pass := func(got interface{}) bool {
-		reflectutil.PanicOnUnexpectedKind(got, reflect.Slice)
+		reflectutil.MustBeOfKind(got, reflect.Slice)
 		for _, expv := range values {
 			if !p.hasValue(got, expv) {
 				missing = append(missing, fmt.Sprint(expv))
@@ -77,7 +77,7 @@ func (p sliceCheckerProvider) HasValues(values ...interface{}) ValueChecker {
 func (p sliceCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
 	var badValues []string
 	pass := func(got interface{}) bool {
-		reflectutil.PanicOnUnexpectedKind(got, reflect.Slice)
+		reflectutil.MustBeOfKind(got, reflect.Slice)
 		for _, badv := range values {
 			if p.hasValue(got, badv) {
 				badValues = append(badValues, fmt.Sprint(badv))
@@ -99,7 +99,7 @@ func (p sliceCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
 func (p sliceCheckerProvider) CheckValues(c ValueChecker, filters ...func(i int, v interface{}) bool) ValueChecker {
 	var badValues []string
 	pass := func(got interface{}) bool {
-		reflectutil.PanicOnUnexpectedKind(got, reflect.Slice)
+		reflectutil.MustBeOfKind(got, reflect.Slice)
 		p.walk(got, filters, func(i int, v interface{}) {
 			if !c.Pass(v) {
 				badValues = append(badValues, fmt.Sprintf("%d:%v", i, v))

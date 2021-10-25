@@ -2,7 +2,6 @@ package reflectutil
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -21,10 +20,10 @@ func FuncName(fn interface{}) string {
 
 func funcName(fval reflect.Value) string {
 	if !IsFunc(fval) {
-		log.Panicf(
-			"calling FuncName with a non func argument (%s %v)",
-			fval.Type().String(), fval.String(),
-		)
+		panic(fmt.Sprintf(
+			"calling FuncName with a non func argument (%s)",
+			fval.Type().String(),
+		))
 	}
 	fptr := fval.Pointer()
 	path := runtime.FuncForPC(fptr).Name()
