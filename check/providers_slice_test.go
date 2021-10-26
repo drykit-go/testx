@@ -1,6 +1,7 @@
 package check_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/drykit-go/testx/check"
@@ -17,7 +18,10 @@ func TestSliceCheckerProvider(t *testing.T) {
 
 	t.Run("Len fail", func(t *testing.T) {
 		c := check.Slice.Len(check.Int.Not(4))
-		assertFailSliceChecker(t, "Len", c, s)
+		assertFailSliceChecker(t, "Len", c, s, makeExpl(
+			"length to pass IntChecker",
+			"explanation: length:\nexp not 4\ngot 4",
+		))
 	})
 
 	t.Run("Cap pass", func(t *testing.T) {
@@ -27,7 +31,10 @@ func TestSliceCheckerProvider(t *testing.T) {
 
 	t.Run("Cap fail", func(t *testing.T) {
 		c := check.Slice.Cap(check.Int.Not(4))
-		assertFailSliceChecker(t, "Cap", c, s)
+		assertFailSliceChecker(t, "Cap", c, s, makeExpl(
+			"capacity to pass IntChecker",
+			"explanation: capacity:\nexp not 4\ngot 4",
+		))
 	})
 
 	t.Run("HasValues pass", func(t *testing.T) {
@@ -37,7 +44,10 @@ func TestSliceCheckerProvider(t *testing.T) {
 
 	t.Run("HasValues fail", func(t *testing.T) {
 		c := check.Slice.HasValues([]float64{3.14})
-		assertFailSliceChecker(t, "HasValues", c, s)
+		assertFailSliceChecker(t, "HasValues", c, s, makeExpl(
+			"to have values {[3.14]}",
+			fmt.Sprint(s),
+		))
 	})
 
 	t.Run("HasNotValues pass", func(t *testing.T) {
@@ -47,7 +57,10 @@ func TestSliceCheckerProvider(t *testing.T) {
 
 	t.Run("HasNotValues fail", func(t *testing.T) {
 		c := check.Slice.HasNotValues("hi", -1, []float32{3.14})
-		assertFailSliceChecker(t, "HasNotValues", c, s)
+		assertFailSliceChecker(t, "HasNotValues", c, s, makeExpl(
+			"not to have values {[3.14]}",
+			fmt.Sprint(s),
+		))
 	})
 
 	t.Run("CheckValues pass", func(t *testing.T) {
@@ -63,7 +76,10 @@ func TestSliceCheckerProvider(t *testing.T) {
 			checkconv.FromInt(check.Int.OutRange(41, 43)),
 			func(_ int, v interface{}) bool { _, ok := v.(int); return ok },
 		)
-		assertFailSliceChecker(t, "CheckValues", c, s)
+		assertFailSliceChecker(t, "CheckValues", c, s, makeExpl(
+			"values to pass ValueChecker",
+			"explanation: values:\nexp not in range [41:43]\ngot {1:42}",
+		))
 	})
 }
 
@@ -76,11 +92,12 @@ func assertPassSliceChecker(t *testing.T, method string, c check.ValueChecker, s
 	}
 }
 
-func assertFailSliceChecker(t *testing.T, method string, c check.ValueChecker, slc interface{}) {
+func assertFailSliceChecker(t *testing.T, method string, c check.ValueChecker, slc interface{}, expexpl string) {
 	t.Helper()
 	if c.Pass(slc) {
 		failSliceCheckerTest(t, false, method, slc, c.Explain)
 	}
+	assertGoodExplain(t, c, slc, expexpl)
 }
 
 func failSliceCheckerTest(t *testing.T, expPass bool, method string, slc interface{}, explain check.ExplainFunc) {
