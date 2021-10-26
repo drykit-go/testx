@@ -1,6 +1,7 @@
 package check_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/drykit-go/testx/check"
@@ -23,13 +24,6 @@ func TestValueCheckerProvider(t *testing.T) {
 
 		zeros   = []interface{}{0, "", 0i + 0, vzero, emptyMap, emptySlice}
 		nozeros = []interface{}{1, "hi", 0i + 1, vorig, map[int]bool{}, []float32{}}
-
-		isInt = func(got interface{}) bool {
-			_, ok := got.(int)
-			return ok
-		}
-		intValue    = 42
-		stringValue = "hi"
 	)
 
 	t.Run("Is pass", func(t *testing.T) {
@@ -39,9 +33,7 @@ func TestValueCheckerProvider(t *testing.T) {
 
 	t.Run("Is fail", func(t *testing.T) {
 		c := check.Value.Is(badval)
-		assertFailValueChecker(t, "Is", c, vorig)
-		c = check.Value.Is(badtyp)
-		assertFailValueChecker(t, "Is", c, vorig)
+		assertFailValueChecker(t, "Is", c, vorig, makeExpl("{hello}", "{hi}"))
 	})
 
 	t.Run("Not pass", func(t *testing.T) {
@@ -51,7 +43,7 @@ func TestValueCheckerProvider(t *testing.T) {
 
 	t.Run("Not fail", func(t *testing.T) {
 		c := check.Value.Not(badval, vsame, badtyp)
-		assertFailValueChecker(t, "Not", c, vorig)
+		assertFailValueChecker(t, "Not", c, vorig, makeExpl("not {hi}", "{hi}"))
 	})
 
 	t.Run("IsZero pass", func(t *testing.T) {
@@ -64,7 +56,10 @@ func TestValueCheckerProvider(t *testing.T) {
 	t.Run("IsZero fail", func(t *testing.T) {
 		c := check.Value.IsZero()
 		for _, nz := range nozeros {
-			assertFailValueChecker(t, "IsZero", c, nz)
+			assertFailValueChecker(t, "IsZero", c, nz, makeExpl(
+				"to be a zero value",
+				fmt.Sprint(nz),
+			))
 		}
 	})
 
@@ -78,18 +73,26 @@ func TestValueCheckerProvider(t *testing.T) {
 	t.Run("NotZero fail", func(t *testing.T) {
 		c := check.Value.NotZero()
 		for _, z := range zeros {
-			assertFailValueChecker(t, "NotZero", c, z)
+			assertFailValueChecker(t, "NotZero", c, z, makeExpl(
+				"not to be a zero value",
+				fmt.Sprint(z),
+			))
 		}
 	})
 
+	isEvenInt := func(n interface{}) bool {
+		nint, ok := n.(int)
+		return ok && nint&1 == 0
+	}
+
 	t.Run("Custom pass", func(t *testing.T) {
-		c := check.Value.Custom("", isInt)
-		assertPassValueChecker(t, "Custom", c, intValue)
+		c := check.Value.Custom("", isEvenInt)
+		assertPassValueChecker(t, "Custom", c, 42)
 	})
 
 	t.Run("Custom fail", func(t *testing.T) {
-		c := check.Value.Custom("", isInt)
-		assertFailValueChecker(t, "Custom", c, stringValue)
+		c := check.Value.Custom("even int", isEvenInt)
+		assertFailValueChecker(t, "Custom", c, -1, makeExpl("even int", "-1"))
 	})
 
 	t.Run("SameJSON pass", func(t *testing.T) {
@@ -105,7 +108,10 @@ func TestValueCheckerProvider(t *testing.T) {
 			"Name": "bad",
 		}
 		c := check.Value.SameJSON(mapdiff)
-		assertFailValueChecker(t, "SameJSON", c, vorig)
+		assertFailValueChecker(t, "SameJSON", c, vorig, makeExpl(
+			"json data: map[Name:bad]",
+			"json data: map[Name:hi]",
+		))
 	})
 }
 
@@ -118,10 +124,13 @@ func assertPassValueChecker(t *testing.T, method string, c check.ValueChecker, v
 	}
 }
 
-func assertFailValueChecker(t *testing.T, method string, c check.ValueChecker, v interface{}) {
+func assertFailValueChecker(t *testing.T, method string, c check.ValueChecker, v interface{}, expexpl string) {
 	t.Helper()
 	if c.Pass(v) {
 		failValueCheckerTest(t, false, method, v, c.Explain)
+	}
+	if expexpl != "" {
+		assertGoodExplain(t, c, v, expexpl)
 	}
 }
 
