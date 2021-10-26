@@ -65,29 +65,38 @@ func (p baseCheckerProvider) explainCheck(label, expStr, gotExpl string) string 
 
 type baseHTTPCheckerProvider struct{ baseCheckerProvider }
 
-func (p baseHTTPCheckerProvider) explainContentLengthFunc(c IntChecker, got int) ExplainFunc {
+func (p baseHTTPCheckerProvider) explainContentLengthFunc(
+	c IntChecker,
+	got func() int,
+) ExplainFunc {
 	return func(label string, _ interface{}) string {
 		return p.explainCheck(label,
 			"content length to pass IntChecker",
-			c.Explain("content length", got),
+			c.Explain("content length", got()),
 		)
 	}
 }
 
-func (p baseHTTPCheckerProvider) explainHeaderFunc(c HTTPHeaderChecker, got http.Header) ExplainFunc {
+func (p baseHTTPCheckerProvider) explainHeaderFunc(
+	c HTTPHeaderChecker,
+	got func() http.Header,
+) ExplainFunc {
 	return func(label string, _ interface{}) string {
 		return p.explainCheck(label,
 			"header to pass HTTPHeaderChecker",
-			c.Explain("http.Header", got),
+			c.Explain("http.Header", got()),
 		)
 	}
 }
 
-func (p baseHTTPCheckerProvider) explainBodyFunc(c BytesChecker, got []byte) ExplainFunc {
+func (p baseHTTPCheckerProvider) explainBodyFunc(
+	c BytesChecker,
+	got func() []byte,
+) ExplainFunc {
 	return func(label string, _ interface{}) string {
 		return p.explainCheck(label,
 			"body to pass BytesChecker",
-			c.Explain("bytes", got),
+			c.Explain("bytes", got()),
 		)
 	}
 }

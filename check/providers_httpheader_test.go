@@ -23,7 +23,7 @@ func TestHTTPHeaderCheckerProvider(t *testing.T) {
 	t.Run("HasKey fail", func(t *testing.T) {
 		c := check.HTTPHeader.HasKey("password")
 		assertFailHTTPHeaderChecker(t, "HasKey", c, h,
-			makeExpl(`to have key: "password"`, hstr),
+			makeExpl(`to have key "password"`, hstr),
 		)
 	})
 
@@ -35,7 +35,7 @@ func TestHTTPHeaderCheckerProvider(t *testing.T) {
 	t.Run("HasNotKey fail", func(t *testing.T) {
 		c := check.HTTPHeader.HasNotKey("API_KEY")
 		assertFailHTTPHeaderChecker(t, "HasNotKey", c, h,
-			makeExpl(`not to have key: "API_KEY"`, hstr),
+			makeExpl(`not to have key "API_KEY"`, hstr),
 		)
 	})
 
@@ -49,12 +49,12 @@ func TestHTTPHeaderCheckerProvider(t *testing.T) {
 	t.Run("HasValue fail", func(t *testing.T) {
 		c := check.HTTPHeader.HasValue("secret42")
 		assertFailHTTPHeaderChecker(t, "HasValue", c, h,
-			makeExpl(`to have value: secret42`, hstr),
+			makeExpl(`to have value secret42`, hstr),
 		)
 
 		c = check.HTTPHeader.HasValue("secret1")
 		assertFailHTTPHeaderChecker(t, "HasValue", c, h,
-			makeExpl(`to have value: secret1`, hstr),
+			makeExpl(`to have value secret1`, hstr),
 		)
 	})
 
@@ -66,12 +66,12 @@ func TestHTTPHeaderCheckerProvider(t *testing.T) {
 	t.Run("HasNotValue fail", func(t *testing.T) {
 		c := check.HTTPHeader.HasNotValue("42")
 		assertFailHTTPHeaderChecker(t, "HasNotValue", c, h,
-			makeExpl(`not to have value: 42`, hstr),
+			makeExpl(`not to have value 42`, hstr),
 		)
 
 		c = check.HTTPHeader.HasNotValue("secret0")
 		assertFailHTTPHeaderChecker(t, "HasNotValue", c, h,
-			makeExpl(`not to have value: secret0`, hstr),
+			makeExpl(`not to have value secret0`, hstr),
 		)
 	})
 

@@ -51,7 +51,10 @@ func (p httpResponseCheckerProvider) ContentLength(c IntChecker) HTTPResponseChe
 		clen = int(got.ContentLength)
 		return c.Pass(clen)
 	}
-	return NewHTTPResponseChecker(pass, p.explainContentLengthFunc(c, clen))
+	return NewHTTPResponseChecker(
+		pass,
+		p.explainContentLengthFunc(c, func() int { return clen }),
+	)
 }
 
 // Header checks the gotten *http.Response Header passes
@@ -62,7 +65,10 @@ func (p httpResponseCheckerProvider) Header(c HTTPHeaderChecker) HTTPResponseChe
 		header = got.Header
 		return c.Pass(header)
 	}
-	return NewHTTPResponseChecker(pass, p.explainHeaderFunc(c, header))
+	return NewHTTPResponseChecker(
+		pass,
+		p.explainHeaderFunc(c, func() http.Header { return header }),
+	)
 }
 
 // Body checks the gotten *http.Response Body passes the input BytesChecker.
@@ -74,5 +80,8 @@ func (p httpResponseCheckerProvider) Body(c BytesChecker) HTTPResponseChecker {
 		body = ioutil.NopRead(&got.Body)
 		return c.Pass(body)
 	}
-	return NewHTTPResponseChecker(pass, p.explainBodyFunc(c, body))
+	return NewHTTPResponseChecker(
+		pass,
+		p.explainBodyFunc(c, func() []byte { return body }),
+	)
 }
