@@ -81,7 +81,7 @@ func (p intCheckerProvider) LT(tar int) IntChecker {
 func (p intCheckerProvider) LTE(tar int) IntChecker {
 	pass := func(got int) bool { return p.lte(got, tar) }
 	expl := func(label string, got interface{}) string {
-		return p.explain(label, fmt.Sprintf(">= %v", tar), got)
+		return p.explain(label, fmt.Sprintf("<= %v", tar), got)
 	}
 	return NewIntChecker(pass, expl)
 }
