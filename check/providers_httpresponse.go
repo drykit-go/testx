@@ -35,7 +35,7 @@ func (p httpResponseCheckerProvider) Status(c StringChecker) HTTPResponseChecker
 		return c.Pass(status)
 	}
 	expl := func(label string, _ interface{}) string {
-		return p.explain(label,
+		return p.explainCheck(label,
 			"status to pass StringChecker",
 			c.Explain("status", status),
 		)
