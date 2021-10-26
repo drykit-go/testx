@@ -35,12 +35,18 @@ func TestContextCheckerProvider(t *testing.T) {
 	t.Run("Done fail", func(t *testing.T) {
 		checkDone := check.Context.Done(true)
 		ctxNotDone, cancel := ctxNotDone()
-		assertFailContextChecker(t, "Done", checkDone, ctxNotDone)
+		assertFailContextChecker(t, "Done", checkDone, ctxNotDone, makeExpl(
+			"context to be done",
+			"context not done",
+		))
 		cancel()
 
 		checkNotDone := check.Context.Done(false)
 		ctxDone := ctxDone()
-		assertFailContextChecker(t, "Done", checkNotDone, ctxDone)
+		assertFailContextChecker(t, "Done", checkNotDone, ctxDone, makeExpl(
+			"context not to be done",
+			"context canceled",
+		))
 	})
 
 	t.Run("HasKeys pass", func(t *testing.T) {
@@ -50,9 +56,12 @@ func TestContextCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("HasKeys fail", func(t *testing.T) {
-		c := check.Context.HasKeys("user", "token")
+		c := check.Context.HasKeys("secret", "user", "token")
 		ctx := ctxVal("user", struct{}{})
-		assertFailContextChecker(t, "HasKeys", c, ctx)
+		assertFailContextChecker(t, "HasKeys", c, ctx, makeExpl(
+			"to have keys [secret, token]",
+			"keys not set",
+		))
 	})
 
 	t.Run("Value pass", func(t *testing.T) {
@@ -65,10 +74,16 @@ func TestContextCheckerProvider(t *testing.T) {
 		c := check.Context.Value("userID", check.Value.Is(0))
 
 		ctxMissingKey := context.Background()
-		assertFailContextChecker(t, "Value", c, ctxMissingKey)
+		assertFailContextChecker(t, "Value", c, ctxMissingKey, makeExpl(
+			"value for key userID to pass ValueChecker",
+			"explanation: value:\nexp 0\ngot <nil>",
+		))
 
 		ctxBadValue := ctxVal("userID", -1)
-		assertFailContextChecker(t, "Value", c, ctxBadValue)
+		assertFailContextChecker(t, "Value", c, ctxBadValue, makeExpl(
+			"value for key userID to pass ValueChecker",
+			"explanation: value:\nexp 0\ngot -1",
+		))
 	})
 }
 
@@ -83,11 +98,12 @@ func assertPassContextChecker(t *testing.T, method string, c check.ContextChecke
 }
 
 //nolint: revive // context-as-argument rule not relevant here
-func assertFailContextChecker(t *testing.T, method string, c check.ContextChecker, ctx context.Context) {
+func assertFailContextChecker(t *testing.T, method string, c check.ContextChecker, ctx context.Context, expexpl string) {
 	t.Helper()
 	if c.Pass(ctx) {
 		failContextCheckerTest(t, false, method, ctx, c.Explain)
 	}
+	assertGoodExplain(t, c, ctx, expexpl)
 }
 
 //nolint: revive // context-as-argument rule not relevant here
