@@ -30,12 +30,10 @@ func TestStructCheckerProvider(t *testing.T) {
 
 	t.Run("FieldsEqual fail", func(t *testing.T) {
 		c := check.Struct.FieldsEqual(vAB, []string{"A", "B", "X", "Y"})
-		assertFailStructChecker(t, "FieldsEqual", c, s,
-			makeExpl(
-				"fields [.A, .B, .X, .Y] to equal "+vABs,
-				".X="+vXYs+", .Y="+vXYs,
-			),
-		)
+		assertFailStructChecker(t, "FieldsEqual", c, s, makeExpl(
+			"fields [.A, .B, .X, .Y] to equal "+vABs,
+			".X="+vXYs+", .Y="+vXYs,
+		))
 	})
 
 	t.Run("CheckFields pass", func(t *testing.T) {
@@ -51,12 +49,10 @@ func TestStructCheckerProvider(t *testing.T) {
 			checkconv.FromInt(check.Int.LT(vAB+1)),
 			[]string{"A", "B", "X", "Y"},
 		)
-		assertFailStructChecker(t, "CheckFields", c, s,
-			makeExpl(
-				"fields [.A, .B, .X, .Y] to pass ValueChecker",
-				"explanation: fields:\nexp < 11\ngot .X=20, .Y=20",
-			),
-		)
+		assertFailStructChecker(t, "CheckFields", c, s, makeExpl(
+			"fields [.A, .B, .X, .Y] to pass ValueChecker",
+			"explanation: fields:\nexp < 11\ngot .X=20, .Y=20",
+		))
 	})
 }
 

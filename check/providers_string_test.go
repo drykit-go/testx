@@ -44,12 +44,10 @@ func TestStringCheckerProvider(t *testing.T) {
 		gotlen := len(s)
 		explen := gotlen + 1
 		c := check.String.Len(check.Int.Is(explen))
-		assertFailStringChecker(t, "Len", c, s,
-			makeExpl(
-				"length to pass IntChecker",
-				fmt.Sprintf("explanation: length:\nexp %d\ngot %d", explen, gotlen),
-			),
-		)
+		assertFailStringChecker(t, "Len", c, s, makeExpl(
+			"length to pass IntChecker",
+			fmt.Sprintf("explanation: length:\nexp %d\ngot %d", explen, gotlen),
+		))
 	})
 
 	t.Run("Match pass", func(t *testing.T) {
@@ -73,9 +71,10 @@ func TestStringCheckerProvider(t *testing.T) {
 	t.Run("NotMatch fail", func(t *testing.T) {
 		r := regexp.MustCompile(`(?i)\sTENET\s`)
 		c := check.String.NotMatch(r)
-		assertFailStringChecker(t, "NotMatch", c, s,
-			makeExpl("not to match regexp "+r.String(), s),
-		)
+		assertFailStringChecker(t, "NotMatch", c, s, makeExpl(
+			"not to match regexp "+r.String(),
+			s,
+		))
 	})
 
 	t.Run("Contains pass", func(t *testing.T) {
@@ -87,9 +86,10 @@ func TestStringCheckerProvider(t *testing.T) {
 
 	t.Run("Contains fail", func(t *testing.T) {
 		c := check.String.Contains(exp)
-		assertFailStringChecker(t, "Contains", c, s,
-			makeExpl("to contain substring "+exp, s),
-		)
+		assertFailStringChecker(t, "Contains", c, s, makeExpl(
+			"to contain substring "+exp,
+			s,
+		))
 	})
 
 	t.Run("NotContains pass", func(t *testing.T) {
@@ -99,13 +99,15 @@ func TestStringCheckerProvider(t *testing.T) {
 
 	t.Run("NotContains fail", func(t *testing.T) {
 		c := check.String.NotContains(sub)
-		assertFailStringChecker(t, "NotContains", c, s,
-			makeExpl("not to contain substring "+sub, s),
-		)
+		assertFailStringChecker(t, "NotContains", c, s, makeExpl(
+			"not to contain substring "+sub,
+			s,
+		))
 		c = check.String.NotContains(s)
-		assertFailStringChecker(t, "NotContains", c, s,
-			makeExpl("not to contain substring "+s, s),
-		)
+		assertFailStringChecker(t, "NotContains", c, s, makeExpl(
+			"not to contain substring "+s,
+			s,
+		))
 	})
 }
 

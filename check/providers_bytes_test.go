@@ -28,9 +28,10 @@ func TestBytesCheckerProvider(t *testing.T) {
 
 	t.Run("Is fail", func(t *testing.T) {
 		c := check.Bytes.Is(diff)
-		assertFailBytesChecker(t, "Is", c, b,
-			makeExpl(fmt.Sprint(diff), fmt.Sprint(b)),
-		)
+		assertFailBytesChecker(t, "Is", c, b, makeExpl(
+			fmt.Sprint(diff),
+			fmt.Sprint(b),
+		))
 	})
 
 	t.Run("Not pass", func(t *testing.T) {
@@ -40,9 +41,10 @@ func TestBytesCheckerProvider(t *testing.T) {
 
 	t.Run("Not fail", func(t *testing.T) {
 		c := check.Bytes.Not(diff, eqJSON, b)
-		assertFailBytesChecker(t, "Not", c, b,
-			makeExpl(fmt.Sprintf("not %v", b), fmt.Sprint(b)),
-		)
+		assertFailBytesChecker(t, "Not", c, b, makeExpl(
+			fmt.Sprintf("not %v", b),
+			fmt.Sprint(b),
+		))
 	})
 
 	t.Run("Len pass", func(t *testing.T) {
@@ -54,12 +56,10 @@ func TestBytesCheckerProvider(t *testing.T) {
 		gotlen := len(b)
 		explen := gotlen + 1
 		c := check.Bytes.Len(check.Int.Is(explen))
-		assertFailBytesChecker(t, "Len", c, b,
-			makeExpl(
-				"length to pass IntChecker",
-				fmt.Sprintf("explanation: length:\nexp %d\ngot %d", explen, gotlen),
-			),
-		)
+		assertFailBytesChecker(t, "Len", c, b, makeExpl(
+			"length to pass IntChecker",
+			fmt.Sprintf("explanation: length:\nexp %d\ngot %d", explen, gotlen),
+		))
 	})
 
 	t.Run("SameJSON pass", func(t *testing.T) {
@@ -71,12 +71,10 @@ func TestBytesCheckerProvider(t *testing.T) {
 
 	t.Run("SameJSON fail", func(t *testing.T) {
 		c := check.Bytes.SameJSON(diff)
-		assertFailBytesChecker(t, "SameJSON", c, b,
-			makeExpl(
-				fmt.Sprintf("json data: %v", mapof(diff)),
-				fmt.Sprintf("json data: %v", mapof(b)),
-			),
-		)
+		assertFailBytesChecker(t, "SameJSON", c, b, makeExpl(
+			fmt.Sprintf("json data: %v", mapof(diff)),
+			fmt.Sprintf("json data: %v", mapof(b)),
+		))
 	})
 
 	t.Run("Contains pass", func(t *testing.T) {
@@ -113,20 +111,16 @@ func TestBytesCheckerProvider(t *testing.T) {
 
 	t.Run("NotContains fail", func(t *testing.T) {
 		c := check.Bytes.NotContains(sub)
-		assertFailBytesChecker(t, "NotContains", c, b,
-			makeExpl(
-				fmt.Sprintf("not to contain subslice %v", sub),
-				fmt.Sprint(b),
-			),
-		)
+		assertFailBytesChecker(t, "NotContains", c, b, makeExpl(
+			fmt.Sprintf("not to contain subslice %v", sub),
+			fmt.Sprint(b),
+		))
 
 		c = check.Bytes.NotContains(b)
-		assertFailBytesChecker(t, "NotContains", c, b,
-			makeExpl(
-				fmt.Sprintf("not to contain subslice %v", b),
-				fmt.Sprint(b),
-			),
-		)
+		assertFailBytesChecker(t, "NotContains", c, b, makeExpl(
+			fmt.Sprintf("not to contain subslice %v", b),
+			fmt.Sprint(b),
+		))
 	})
 
 	t.Run("AsMap pass", func(t *testing.T) {
@@ -137,23 +131,20 @@ func TestBytesCheckerProvider(t *testing.T) {
 
 	t.Run("AsMap fail", func(t *testing.T) {
 		c := check.Bytes.AsMap(check.Map.HasKeys("id", "nomatch"))
-		assertFailBytesChecker(t, "AsMap", c, b,
-			makeExpl(
-				"to pass MapChecker",
-				fmt.Sprintf(
-					"explanation: json map:\nexp to have keys [nomatch]\ngot %v",
-					mapof(b),
-				),
+		assertFailBytesChecker(t, "AsMap", c, b, makeExpl(
+			"to pass MapChecker",
+			fmt.Sprintf(
+				"explanation: json map:\nexp to have keys [nomatch]\ngot %v",
+				mapof(b),
 			),
+		),
 		)
 
 		c = check.Bytes.AsMap(check.Map.HasKeys("id"))
-		assertFailBytesChecker(t, "AsMap", c, sub,
-			makeExpl(
-				"to pass MapChecker",
-				"error: json: cannot unmarshal string into Go value of type map[string]interface {}",
-			),
-		)
+		assertFailBytesChecker(t, "AsMap", c, sub, makeExpl(
+			"to pass MapChecker",
+			"error: json: cannot unmarshal string into Go value of type map[string]interface {}",
+		))
 	})
 
 	t.Run("AsString pass", func(t *testing.T) {
@@ -163,14 +154,12 @@ func TestBytesCheckerProvider(t *testing.T) {
 
 	t.Run("AsString fail", func(t *testing.T) {
 		c := check.Bytes.AsString(check.String.Is(string(diff)))
-		assertFailBytesChecker(t, "AsString", c, b,
-			makeExpl(
-				"to pass StringChecker",
-				fmt.Sprintf(
-					"explanation: converted bytes:\nexp %s\ngot %s",
-					string(diff), string(b),
-				),
-			),
+		assertFailBytesChecker(t, "AsString", c, b, makeExpl(
+			"to pass StringChecker",
+			fmt.Sprintf(
+				"explanation: converted bytes:\nexp %s\ngot %s",
+				string(diff), string(b),
+			)),
 		)
 	})
 }
