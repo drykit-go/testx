@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/drykit-go/cond"
+
 	"github.com/drykit-go/testx/internal/reflectutil"
 )
 
@@ -41,25 +43,25 @@ func (p mapCheckerProvider) HasKeys(keys ...interface{}) ValueChecker {
 		return len(missing) == 0
 	}
 	expl := func(label string, got interface{}) string {
-		return p.explain(label, "to have keys "+strings.Join(missing, ","), got)
+		return p.explain(label, "to have keys "+p.formatValues(missing), got)
 	}
 	return NewValueChecker(pass, expl)
 }
 
 // HasNotKey checks the gotten map has the given keys set.
 func (p mapCheckerProvider) HasNotKeys(keys ...interface{}) ValueChecker {
-	var badKeys []string
+	var badkeys []string
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
 		for _, expk := range keys {
 			if _, found := p.get(got, expk); found {
-				badKeys = append(badKeys, fmt.Sprint(expk))
+				badkeys = append(badkeys, fmt.Sprint(expk))
 			}
 		}
-		return len(badKeys) == 0
+		return len(badkeys) == 0
 	}
 	expl := func(label string, got interface{}) string {
-		return p.explainNot(label, "to have keys "+strings.Join(badKeys, ","), got)
+		return p.explainNot(label, "to have keys "+p.formatValues(badkeys), got)
 	}
 	return NewValueChecker(pass, expl)
 }
@@ -77,25 +79,25 @@ func (p mapCheckerProvider) HasValues(values ...interface{}) ValueChecker {
 		return len(missing) == 0
 	}
 	expl := func(label string, got interface{}) string {
-		return p.explain(label, "to have values "+strings.Join(missing, ","), got)
+		return p.explain(label, "to have values "+p.formatValues(missing), got)
 	}
 	return NewValueChecker(pass, expl)
 }
 
 // HasNotValues checks the gotten map has not the given values set.
 func (p mapCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
-	var badValues []string
+	var badvalues []string
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
 		for _, badv := range values {
 			if p.hasValue(got, badv) {
-				badValues = append(badValues, fmt.Sprint(badv))
+				badvalues = append(badvalues, fmt.Sprint(badv))
 			}
 		}
-		return len(badValues) == 0
+		return len(badvalues) == 0
 	}
 	expl := func(label string, got interface{}) string {
-		return p.explainNot(label, "to have values "+strings.Join(badValues, ","), got)
+		return p.explainNot(label, "to have values "+p.formatValues(badvalues), got)
 	}
 	return NewValueChecker(pass, expl)
 }
@@ -104,29 +106,31 @@ func (p mapCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
 // pass the given checker. A key not found is considered a fail.
 // If len(keys) == 0, the check is made on all map values.
 func (p mapCheckerProvider) CheckValues(c ValueChecker, keys ...interface{}) ValueChecker { //nolint: gocognit // TODO: refactor
-	var badEntries []string
+	var badentries []string
+	allKeys := len(keys) == 0
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
-		if len(keys) == 0 {
+		if allKeys {
 			p.walk(got, func(gotk, gotv interface{}) {
 				if !c.Pass(gotv) {
-					badEntries = append(badEntries, fmt.Sprint(gotk))
+					badentries = append(badentries, fmt.Sprintf("%s:%v", gotk, gotv))
 				}
 			})
 		} else {
 			for _, expk := range keys {
 				gotv, ok := p.get(got, expk)
 				if !ok || !c.Pass(gotv) {
-					badEntries = append(badEntries, fmt.Sprint(expk))
+					badentries = append(badentries, fmt.Sprintf("%s:%v", expk, gotv))
 				}
 			}
 		}
-		return len(badEntries) == 0
+		return len(badentries) == 0
 	}
 	expl := func(label string, _ interface{}) string {
+		checkedKeys := cond.String("all keys", fmt.Sprintf("keys %v", keys), allKeys)
 		return p.explainCheck(label,
-			fmt.Sprintf("values for keys %v to pass ValueChecker", keys),
-			c.Explain("values", "fail"),
+			fmt.Sprintf("values for %s to pass ValueChecker", checkedKeys),
+			c.Explain("values", p.formatValues(badentries)),
 		)
 	}
 	return NewValueChecker(pass, expl)
@@ -162,4 +166,12 @@ func (mapCheckerProvider) walk(gotmap interface{}, f func(k, v interface{})) {
 		v := iter.Value().Interface()
 		f(k, v)
 	}
+}
+
+func (p mapCheckerProvider) formatValues(values []string) string {
+	var b strings.Builder
+	b.WriteByte('[')
+	b.WriteString(strings.Join(values, ", "))
+	b.WriteByte(']')
+	return b.String()
 }

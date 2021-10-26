@@ -1,6 +1,7 @@
 package check_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/drykit-go/testx/check"
@@ -21,7 +22,10 @@ func TestMapCheckerProvider(t *testing.T) {
 
 	t.Run("Len fail", func(t *testing.T) {
 		c := check.Map.Len(check.Int.Not(3))
-		assertFailMapChecker(t, "Len", c, m)
+		assertFailMapChecker(t, "Len", c, m, makeExpl(
+			"length to pass IntChecker",
+			"explanation: length:\nexp not 3\ngot 3",
+		))
 	})
 
 	t.Run("HasKeys pass", func(t *testing.T) {
@@ -30,8 +34,11 @@ func TestMapCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("HasKeys fail", func(t *testing.T) {
-		c := check.Map.HasKeys("name", "hello")
-		assertFailMapChecker(t, "HasKeys", c, m)
+		c := check.Map.HasKeys("name", "hello", "bad")
+		assertFailMapChecker(t, "HasKeys", c, m, makeExpl(
+			"to have keys [hello, bad]",
+			fmt.Sprint(m),
+		))
 	})
 
 	t.Run("HasNotKeys pass", func(t *testing.T) {
@@ -40,8 +47,11 @@ func TestMapCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("HasNotKeys fail", func(t *testing.T) {
-		c := check.Map.HasNotKeys("name", "hello")
-		assertFailMapChecker(t, "HasNotKeys", c, m)
+		c := check.Map.HasNotKeys("name", "hello", "age")
+		assertFailMapChecker(t, "HasNotKeys", c, m, makeExpl(
+			"not to have keys [name, age]",
+			fmt.Sprint(m),
+		))
 	})
 
 	t.Run("HasValues pass", func(t *testing.T) {
@@ -50,8 +60,11 @@ func TestMapCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("HasValues fail", func(t *testing.T) {
-		c := check.Map.HasValues(42, "hello")
-		assertFailMapChecker(t, "HasValues", c, m)
+		c := check.Map.HasValues(42, "hello", true)
+		assertFailMapChecker(t, "HasValues", c, m, makeExpl(
+			"to have values [hello, true]",
+			fmt.Sprint(m),
+		))
 	})
 
 	t.Run("HasNotValues pass", func(t *testing.T) {
@@ -60,24 +73,44 @@ func TestMapCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("HasNotValues fail", func(t *testing.T) {
-		c := check.Map.HasNotValues(-1, []string{"Robert Robichet", "Jean-Pierre Avidol"})
-		assertFailMapChecker(t, "HasNotValues", c, m)
+		c := check.Map.HasNotValues(42, "hi", []string{"Robert Robichet", "Jean-Pierre Avidol"})
+		assertFailMapChecker(t, "HasNotValues", c, m, makeExpl(
+			"not to have values [42, [Robert Robichet Jean-Pierre Avidol]]",
+			fmt.Sprint(m),
+		))
 	})
 
 	t.Run("CheckValues pass", func(t *testing.T) {
+		// keys subset
 		c := check.Map.CheckValues(
 			checkconv.FromInt(check.Int.InRange(41, 43)),
 			"age",
 		)
 		assertPassMapChecker(t, "CheckValues", c, m)
+
+		// all keys
+		c = check.Map.CheckValues(check.Value.Not(0))
+		assertPassMapChecker(t, "CheckValues", c, m)
 	})
 
 	t.Run("CheckValues fail", func(t *testing.T) {
+		// keys subset
 		c := check.Map.CheckValues(
 			checkconv.FromInt(check.Int.OutRange(41, 43)),
-			"age",
+			"age", "badkey",
 		)
-		assertFailMapChecker(t, "CheckValues", c, m)
+		assertFailMapChecker(t, "CheckValues", c, m, makeExpl(
+			"values for keys [age badkey] to pass ValueChecker",
+			"explanation: values:\nexp not in range [41:43]\ngot [age:42, badkey:<nil>]",
+		))
+
+		// all keys
+		c = check.Map.CheckValues(check.Value.Is("Marcel Patulacci"))
+		assertFailMapChecker(t, "CheckValues", c, m, makeExpl(
+			"values for all keys to pass ValueChecker",
+			"explanation: values:\nexp Marcel Patulacci\ngot "+
+				"[age:42, friends:[Robert Robichet Jean-Pierre Avidol]]",
+		))
 	})
 }
 
@@ -90,11 +123,12 @@ func assertPassMapChecker(t *testing.T, method string, c check.ValueChecker, got
 	}
 }
 
-func assertFailMapChecker(t *testing.T, method string, c check.ValueChecker, gotm interface{}) {
+func assertFailMapChecker(t *testing.T, method string, c check.ValueChecker, gotm interface{}, expexpl string) {
 	t.Helper()
 	if c.Pass(gotm) {
 		failMapCheckerTest(t, false, method, gotm, c.Explain)
 	}
+	assertGoodExplain(t, c, gotm, expexpl)
 }
 
 func failMapCheckerTest(t *testing.T, expPass bool, method string, gotm interface{}, explain check.ExplainFunc) {

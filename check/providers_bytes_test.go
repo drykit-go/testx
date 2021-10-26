@@ -141,7 +141,7 @@ func TestBytesCheckerProvider(t *testing.T) {
 			makeExpl(
 				"to pass MapChecker",
 				fmt.Sprintf(
-					"explanation: json map:\nexp to have keys nomatch\ngot %v",
+					"explanation: json map:\nexp to have keys [nomatch]\ngot %v",
 					mapof(b),
 				),
 			),
