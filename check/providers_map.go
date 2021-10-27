@@ -3,7 +3,6 @@ package check
 import (
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/drykit-go/cond"
 
@@ -43,7 +42,7 @@ func (p mapCheckerProvider) HasKeys(keys ...interface{}) ValueChecker {
 		return len(missing) == 0
 	}
 	expl := func(label string, got interface{}) string {
-		return p.explain(label, "to have keys "+p.formatValues(missing), got)
+		return p.explain(label, "to have keys "+p.formatList(missing), got)
 	}
 	return NewValueChecker(pass, expl)
 }
@@ -61,7 +60,7 @@ func (p mapCheckerProvider) HasNotKeys(keys ...interface{}) ValueChecker {
 		return len(badkeys) == 0
 	}
 	expl := func(label string, got interface{}) string {
-		return p.explainNot(label, "to have keys "+p.formatValues(badkeys), got)
+		return p.explainNot(label, "to have keys "+p.formatList(badkeys), got)
 	}
 	return NewValueChecker(pass, expl)
 }
@@ -79,7 +78,7 @@ func (p mapCheckerProvider) HasValues(values ...interface{}) ValueChecker {
 		return len(missing) == 0
 	}
 	expl := func(label string, got interface{}) string {
-		return p.explain(label, "to have values "+p.formatValues(missing), got)
+		return p.explain(label, "to have values "+p.formatList(missing), got)
 	}
 	return NewValueChecker(pass, expl)
 }
@@ -97,7 +96,7 @@ func (p mapCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
 		return len(badvalues) == 0
 	}
 	expl := func(label string, got interface{}) string {
-		return p.explainNot(label, "to have values "+p.formatValues(badvalues), got)
+		return p.explainNot(label, "to have values "+p.formatList(badvalues), got)
 	}
 	return NewValueChecker(pass, expl)
 }
@@ -130,7 +129,7 @@ func (p mapCheckerProvider) CheckValues(c ValueChecker, keys ...interface{}) Val
 		checkedKeys := cond.String("all keys", fmt.Sprintf("keys %v", keys), allKeys)
 		return p.explainCheck(label,
 			fmt.Sprintf("values for %s to pass ValueChecker", checkedKeys),
-			c.Explain("values", p.formatValues(badentries)),
+			c.Explain("values", p.formatList(badentries)),
 		)
 	}
 	return NewValueChecker(pass, expl)
@@ -166,12 +165,4 @@ func (mapCheckerProvider) walk(gotmap interface{}, f func(k, v interface{})) {
 		v := iter.Value().Interface()
 		f(k, v)
 	}
-}
-
-func (p mapCheckerProvider) formatValues(values []string) string {
-	var b strings.Builder
-	b.WriteByte('[')
-	b.WriteString(strings.Join(values, ", "))
-	b.WriteByte(']')
-	return b.String()
 }

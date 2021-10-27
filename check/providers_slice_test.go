@@ -45,7 +45,7 @@ func TestSliceCheckerProvider(t *testing.T) {
 	t.Run("HasValues fail", func(t *testing.T) {
 		c := check.Slice.HasValues([]float64{3.14})
 		assertFailSliceChecker(t, "HasValues", c, s, makeExpl(
-			"to have values {[3.14]}",
+			"to have values [[3.14]]",
 			fmt.Sprint(s),
 		))
 	})
@@ -58,7 +58,7 @@ func TestSliceCheckerProvider(t *testing.T) {
 	t.Run("HasNotValues fail", func(t *testing.T) {
 		c := check.Slice.HasNotValues("hi", -1, []float32{3.14})
 		assertFailSliceChecker(t, "HasNotValues", c, s, makeExpl(
-			"not to have values {[3.14]}",
+			"not to have values [[3.14]]",
 			fmt.Sprint(s),
 		))
 	})
@@ -78,7 +78,7 @@ func TestSliceCheckerProvider(t *testing.T) {
 		)
 		assertFailSliceChecker(t, "CheckValues", c, s, makeExpl(
 			"values to pass ValueChecker",
-			"explanation: values:\n"+makeExpl("not in range [41:43]", "{1:42}"),
+			"explanation: values:\n"+makeExpl("not in range [41:43]", "[1:42]"),
 		))
 	})
 }

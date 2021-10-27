@@ -3,7 +3,6 @@ package check
 import (
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/drykit-go/testx/internal/reflectutil"
 )
@@ -59,7 +58,7 @@ func (p sliceCheckerProvider) HasValues(values ...interface{}) ValueChecker {
 	}
 	expl := func(label string, got interface{}) string {
 		return p.explain(label,
-			"to have values "+p.formatValues(missing),
+			"to have values "+p.formatList(missing),
 			got,
 		)
 	}
@@ -80,7 +79,7 @@ func (p sliceCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
 	}
 	expl := func(label string, got interface{}) string {
 		return p.explainNot(label,
-			"to have values "+p.formatValues(badvalues),
+			"to have values "+p.formatList(badvalues),
 			got,
 		)
 	}
@@ -103,7 +102,7 @@ func (p sliceCheckerProvider) CheckValues(c ValueChecker, filters ...func(i int,
 	expl := func(label string, _ interface{}) string {
 		return p.explainCheck(label,
 			"values to pass ValueChecker",
-			c.Explain("values", p.formatValues(badvalues)),
+			c.Explain("values", p.formatList(badvalues)),
 		)
 	}
 	return NewValueChecker(pass, expl)
@@ -164,12 +163,4 @@ func (p sliceCheckerProvider) mergeFilters(
 		next := p.mergeFilters(filters[1:]...)
 		return curr(i, v) && next(i, v)
 	}
-}
-
-func (p sliceCheckerProvider) formatValues(values []string) string {
-	var b strings.Builder
-	b.WriteByte('{')
-	b.WriteString(strings.Join(values, ", "))
-	b.WriteByte('}')
-	return b.String()
 }

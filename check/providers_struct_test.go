@@ -17,10 +17,6 @@ func TestStructCheckerProvider(t *testing.T) {
 		vAB = 10
 		vXY = 20
 	)
-	var (
-		vABs = fmt.Sprint(vAB)
-		vXYs = fmt.Sprint(vXY)
-	)
 	s := structTest{A: vAB, B: vAB, X: vXY, Y: vXY}
 
 	t.Run("FieldsEqual pass", func(t *testing.T) {
@@ -31,8 +27,8 @@ func TestStructCheckerProvider(t *testing.T) {
 	t.Run("FieldsEqual fail", func(t *testing.T) {
 		c := check.Struct.FieldsEqual(vAB, []string{"A", "B", "X", "Y"})
 		assertFailStructChecker(t, "FieldsEqual", c, s, makeExpl(
-			"fields [.A, .B, .X, .Y] to equal "+vABs,
-			".X="+vXYs+", .Y="+vXYs,
+			fmt.Sprintf("fields [.A, .B, .X, .Y] to equal %v", vAB),
+			fmt.Sprintf(".X=%v, .Y=%v", vXY, vXY),
 		))
 	})
 

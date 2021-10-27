@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 
 	"github.com/drykit-go/testx/internal/fmtexpl"
 )
@@ -45,6 +46,14 @@ func (p baseCheckerProvider) sameJSONProduced(xdata, ydata, xptr, yptr interface
 	bx := mustMarshal(xdata)
 	by := mustMarshal(ydata)
 	return p.sameJSON(bx, by, &xptr, &yptr)
+}
+
+func (p baseCheckerProvider) formatList(values []string) string {
+	var b strings.Builder
+	b.WriteByte('[')
+	b.WriteString(strings.Join(values, ", "))
+	b.WriteByte(']')
+	return b.String()
 }
 
 func (p baseCheckerProvider) deq(a, b interface{}) bool {
