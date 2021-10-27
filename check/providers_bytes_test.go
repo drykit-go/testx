@@ -180,9 +180,7 @@ func assertFailBytesChecker(t *testing.T, method string, c check.BytesChecker, i
 	if c.Pass(in) {
 		failBytesCheckerTest(t, false, method, in, c.Explain)
 	}
-	if expexpl != "" {
-		assertGoodExplain(t, c, in, expexpl)
-	}
+	assertGoodExplain(t, c, in, expexpl)
 }
 
 func failBytesCheckerTest(t *testing.T, expPass bool, method string, in []byte, explain check.ExplainFunc) {

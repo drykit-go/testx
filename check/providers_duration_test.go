@@ -117,9 +117,7 @@ func assertFailDurationChecker(t *testing.T, method string, c check.DurationChec
 	if c.Pass(d) {
 		failDurationCheckerTest(t, false, method, d, c.Explain)
 	}
-	if expexpl != "" {
-		assertGoodExplain(t, c, d, expexpl)
-	}
+	assertGoodExplain(t, c, d, expexpl)
 }
 
 func failDurationCheckerTest(t *testing.T, expPass bool, method string, d time.Duration, explain check.ExplainFunc) {

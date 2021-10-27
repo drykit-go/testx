@@ -129,9 +129,7 @@ func assertFailValueChecker(t *testing.T, method string, c check.ValueChecker, v
 	if c.Pass(v) {
 		failValueCheckerTest(t, false, method, v, c.Explain)
 	}
-	if expexpl != "" {
-		assertGoodExplain(t, c, v, expexpl)
-	}
+	assertGoodExplain(t, c, v, expexpl)
 }
 
 func failValueCheckerTest(t *testing.T, expPass bool, method string, v interface{}, explain check.ExplainFunc) {

@@ -128,9 +128,7 @@ func assertFailStringChecker(t *testing.T, method string, c check.StringChecker,
 	if c.Pass(in) {
 		failStringCheckerTest(t, false, method, in, c.Explain)
 	}
-	if expexpl != "" {
-		assertGoodExplain(t, c, in, expexpl)
-	}
+	assertGoodExplain(t, c, in, expexpl)
 }
 
 func failStringCheckerTest(t *testing.T, expPass bool, method, in string, explain check.ExplainFunc) {

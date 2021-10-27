@@ -38,9 +38,7 @@ func assertFailBoolChecker(t *testing.T, method string, c check.BoolChecker, b b
 	if c.Pass(b) {
 		failBoolCheckerTest(t, false, method, b, c.Explain)
 	}
-	if expexpl != "" {
-		assertGoodExplain(t, c, b, expexpl)
-	}
+	assertGoodExplain(t, c, b, expexpl)
 }
 
 func failBoolCheckerTest(t *testing.T, expPass bool, method string, b bool, explain check.ExplainFunc) {

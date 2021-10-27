@@ -106,9 +106,7 @@ func assertFailHTTPHeaderChecker(t *testing.T, method string, c check.HTTPHeader
 	if c.Pass(h) {
 		failHTTPHeaderCheckerTest(t, false, method, h, c.Explain)
 	}
-	if expexpl != "" {
-		assertGoodExplain(t, c, h, expexpl)
-	}
+	assertGoodExplain(t, c, h, expexpl)
 }
 
 func failHTTPHeaderCheckerTest(t *testing.T, expPass bool, method string, h http.Header, explain check.ExplainFunc) {

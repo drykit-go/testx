@@ -70,9 +70,7 @@ func assertFailStructChecker(t *testing.T, method string, c check.ValueChecker, 
 	if c.Pass(s) {
 		failStructCheckerTest(t, false, method, s, c.Explain)
 	}
-	if expexpl != "" {
-		assertGoodExplain(t, c, s, expexpl)
-	}
+	assertGoodExplain(t, c, s, expexpl)
 }
 
 func failStructCheckerTest(t *testing.T, expPass bool, method string, s structTest, explain check.ExplainFunc) {
