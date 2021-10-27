@@ -58,7 +58,10 @@ func TestBytesCheckerProvider(t *testing.T) {
 		c := check.Bytes.Len(check.Int.Is(explen))
 		assertFailBytesChecker(t, "Len", c, b, makeExpl(
 			"length to pass IntChecker",
-			fmt.Sprintf("explanation: length:\nexp %d\ngot %d", explen, gotlen),
+			"explanation: length:\n"+makeExpl(
+				fmt.Sprint(explen),
+				fmt.Sprint(gotlen),
+			),
 		))
 	})
 
@@ -133,12 +136,11 @@ func TestBytesCheckerProvider(t *testing.T) {
 		c := check.Bytes.AsMap(check.Map.HasKeys("id", "nomatch"))
 		assertFailBytesChecker(t, "AsMap", c, b, makeExpl(
 			"to pass MapChecker",
-			fmt.Sprintf(
-				"explanation: json map:\nexp to have keys [nomatch]\ngot %v",
-				mapof(b),
+			"explanation: json map:\n"+makeExpl(
+				"to have keys [nomatch]",
+				fmt.Sprint(mapof(b)),
 			),
-		),
-		)
+		))
 
 		c = check.Bytes.AsMap(check.Map.HasKeys("id"))
 		assertFailBytesChecker(t, "AsMap", c, sub, makeExpl(
@@ -156,11 +158,11 @@ func TestBytesCheckerProvider(t *testing.T) {
 		c := check.Bytes.AsString(check.String.Is(string(diff)))
 		assertFailBytesChecker(t, "AsString", c, b, makeExpl(
 			"to pass StringChecker",
-			fmt.Sprintf(
-				"explanation: converted bytes:\nexp %s\ngot %s",
-				string(diff), string(b),
-			)),
-		)
+			"explanation: converted bytes:\n"+makeExpl(
+				string(diff),
+				string(b),
+			),
+		))
 	})
 }
 

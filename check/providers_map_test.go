@@ -24,7 +24,7 @@ func TestMapCheckerProvider(t *testing.T) {
 		c := check.Map.Len(check.Int.Not(3))
 		assertFailMapChecker(t, "Len", c, m, makeExpl(
 			"length to pass IntChecker",
-			"explanation: length:\nexp not 3\ngot 3",
+			"explanation: length:\n"+makeExpl("not 3", "3"),
 		))
 	})
 
@@ -101,15 +101,21 @@ func TestMapCheckerProvider(t *testing.T) {
 		)
 		assertFailMapChecker(t, "CheckValues", c, m, makeExpl(
 			"values for keys [age badkey] to pass ValueChecker",
-			"explanation: values:\nexp not in range [41:43]\ngot [age:42, badkey:<nil>]",
+			"explanation: values:\n"+makeExpl(
+				"not in range [41:43]",
+				"[age:42, badkey:<nil>]",
+			),
 		))
 
 		// all keys
 		c = check.Map.CheckValues(check.Value.Is("Marcel Patulacci"))
 		assertFailMapChecker(t, "CheckValues", c, m, makeExpl(
 			"values for all keys to pass ValueChecker",
-			"explanation: values:\nexp Marcel Patulacci\ngot "+
+			"explanation: values:\n"+makeExpl(
+				"Marcel Patulacci",
+				//! keys order not guaranteed here, might break
 				"[age:42, friends:[Robert Robichet Jean-Pierre Avidol]]",
+			),
 		))
 	})
 }

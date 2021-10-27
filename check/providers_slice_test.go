@@ -20,7 +20,7 @@ func TestSliceCheckerProvider(t *testing.T) {
 		c := check.Slice.Len(check.Int.Not(4))
 		assertFailSliceChecker(t, "Len", c, s, makeExpl(
 			"length to pass IntChecker",
-			"explanation: length:\nexp not 4\ngot 4",
+			"explanation: length:\n"+makeExpl("not 4", "4"),
 		))
 	})
 
@@ -33,7 +33,7 @@ func TestSliceCheckerProvider(t *testing.T) {
 		c := check.Slice.Cap(check.Int.Not(4))
 		assertFailSliceChecker(t, "Cap", c, s, makeExpl(
 			"capacity to pass IntChecker",
-			"explanation: capacity:\nexp not 4\ngot 4",
+			"explanation: capacity:\n"+makeExpl("not 4", "4"),
 		))
 	})
 
@@ -78,7 +78,7 @@ func TestSliceCheckerProvider(t *testing.T) {
 		)
 		assertFailSliceChecker(t, "CheckValues", c, s, makeExpl(
 			"values to pass ValueChecker",
-			"explanation: values:\nexp not in range [41:43]\ngot {1:42}",
+			"explanation: values:\n"+makeExpl("not in range [41:43]", "{1:42}"),
 		))
 	})
 }

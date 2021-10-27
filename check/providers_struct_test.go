@@ -51,7 +51,7 @@ func TestStructCheckerProvider(t *testing.T) {
 		)
 		assertFailStructChecker(t, "CheckFields", c, s, makeExpl(
 			"fields [.A, .B, .X, .Y] to pass ValueChecker",
-			"explanation: fields:\nexp < 11\ngot .X=20, .Y=20",
+			"explanation: fields:\n"+makeExpl("< 11", ".X=20, .Y=20"),
 		))
 	})
 }

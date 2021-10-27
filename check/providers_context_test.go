@@ -76,13 +76,13 @@ func TestContextCheckerProvider(t *testing.T) {
 		ctxMissingKey := context.Background()
 		assertFailContextChecker(t, "Value", c, ctxMissingKey, makeExpl(
 			"value for key userID to pass ValueChecker",
-			"explanation: value:\nexp 0\ngot <nil>",
+			"explanation: value:\n"+makeExpl("0", "<nil>"),
 		))
 
 		ctxBadValue := ctxVal("userID", -1)
 		assertFailContextChecker(t, "Value", c, ctxBadValue, makeExpl(
 			"value for key userID to pass ValueChecker",
-			"explanation: value:\nexp 0\ngot -1",
+			"explanation: value:\n"+makeExpl("0", "-1"),
 		))
 	})
 }

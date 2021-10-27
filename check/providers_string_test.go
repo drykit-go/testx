@@ -46,7 +46,10 @@ func TestStringCheckerProvider(t *testing.T) {
 		c := check.String.Len(check.Int.Is(explen))
 		assertFailStringChecker(t, "Len", c, s, makeExpl(
 			"length to pass IntChecker",
-			fmt.Sprintf("explanation: length:\nexp %d\ngot %d", explen, gotlen),
+			"explanation: length:\n"+makeExpl(
+				fmt.Sprint(explen),
+				fmt.Sprint(gotlen),
+			),
 		))
 	})
 

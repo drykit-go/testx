@@ -82,12 +82,13 @@ func TestHTTPHeaderCheckerProvider(t *testing.T) {
 
 	t.Run("CheckValue fail", func(t *testing.T) {
 		c := check.HTTPHeader.CheckValue("API_KEY", check.String.Not("secret0"))
-		assertFailHTTPHeaderChecker(t, "CheckValue", c, h,
-			makeExpl(
-				`value for key "API_KEY" to pass StringChecker`,
-				"explanation: http.Header[\"API_KEY\"]:\nexp not secret0\ngot secret0",
+		assertFailHTTPHeaderChecker(t, "CheckValue", c, h, makeExpl(
+			`value for key "API_KEY" to pass StringChecker`,
+			`explanation: http.Header["API_KEY"]:`+"\n"+makeExpl(
+				"not secret0",
+				"secret0",
 			),
-		)
+		))
 	})
 }
 
