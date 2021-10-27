@@ -3,7 +3,8 @@ package check
 import (
 	"fmt"
 	"reflect"
-	"strings"
+
+	"github.com/drykit-go/cond"
 
 	"github.com/drykit-go/testx/internal/reflectutil"
 )
@@ -41,25 +42,25 @@ func (p mapCheckerProvider) HasKeys(keys ...interface{}) ValueChecker {
 		return len(missing) == 0
 	}
 	expl := func(label string, got interface{}) string {
-		return p.explain(label, "to have keys "+strings.Join(missing, ","), got)
+		return p.explain(label, "to have keys "+p.formatList(missing), got)
 	}
 	return NewValueChecker(pass, expl)
 }
 
 // HasNotKey checks the gotten map has the given keys set.
 func (p mapCheckerProvider) HasNotKeys(keys ...interface{}) ValueChecker {
-	var badKeys []string
+	var badkeys []string
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
 		for _, expk := range keys {
 			if _, found := p.get(got, expk); found {
-				badKeys = append(badKeys, fmt.Sprint(expk))
+				badkeys = append(badkeys, fmt.Sprint(expk))
 			}
 		}
-		return len(badKeys) == 0
+		return len(badkeys) == 0
 	}
 	expl := func(label string, got interface{}) string {
-		return p.explainNot(label, "to have keys "+strings.Join(badKeys, ","), got)
+		return p.explainNot(label, "to have keys "+p.formatList(badkeys), got)
 	}
 	return NewValueChecker(pass, expl)
 }
@@ -77,25 +78,25 @@ func (p mapCheckerProvider) HasValues(values ...interface{}) ValueChecker {
 		return len(missing) == 0
 	}
 	expl := func(label string, got interface{}) string {
-		return p.explain(label, "to have values "+strings.Join(missing, ","), got)
+		return p.explain(label, "to have values "+p.formatList(missing), got)
 	}
 	return NewValueChecker(pass, expl)
 }
 
 // HasNotValues checks the gotten map has not the given values set.
 func (p mapCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
-	var badValues []string
+	var badvalues []string
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
 		for _, badv := range values {
 			if p.hasValue(got, badv) {
-				badValues = append(badValues, fmt.Sprint(badv))
+				badvalues = append(badvalues, fmt.Sprint(badv))
 			}
 		}
-		return len(badValues) == 0
+		return len(badvalues) == 0
 	}
 	expl := func(label string, got interface{}) string {
-		return p.explainNot(label, "to have values "+strings.Join(badValues, ","), got)
+		return p.explainNot(label, "to have values "+p.formatList(badvalues), got)
 	}
 	return NewValueChecker(pass, expl)
 }
@@ -104,39 +105,41 @@ func (p mapCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
 // pass the given checker. A key not found is considered a fail.
 // If len(keys) == 0, the check is made on all map values.
 func (p mapCheckerProvider) CheckValues(c ValueChecker, keys ...interface{}) ValueChecker { //nolint: gocognit // TODO: refactor
-	var badEntries []string
+	var badentries []string
+	allKeys := len(keys) == 0
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
-		if len(keys) == 0 {
+		if allKeys {
 			p.walk(got, func(gotk, gotv interface{}) {
 				if !c.Pass(gotv) {
-					badEntries = append(badEntries, fmt.Sprint(gotk))
+					badentries = append(badentries, fmt.Sprintf("%s:%v", gotk, gotv))
 				}
 			})
 		} else {
 			for _, expk := range keys {
 				gotv, ok := p.get(got, expk)
 				if !ok || !c.Pass(gotv) {
-					badEntries = append(badEntries, fmt.Sprint(expk))
+					badentries = append(badentries, fmt.Sprintf("%s:%v", expk, gotv))
 				}
 			}
 		}
-		return len(badEntries) == 0
+		return len(badentries) == 0
 	}
 	expl := func(label string, _ interface{}) string {
+		checkedKeys := cond.String("all keys", fmt.Sprintf("keys %v", keys), allKeys)
 		return p.explainCheck(label,
-			fmt.Sprintf("values for keys %v to pass ValueChecker", keys),
-			c.Explain("values", "fail"),
+			fmt.Sprintf("values for %s to pass ValueChecker", checkedKeys),
+			c.Explain("values", p.formatList(badentries)),
 		)
 	}
 	return NewValueChecker(pass, expl)
 }
 
 // get returns gotmap[key] and a bool representing whether a match is found.
-func (mapCheckerProvider) get(gotmap, key interface{}) (interface{}, bool) {
+func (p mapCheckerProvider) get(gotmap, key interface{}) (interface{}, bool) {
 	iter := reflect.ValueOf(gotmap).MapRange()
 	for iter.Next() {
-		if k := iter.Key().Interface(); deq(k, key) {
+		if k := iter.Key().Interface(); p.deq(k, key) {
 			return iter.Value().Interface(), true
 		}
 	}
@@ -144,10 +147,10 @@ func (mapCheckerProvider) get(gotmap, key interface{}) (interface{}, bool) {
 }
 
 // hasValue returns true if gotmap matches the specified value.
-func (mapCheckerProvider) hasValue(gotmap, value interface{}) bool {
+func (p mapCheckerProvider) hasValue(gotmap, value interface{}) bool {
 	iter := reflect.ValueOf(gotmap).MapRange()
 	for iter.Next() {
-		if gotv := iter.Value().Interface(); deq(gotv, value) {
+		if gotv := iter.Value().Interface(); p.deq(gotv, value) {
 			return true
 		}
 	}

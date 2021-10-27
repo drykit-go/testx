@@ -3,7 +3,6 @@ package check
 import (
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/drykit-go/testx/internal/reflectutil"
 )
@@ -59,7 +58,7 @@ func (p sliceCheckerProvider) HasValues(values ...interface{}) ValueChecker {
 	}
 	expl := func(label string, got interface{}) string {
 		return p.explain(label,
-			fmt.Sprintf("to have values %s", strings.Join(missing, ",")),
+			"to have values "+p.formatList(missing),
 			got,
 		)
 	}
@@ -68,19 +67,19 @@ func (p sliceCheckerProvider) HasValues(values ...interface{}) ValueChecker {
 
 // HasNotValues checks the gotten slice has not the given values set.
 func (p sliceCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
-	var badValues []string
+	var badvalues []string
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
 		for _, badv := range values {
 			if p.hasValue(got, badv) {
-				badValues = append(badValues, fmt.Sprint(badv))
+				badvalues = append(badvalues, fmt.Sprint(badv))
 			}
 		}
-		return len(badValues) == 0
+		return len(badvalues) == 0
 	}
 	expl := func(label string, got interface{}) string {
 		return p.explainNot(label,
-			fmt.Sprintf("to have values %s", strings.Join(badValues, ",")),
+			"to have values "+p.formatList(badvalues),
 			got,
 		)
 	}
@@ -90,20 +89,20 @@ func (p sliceCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
 // CheckValues checks the values of the gotten slice pass the given ValueChecker.
 // If a filterFunc is provided, the values not passing it are ignored.
 func (p sliceCheckerProvider) CheckValues(c ValueChecker, filters ...func(i int, v interface{}) bool) ValueChecker {
-	var badValues []string
+	var badvalues []string
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
 		p.walk(got, filters, func(i int, v interface{}) {
 			if !c.Pass(v) {
-				badValues = append(badValues, fmt.Sprintf("%d:%v", i, v))
+				badvalues = append(badvalues, fmt.Sprintf("%d:%v", i, v))
 			}
 		})
-		return len(badValues) == 0
+		return len(badvalues) == 0
 	}
 	expl := func(label string, _ interface{}) string {
 		return p.explainCheck(label,
 			"values to pass ValueChecker",
-			c.Explain(strings.Join(badValues, ","), "fail"),
+			c.Explain("values", p.formatList(badvalues)),
 		)
 	}
 	return NewValueChecker(pass, expl)
@@ -114,7 +113,7 @@ func (p sliceCheckerProvider) CheckValues(c ValueChecker, filters ...func(i int,
 // hasValue returns true if slice has a value equal to expv.
 func (p sliceCheckerProvider) hasValue(slice, expv interface{}) bool {
 	return p.walkUntil(slice, nil, func(_ int, v interface{}) bool {
-		return deq(v, expv)
+		return p.deq(v, expv)
 	})
 }
 

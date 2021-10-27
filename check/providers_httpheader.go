@@ -14,7 +14,7 @@ type httpHeaderCheckerProvider struct{ baseCheckerProvider }
 func (p httpHeaderCheckerProvider) HasKey(key string) HTTPHeaderChecker {
 	pass := func(got http.Header) bool { return p.hasKey(got, key) }
 	expl := func(label string, got interface{}) string {
-		return p.explain(label, "to have key "+key, got)
+		return p.explain(label, `to have key "`+key+`"`, got)
 	}
 	return NewHTTPHeaderChecker(pass, expl)
 }
@@ -24,7 +24,7 @@ func (p httpHeaderCheckerProvider) HasKey(key string) HTTPHeaderChecker {
 func (p httpHeaderCheckerProvider) HasNotKey(key string) HTTPHeaderChecker {
 	pass := func(got http.Header) bool { return !p.hasKey(got, key) }
 	expl := func(label string, got interface{}) string {
-		return p.explainNot(label, "to have key "+key, got)
+		return p.explainNot(label, `to have key "`+key+`"`, got)
 	}
 	return NewHTTPHeaderChecker(pass, expl)
 }
@@ -64,8 +64,8 @@ func (p httpHeaderCheckerProvider) CheckValue(key string, c StringChecker) HTTPH
 	}
 	expl := func(label string, got interface{}) string {
 		return p.explainCheck(label,
-			fmt.Sprintf("value for key %s to pass StringChecker", key),
-			c.Explain("value", val),
+			fmt.Sprintf(`value for key "%s" to pass StringChecker`, key),
+			c.Explain(`http.Header["`+key+`"]`, val),
 		)
 	}
 	return NewHTTPHeaderChecker(pass, expl)

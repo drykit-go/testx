@@ -18,9 +18,9 @@ func TestBoolCheckerProvider(t *testing.T) {
 
 	t.Run("Is fail", func(t *testing.T) {
 		c := check.Bool.Is(!b)
-		assertFailBoolChecker(t, "Is", c, b)
+		assertFailBoolChecker(t, "Is", c, b, makeExpl("false", "true"))
 		c = check.Bool.Is(b)
-		assertFailBoolChecker(t, "Is", c, !b)
+		assertFailBoolChecker(t, "Is", c, !b, makeExpl("true", "false"))
 	})
 }
 
@@ -33,11 +33,12 @@ func assertPassBoolChecker(t *testing.T, method string, c check.BoolChecker, b b
 	}
 }
 
-func assertFailBoolChecker(t *testing.T, method string, c check.BoolChecker, b bool) {
+func assertFailBoolChecker(t *testing.T, method string, c check.BoolChecker, b bool, expexpl string) {
 	t.Helper()
 	if c.Pass(b) {
 		failBoolCheckerTest(t, false, method, b, c.Explain)
 	}
+	assertGoodExplain(t, c, b, expexpl)
 }
 
 func failBoolCheckerTest(t *testing.T, expPass bool, method string, b bool, explain check.ExplainFunc) {

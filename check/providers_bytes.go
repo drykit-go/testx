@@ -41,7 +41,7 @@ func (p bytesCheckerProvider) Not(values ...[]byte) BytesChecker {
 func (p bytesCheckerProvider) SameJSON(tar []byte) BytesChecker {
 	var decGot, decTar interface{}
 	pass := func(got []byte) bool {
-		return sameJSON(got, tar, &decGot, &decTar)
+		return p.sameJSON(got, tar, &decGot, &decTar)
 	}
 	expl := func(label string, got interface{}) string {
 		return p.explain(label,
@@ -103,12 +103,12 @@ func (p bytesCheckerProvider) AsMap(mapChecker ValueChecker) BytesChecker {
 		if goterr != nil {
 			return p.explain(label,
 				"to pass MapChecker",
-				fmt.Sprintf("marshaling error: %s", goterr),
+				fmt.Sprintf("error: %s", goterr),
 			)
 		}
 		return p.explainCheck(label,
 			"to pass MapChecker",
-			mapChecker.Explain("unmarshaled json", m),
+			mapChecker.Explain("json map", m),
 		)
 	}
 	return NewBytesChecker(pass, expl)

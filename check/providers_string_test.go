@@ -1,6 +1,7 @@
 package check_test
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -21,7 +22,7 @@ func TestStringCheckerProvider(t *testing.T) {
 
 	t.Run("Is fail", func(t *testing.T) {
 		c := check.String.Is(exp)
-		assertFailStringChecker(t, "Is", c, s)
+		assertFailStringChecker(t, "Is", c, s, makeExpl(exp, s))
 	})
 
 	t.Run("Not pass", func(t *testing.T) {
@@ -31,7 +32,7 @@ func TestStringCheckerProvider(t *testing.T) {
 
 	t.Run("Not fail", func(t *testing.T) {
 		c := check.String.Not("hello", sub, s, exp)
-		assertFailStringChecker(t, "Not", c, s)
+		assertFailStringChecker(t, "Not", c, s, makeExpl("not "+s, s))
 	})
 
 	t.Run("Len pass", func(t *testing.T) {
@@ -40,8 +41,16 @@ func TestStringCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("Len fail", func(t *testing.T) {
-		c := check.String.Len(check.Int.Is(len(s) + 1))
-		assertFailStringChecker(t, "Len", c, s)
+		gotlen := len(s)
+		explen := gotlen + 1
+		c := check.String.Len(check.Int.Is(explen))
+		assertFailStringChecker(t, "Len", c, s, makeExpl(
+			"length to pass IntChecker",
+			"explanation: length:\n"+makeExpl(
+				fmt.Sprint(explen),
+				fmt.Sprint(gotlen),
+			),
+		))
 	})
 
 	t.Run("Match pass", func(t *testing.T) {
@@ -50,8 +59,11 @@ func TestStringCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("Match fail", func(t *testing.T) {
-		c := check.String.Match(regexp.MustCompile(`\sTENET\s`))
-		assertFailStringChecker(t, "Match", c, s)
+		r := regexp.MustCompile(`\sTENET\s`)
+		c := check.String.Match(r)
+		assertFailStringChecker(t, "Match", c, s,
+			makeExpl("to match regexp "+r.String(), s),
+		)
 	})
 
 	t.Run("NotMatch pass", func(t *testing.T) {
@@ -60,8 +72,12 @@ func TestStringCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("NotMatch fail", func(t *testing.T) {
-		c := check.String.NotMatch(regexp.MustCompile(`(?i)\sTENET\s`))
-		assertFailStringChecker(t, "NotMatch", c, s)
+		r := regexp.MustCompile(`(?i)\sTENET\s`)
+		c := check.String.NotMatch(r)
+		assertFailStringChecker(t, "NotMatch", c, s, makeExpl(
+			"not to match regexp "+r.String(),
+			s,
+		))
 	})
 
 	t.Run("Contains pass", func(t *testing.T) {
@@ -73,7 +89,10 @@ func TestStringCheckerProvider(t *testing.T) {
 
 	t.Run("Contains fail", func(t *testing.T) {
 		c := check.String.Contains(exp)
-		assertFailStringChecker(t, "Contains", c, s)
+		assertFailStringChecker(t, "Contains", c, s, makeExpl(
+			"to contain substring "+exp,
+			s,
+		))
 	})
 
 	t.Run("NotContains pass", func(t *testing.T) {
@@ -83,29 +102,36 @@ func TestStringCheckerProvider(t *testing.T) {
 
 	t.Run("NotContains fail", func(t *testing.T) {
 		c := check.String.NotContains(sub)
-		assertFailStringChecker(t, "NotContains", c, s)
+		assertFailStringChecker(t, "NotContains", c, s, makeExpl(
+			"not to contain substring "+sub,
+			s,
+		))
 		c = check.String.NotContains(s)
-		assertFailStringChecker(t, "NotContains", c, s)
+		assertFailStringChecker(t, "NotContains", c, s, makeExpl(
+			"not to contain substring "+s,
+			s,
+		))
 	})
 }
 
 // Helpers
 
-func assertPassStringChecker(t *testing.T, method string, c check.StringChecker, s string) {
+func assertPassStringChecker(t *testing.T, method string, c check.StringChecker, in string) {
 	t.Helper()
-	if !c.Pass(s) {
-		failStringCheckerTest(t, true, method, s, c.Explain)
+	if !c.Pass(in) {
+		failStringCheckerTest(t, true, method, in, c.Explain)
 	}
 }
 
-func assertFailStringChecker(t *testing.T, method string, c check.StringChecker, s string) {
+func assertFailStringChecker(t *testing.T, method string, c check.StringChecker, in, expexpl string) {
 	t.Helper()
-	if c.Pass(s) {
-		failStringCheckerTest(t, false, method, s, c.Explain)
+	if c.Pass(in) {
+		failStringCheckerTest(t, false, method, in, c.Explain)
 	}
+	assertGoodExplain(t, c, in, expexpl)
 }
 
-func failStringCheckerTest(t *testing.T, expPass bool, method, s string, explain check.ExplainFunc) {
+func failStringCheckerTest(t *testing.T, expPass bool, method, in string, explain check.ExplainFunc) {
 	t.Helper()
-	failCheckerTest(t, expPass, "String."+method, explain("String value", s))
+	failCheckerTest(t, expPass, "String."+method, explain("String value", in))
 }

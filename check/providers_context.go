@@ -3,7 +3,6 @@ package check
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/drykit-go/cond"
 )
@@ -42,7 +41,7 @@ func (p contextCheckerProvider) HasKeys(keys ...interface{}) ContextChecker {
 	}
 	expl := func(label string, got interface{}) string {
 		return p.explain(label,
-			"to have keys "+strings.Join(missing, ","),
+			"to have keys "+p.formatList(missing),
 			"keys not set",
 		)
 	}

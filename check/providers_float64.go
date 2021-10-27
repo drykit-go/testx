@@ -81,7 +81,7 @@ func (p float64CheckerProvider) LT(tar float64) Float64Checker {
 func (p float64CheckerProvider) LTE(tar float64) Float64Checker {
 	pass := func(got float64) bool { return p.lte(got, tar) }
 	expl := func(label string, got interface{}) string {
-		return p.explain(label, fmt.Sprintf(">= %v", tar), got)
+		return p.explain(label, fmt.Sprintf("<= %v", tar), got)
 	}
 	return NewFloat64Checker(pass, expl)
 }

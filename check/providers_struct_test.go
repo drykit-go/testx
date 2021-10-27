@@ -1,6 +1,7 @@
 package check_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/drykit-go/testx/check"
@@ -8,37 +9,46 @@ import (
 )
 
 type structTest struct {
-	Name string
-	Age  int
+	A, B, X, Y int
 }
 
 func TestStructCheckerProvider(t *testing.T) {
-	s := structTest{Name: "Marcel Patulacci", Age: 42}
+	const (
+		vAB = 10
+		vXY = 20
+	)
+	s := structTest{A: vAB, B: vAB, X: vXY, Y: vXY}
 
 	t.Run("FieldsEqual pass", func(t *testing.T) {
-		c := check.Struct.FieldsEqual("Marcel Patulacci", []string{"Name"})
+		c := check.Struct.FieldsEqual(vAB, []string{"A", "B"})
 		assertPassStructChecker(t, "FieldsEqual", c, s)
 	})
 
 	t.Run("FieldsEqual fail", func(t *testing.T) {
-		c := check.Struct.FieldsEqual("Jean-Pierre Avidol", []string{"Name"})
-		assertFailStructChecker(t, "FieldsEqual", c, s)
+		c := check.Struct.FieldsEqual(vAB, []string{"A", "B", "X", "Y"})
+		assertFailStructChecker(t, "FieldsEqual", c, s, makeExpl(
+			fmt.Sprintf("fields [.A, .B, .X, .Y] to equal %v", vAB),
+			fmt.Sprintf(".X=%v, .Y=%v", vXY, vXY),
+		))
 	})
 
 	t.Run("CheckFields pass", func(t *testing.T) {
 		c := check.Struct.CheckFields(
-			checkconv.FromInt(check.Int.InRange(41, 43)),
-			[]string{"Age"},
+			checkconv.FromInt(check.Int.LT(vAB+1)),
+			[]string{"A", "B"},
 		)
 		assertPassStructChecker(t, "CheckFields", c, s)
 	})
 
 	t.Run("CheckFields fail", func(t *testing.T) {
 		c := check.Struct.CheckFields(
-			checkconv.FromInt(check.Int.OutRange(41, 43)),
-			[]string{"Age"},
+			checkconv.FromInt(check.Int.LT(vAB+1)),
+			[]string{"A", "B", "X", "Y"},
 		)
-		assertFailStructChecker(t, "CheckFields", c, s)
+		assertFailStructChecker(t, "CheckFields", c, s, makeExpl(
+			"fields [.A, .B, .X, .Y] to pass ValueChecker",
+			"explanation: fields:\n"+makeExpl("< 11", ".X=20, .Y=20"),
+		))
 	})
 }
 
@@ -51,11 +61,12 @@ func assertPassStructChecker(t *testing.T, method string, c check.ValueChecker, 
 	}
 }
 
-func assertFailStructChecker(t *testing.T, method string, c check.ValueChecker, s structTest) {
+func assertFailStructChecker(t *testing.T, method string, c check.ValueChecker, s structTest, expexpl string) {
 	t.Helper()
 	if c.Pass(s) {
 		failStructCheckerTest(t, false, method, s, c.Explain)
 	}
+	assertGoodExplain(t, c, s, expexpl)
 }
 
 func failStructCheckerTest(t *testing.T, expPass bool, method string, s structTest, explain check.ExplainFunc) {
