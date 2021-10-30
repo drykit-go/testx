@@ -282,13 +282,7 @@ func (res tableResults) FailedLabel(label string) bool {
 	ExpNil
 */
 
-type expNiler interface{ expNil() }
+type expNil int
 
-type expNilerImpl struct{}
-
-func (expNilerImpl) expNil() {}
-
-// ExpNil is a value indicating that nil is an expected value.
-// It is meant to be used as a Case.Exp value in a TableRunner
-// test.
-var ExpNil expNiler = expNilerImpl{}
+// ExpNil is a special value for Case.Exp that sets the expected value to nil.
+const ExpNil expNil = 0
