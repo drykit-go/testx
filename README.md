@@ -7,18 +7,18 @@
 	</tr>
 </table>
 
-<p align="center">    
-  <a href="https://pkg.go.dev/github.com/drykit-go/testx#section-documentation">
-    <img alt="Go package Reference" src="https://img.shields.io/badge/pkg-reference-informational?logo=go" /></a>
-  <a href="https://goreportcard.com/report/github.com/drykit-go/testx">
-    <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/drykit-go/testx" /></a>
-  <a href="https://github.com/drykit-go/testx/releases">
-    <img alt="Latest version" src="https://img.shields.io/github/v/tag/drykit-go/testx?label=release"></a>
-  <br/>
+<p align="center">
   <a href="https://circleci.com/gh/drykit-go/testx/tree/main">
     <img alt="CircleCI" src="https://img.shields.io/circleci/build/gh/drykit-go/testx?label=CI"></a>
   <a href="https://codecov.io/gh/drykit-go/testx">
     <img alt="Codecov" src="https://img.shields.io/codecov/c/gh/drykit-go/testx?label=coverage"></a>
+  <a href="https://goreportcard.com/report/github.com/drykit-go/testx">
+    <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/drykit-go/testx" /></a>
+  <br />
+  <a href="https://pkg.go.dev/github.com/drykit-go/testx#section-documentation">
+    <img alt="Go package Reference" src="https://img.shields.io/badge/pkg-reference-informational?logo=go" /></a>
+  <a href="https://github.com/drykit-go/testx/releases">
+    <img alt="Latest version" src="https://img.shields.io/github/v/tag/drykit-go/testx?label=release"></a>
 </p>
 
 `testx` is a Go testing library that provides test runners to write reliable
