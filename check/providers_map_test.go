@@ -113,7 +113,6 @@ func TestMapCheckerProvider(t *testing.T) {
 			"values for all keys to pass ValueChecker",
 			"explanation: values:\n"+makeExpl(
 				"Marcel Patulacci",
-				//! keys order not guaranteed here, might break
 				"[age:42, friends:[Robert Robichet Jean-Pierre Avidol]]",
 			),
 		))
