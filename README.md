@@ -15,8 +15,8 @@
   <a href="https://github.com/drykit-go/testx/releases">
     <img alt="Latest version" src="https://img.shields.io/github/v/tag/drykit-go/testx?label=release"></a>
   <br/>
-  <a href="https://circleci.com/gh/circleci/circleci-docs">
-    <img alt="CircleCI" src="https://circleci.com/gh/circleci/circleci-docs.svg?style=shield" /></a>
+  <a href="https://circleci.com/gh/drykit-go/testx/tree/main">
+    <img alt="CircleCI" src="https://circleci.com/gh/drykit-go/testx/tree/main.svg?style=shield" /></a>
   <a href="https://codecov.io/gh/drykit-go/testx">
     <img alt="Codecov" src="https://codecov.io/gh/drykit-go/testx/branch/main/graph/badge.svg?token=XZRUXJDFJE"/></a>
 </p>
