@@ -32,7 +32,7 @@ func (p structCheckerProvider) FieldsEqual(exp interface{}, fields []string) Val
 	return NewValueChecker(pass, expl)
 }
 
-// FieldsEqual checks all given fields pass the ValueChecker.
+// CheckFields checks all given fields pass the ValueChecker.
 // It panics if the fields do not exist or are not exported,
 // or if the tested value is not a struct.
 func (p structCheckerProvider) CheckFields(c ValueChecker, fields []string) ValueChecker {

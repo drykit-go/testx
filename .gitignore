@@ -3,4 +3,5 @@ bin/
 
 # Local files
 .local/
+.idea/
 .vscode/

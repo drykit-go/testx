@@ -65,7 +65,7 @@ func (p bytesCheckerProvider) Len(c IntChecker) BytesChecker {
 	return NewBytesChecker(pass, expl)
 }
 
-// Contains checks the gotten []byte contains a spcific subslice.
+// Contains checks the gotten []byte contains a specific subslice.
 func (p bytesCheckerProvider) Contains(subslice []byte) BytesChecker {
 	pass := func(got []byte) bool { return bytes.Contains(got, subslice) }
 	expl := func(label string, got interface{}) string {
@@ -77,7 +77,7 @@ func (p bytesCheckerProvider) Contains(subslice []byte) BytesChecker {
 	return NewBytesChecker(pass, expl)
 }
 
-// NotContains checks the gotten []byte contains a spcific subslice.
+// NotContains checks the gotten []byte contains a specific subslice.
 func (p bytesCheckerProvider) NotContains(subslice []byte) BytesChecker {
 	pass := func(got []byte) bool { return !bytes.Contains(got, subslice) }
 	expl := func(label string, got interface{}) string {

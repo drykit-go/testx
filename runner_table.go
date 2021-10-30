@@ -97,12 +97,14 @@ func (args Args) replaceAt(pos int, arg interface{}) Args {
 }
 
 func (args Args) String() string {
-	argsStr := []string{}
-	for _, arg := range args {
-		argsStr = append(argsStr, fmt.Sprintf("%v", arg))
+	var b strings.Builder
+	for i, arg := range args {
+		b.WriteString(fmt.Sprint(arg))
+		if i != len(args)-1 {
+			b.WriteString(", ")
+		}
 	}
-	str := strings.Join(argsStr, ", ")
-	return str
+	return b.String()
 }
 
 type tableRunner struct {
@@ -117,26 +119,31 @@ type tableRunner struct {
 
 func (r *tableRunner) Run(t *testing.T) {
 	t.Helper()
-	r.setGetFunc()
+	cond.PanicOnErr(r.setGetFunc())
 	r.run(t)
 }
 
 func (r *tableRunner) DryRun() TableResulter {
-	r.setGetFunc()
+	cond.PanicOnErr(r.setGetFunc())
 	return tableResults{baseResults: r.dryRun()}
 }
 
-func (r *tableRunner) setGetFunc() {
-	cond.PanicOnErr(r.validateConfig())
+func (r *tableRunner) setGetFunc() error {
+	if err := r.validateConfig(); err != nil {
+		return err
+	}
 
 	args, err := r.makeFixedArgs(r.rfunc, r.config)
-	cond.PanicOnErr(err)
+	if err != nil {
+		return err
+	}
 
 	r.get = func(in interface{}) gottype {
 		pin, pout := r.config.InPos, r.config.OutPos
 		r.args = args.replaceAt(pin, in)
 		return r.rfunc.Call(r.args)[pout]
 	}
+	return nil
 }
 
 func (r *tableRunner) Cases(cases []Case) TableRunner {
@@ -144,32 +151,35 @@ func (r *tableRunner) Cases(cases []Case) TableRunner {
 		i, tc := i, tc
 
 		get := func() gottype { return r.get(tc.In) }
+
 		getLabel := func() string {
 			return fmtexpl.TableCaseLabel(r.rfunc.Name, i, tc.Lab, r.args)
 		}
 
-		caseCheck := func(c check.ValueChecker) baseCheck {
-			return baseCheck{
+		addCaseCheck := func(c check.ValueChecker) {
+			r.addCheck(baseCheck{
 				get:      get,
 				getLabel: getLabel,
 				label:    tc.Lab,
 				checker:  c,
-			}
+			})
 		}
 
 		// add Case.Exp check
 		if tc.Exp != nil {
 			exp := cond.Value(nil, tc.Exp, tc.Exp == ExpNil)
-			r.addCheck(caseCheck(check.Value.Is(exp)))
+			addCaseCheck(check.Value.Is(exp))
 		}
 
 		// add Case.Not checks
 		if len(tc.Not) != 0 {
-			r.addCheck(caseCheck(check.Value.Not(tc.Not...)))
+			addCaseCheck(check.Value.Not(tc.Not...))
 		}
 
 		// add Case.Pass checks
-		r.addChecks(tc.Lab, get, tc.Pass)
+		if len(tc.Pass) != 0 {
+			r.addChecks(tc.Lab, get, tc.Pass)
+		}
 	}
 	return r
 }
@@ -211,24 +221,20 @@ func (r *tableRunner) makeFixedArgs(rfunc *reflectutil.Func, cfg TableConfig) (A
 	nparams := rfunc.Value.Type().NumIn()
 	nargs := len(cfg.FixedArgs)
 
-	fillskip := func(at int) Args {
+	switch d := nparams - nargs; d {
+	case 0:
+		return cfg.FixedArgs, nil
+	case 1:
 		args := make(Args, nparams)
 		delta := 0
 		for i := 0; i < nparams; i++ {
-			if i == at {
+			if i == cfg.InPos {
 				delta++
 				continue
 			}
 			args[i] = cfg.FixedArgs[i-delta]
 		}
-		return args
-	}
-
-	switch d := nparams - nargs; d {
-	case 0:
-		return cfg.FixedArgs, nil
-	case 1:
-		return fillskip(cfg.InPos), nil
+		return args, nil
 	default:
 		return nil, errTableRunnerConfigFixedArgs(d)
 	}
@@ -276,13 +282,7 @@ func (res tableResults) FailedLabel(label string) bool {
 	ExpNil
 */
 
-type expNiler interface{ expNil() }
+type expNil int
 
-type expNilerImpl struct{}
-
-func (expNilerImpl) expNil() {}
-
-// ExpNil is a value indicating that nil is an expected value.
-// It is meant to be used as a Case.Exp value in a TableRunner
-// test.
-var ExpNil expNiler = expNilerImpl{}
+// ExpNil is a special value for Case.Exp that sets the expected value to nil.
+const ExpNil expNil = 0

@@ -85,7 +85,7 @@ It provides methods to perform checks:
 func TestHandleGetMovieByID(t *testing.T) {
     r, _ := http.NewRequest("GET", "/movies/42", nil)
     // Note: WithRequest can be omitted if the input request is not relevant.
-    // In that case it defaults to http.NewRequest("GET", "/", nil).
+    // In that case it defaults to httptest.NewRequest("GET", "/", nil).
     testx.HTTPHandlerFunc(HandleGetMovieByID).WithRequest(r).
         Response(
             check.HTTPResponse.StatusCode(check.Int.InRange(200, 299)),

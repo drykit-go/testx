@@ -59,7 +59,7 @@ type HTTPHandlerRunner interface {
 	DryRun() HandlerResulter
 	// WithRequest sets the input request to call the handler with.
 	// If not set, the following default request is used:
-	//	http.NewRequest("GET", "/", nil)
+	//	httptest.NewRequest("GET", "/", nil)
 	WithRequest(*http.Request) HTTPHandlerRunner
 	// Request adds checkers on the resulting request,
 	// after the last middleware is called and before the handler is called.
@@ -76,7 +76,7 @@ type HTTPHandlerRunner interface {
 
 // Resulter provides methods to read test results after a dry run.
 type Resulter interface {
-	// Checks returns a slice of CheckResults listing the runned checks
+	// Checks returns a slice of CheckResults listing the run checks
 	Checks() []CheckResult
 	// Passed returns true if all checks passed.
 	Passed() bool

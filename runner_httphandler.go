@@ -89,7 +89,7 @@ func (r *httpHandlerRunner) setResults() {
 }
 
 func (r *httpHandlerRunner) defaultRequest() *http.Request {
-	req, _ := http.NewRequest("GET", "/", nil)
+	req := httptest.NewRequest("GET", "/", nil)
 	return req
 }
 

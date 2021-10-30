@@ -8,7 +8,7 @@ import (
 // httpHeaderCheckerProvider provides checks on type http.Header.
 type httpHeaderCheckerProvider struct{ baseCheckerProvider }
 
-// HasKey checks the gotten http.Header has a spcific key set.
+// HasKey checks the gotten http.Header has a specific key set.
 // The corresponding value is ignored, meaning an empty value
 // for that key passes the check.
 func (p httpHeaderCheckerProvider) HasKey(key string) HTTPHeaderChecker {
@@ -29,7 +29,7 @@ func (p httpHeaderCheckerProvider) HasNotKey(key string) HTTPHeaderChecker {
 	return NewHTTPHeaderChecker(pass, expl)
 }
 
-// HasValue checks the gotten http.Heaser has any value equal to val.
+// HasValue checks the gotten http.Header has any value equal to val.
 // It only compares the first result for each key.
 func (p httpHeaderCheckerProvider) HasValue(val string) HTTPHeaderChecker {
 	pass := func(got http.Header) bool { return p.hasValue(got, val) }
