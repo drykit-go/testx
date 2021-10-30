@@ -3,6 +3,7 @@ package check
 import (
 	"fmt"
 	"reflect"
+	"sort"
 
 	"github.com/drykit-go/cond"
 
@@ -115,6 +116,7 @@ func (p mapCheckerProvider) CheckValues(c ValueChecker, keys ...interface{}) Val
 					badentries = append(badentries, fmt.Sprintf("%s:%v", gotk, gotv))
 				}
 			})
+			sort.Strings(badentries)
 		} else {
 			for _, expk := range keys {
 				gotv, ok := p.get(got, expk)
