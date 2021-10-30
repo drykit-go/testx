@@ -137,6 +137,50 @@ func TestTableRunner(t *testing.T) {
 	})
 }
 
+func TestExpNil(t *testing.T) {
+	t.Run("Exp=ExpNil expects nil", func(t *testing.T) {
+		f := func(int) interface{} { return nil }
+		res := testx.Table(f).Cases([]testx.Case{
+			{In: 0, Exp: testx.ExpNil},
+		}).DryRun()
+
+		if n := res.NChecks(); n != 1 {
+			t.Errorf("exp 1 check, got %d", n)
+		}
+		if res.Failed() {
+			t.Error("nil did not pass Case.Exp == ExpNil")
+		}
+	})
+
+	t.Run("Exp=ExpNil does not expect 0", func(t *testing.T) {
+		f := func(int) int { return 0 }
+		res := testx.Table(f).Cases([]testx.Case{
+			{In: 0, Exp: testx.ExpNil},
+		}).DryRun()
+
+		if n := res.NChecks(); n != 1 {
+			t.Errorf("exp 1 check, got %d", n)
+		}
+		if res.Passed() {
+			t.Error("0 did pass Case.Exp == ExpNil")
+		}
+	})
+
+	t.Run("Exp=0 does not expect nil", func(t *testing.T) {
+		f := func(int) interface{} { return nil }
+		res := testx.Table(f).Cases([]testx.Case{
+			{In: 0, Exp: 0},
+		}).DryRun()
+
+		if n := res.NChecks(); n != 1 {
+			t.Errorf("exp 1 check, got %d", n)
+		}
+		if res.Passed() {
+			t.Error("nil did pass Case.Exp == 0")
+		}
+	})
+}
+
 func TestTableRunnerResults(t *testing.T) {
 	t.Run("pass", func(t *testing.T) {
 		res := testx.
