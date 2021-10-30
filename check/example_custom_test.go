@@ -3,6 +3,7 @@ package check_test
 import (
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 
 	"github.com/drykit-go/testx"
 	"github.com/drykit-go/testx/check"
@@ -32,7 +33,7 @@ func HandleNotFound(w http.ResponseWriter, _ *http.Request) {
 }
 
 func Example_customChecker() {
-	request, _ := http.NewRequest("GET", "/", nil)
+	request := httptest.NewRequest("GET", "/", nil)
 
 	results := testx.HTTPHandlerFunc(HandleNotFound).WithRequest(request).
 		// check.HTTPResponse.StatusCode accepts an IntChecker,
