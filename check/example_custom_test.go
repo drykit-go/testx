@@ -37,7 +37,7 @@ func Example_customChecker() {
 
 	results := testx.HTTPHandlerFunc(HandleNotFound).WithRequest(request).
 		// check.HTTPResponse.StatusCode accepts an IntChecker,
-		// StatusOKChecker statisfies IntChecker interface.
+		// StatusOKChecker satisfies IntChecker interface.
 		Response(check.HTTPResponse.StatusCode(StatusOKChecker{})).
 		DryRun()
 

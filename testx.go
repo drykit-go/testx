@@ -76,7 +76,7 @@ type HTTPHandlerRunner interface {
 
 // Resulter provides methods to read test results after a dry run.
 type Resulter interface {
-	// Checks returns a slice of CheckResults listing the runned checks
+	// Checks returns a slice of CheckResults listing the run checks
 	Checks() []CheckResult
 	// Passed returns true if all checks passed.
 	Passed() bool

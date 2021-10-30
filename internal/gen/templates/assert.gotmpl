@@ -3,7 +3,7 @@
 package checkconv
 
 {{range . -}}
-{{if ne .N "Value" }}
+{{if ne .N "Value"}}
 // From{{.N}} returns a check.ValueChecker that wraps the given
 // check.{{.N}}Checker, so it can be used as a generic checker.
 func From{{.N}}(c check.{{.N}}Checker) check.ValueChecker {
@@ -34,8 +34,7 @@ func Assert(knownChecker interface{}) check.ValueChecker {
 	{{end -}}
 	{{end -}}
 	default:
-		log.Panic("assert from unknown checker type")
-		return nil
+		panic("assert from unknown checker type")
 	}
 }
 

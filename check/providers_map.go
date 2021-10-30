@@ -29,7 +29,7 @@ func (p mapCheckerProvider) Len(c IntChecker) ValueChecker {
 	return NewValueChecker(pass, expl)
 }
 
-// HasKey checks the gotten map has the given keys set.
+// HasKeys checks the gotten map has the given keys set.
 func (p mapCheckerProvider) HasKeys(keys ...interface{}) ValueChecker {
 	var missing []string
 	pass := func(got interface{}) bool {
@@ -47,7 +47,7 @@ func (p mapCheckerProvider) HasKeys(keys ...interface{}) ValueChecker {
 	return NewValueChecker(pass, expl)
 }
 
-// HasNotKey checks the gotten map has the given keys set.
+// HasNotKeys checks the gotten map has the given keys set.
 func (p mapCheckerProvider) HasNotKeys(keys ...interface{}) ValueChecker {
 	var badkeys []string
 	pass := func(got interface{}) bool {

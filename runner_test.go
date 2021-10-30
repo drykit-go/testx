@@ -53,8 +53,8 @@ func assertEqualBaseResults(t *testing.T, res testx.Resulter, exp baseResults) {
 				errs = append(errs, fmtexpl.Pretty(
 					fmt.Sprintf("checks[%d].Passed", i),
 					expc.Passed,
-					gotc.Passed),
-				)
+					gotc.Passed,
+				))
 			}
 			if gotc.Reason != expc.Reason {
 				errs = append(errs, fmtexpl.Pretty(

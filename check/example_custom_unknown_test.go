@@ -19,7 +19,7 @@ type MyType struct {
 
 // MyTypeValidityChecker is a custom checker for type MyType
 // that is not handled by package check.
-// However it works with any test runner that requires a generic checker
+// However, it works with any test runner that requires a generic checker
 // because it implements Pass(got T) bool and check.Explainer.
 type MyTypeValidityChecker struct{}
 
