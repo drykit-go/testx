@@ -21,7 +21,7 @@ func TestAssert(t *testing.T) {
 				expExpl: "",
 			},
 			{
-				checker: check.NewIntChecker(isEven, isEvenExpl),
+				checker: check.NewChecker(isEven, isEvenExpl),
 				in:      -1,
 				expPass: false,
 				expExpl: "expect value to be even, got -1",
@@ -106,7 +106,7 @@ func TestAssertMany(t *testing.T) {
 	t.Run("custom checkers known type", func(t *testing.T) {
 		knownCheckers := []any{
 			check.Value.Custom("", func(_ any) bool { return true }),
-			check.NewIntChecker(isEven, validExplainFunc),
+			check.NewChecker(isEven, validExplainFunc),
 			validCheckerInt{},
 			validCheckerInterface{},
 		}

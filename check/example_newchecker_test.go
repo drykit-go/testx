@@ -13,7 +13,7 @@ import (
 */
 
 func Example_newIntChecker() {
-	checkIsEven := check.NewIntChecker(
+	checkIsEven := check.NewChecker(
 		func(got int) bool { return got&1 == 0 },
 		func(label string, got any) string {
 			return fmt.Sprintf("%s: expect even int, got %v", label, got)
