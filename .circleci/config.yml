@@ -10,6 +10,7 @@ commands:
   setup:
     steps:
       - checkout
+
       - restore_cache:
           keys:
             - go-mod-v4-{{ checksum "go.sum" }}-{{ .Environment.CACHE_VERSION }}
@@ -17,15 +18,28 @@ commands:
           name: Install dependencies
           command: |
             go mod download
-      - run:
-          name: Install gotip
-          command: |
-            go install golang.org/dl/gotip@latest
-            gotip download
       - save_cache:
           key: go-mod-v4-{{ checksum "go.sum" }}-{{ .Environment.CACHE_VERSION }}
           paths:
-            - "/go/pkg/mod"
+            - /go/pkg/mod
+
+      - restore_cache:
+          keys:
+            - gotip-{{ .Environment.CACHE_VERSION }}
+      - run:
+          name: Install gotip
+          command: |
+            command -v /go/bin/gotip && echo "Skipping gotip installation" && exit
+            go install golang.org/dl/gotip@latest
+            gotip download
+      - save_cache:
+          key: gotip-{{ .Environment.CACHE_VERSION }}
+          paths:
+            - /go/bin/gotip
+      - run:
+          name: Run gotip download
+          command: |
+            gotip download
 
   # setup-lint:
   #   description: Set up lint
