@@ -13,11 +13,11 @@ import (
 	Example: implementation of a custom checker
 */
 
-// StatusOKChecker is a custom checker that implements IntChecker interface.
-// In consequence in can be used in any function that accepts an IntChecker.
+// StatusOKChecker is a custom checker that implements Checker[int] interface.
+// In consequence in can be used in any function that accepts an Checker[int].
 type StatusOKChecker struct{}
 
-// Pass satisfies IntPasser interface.
+// Pass satisfies Passer[int] interface.
 func (c StatusOKChecker) Pass(got int) bool {
 	return (got >= 200 && got < 300) || got == 304
 }
@@ -36,8 +36,8 @@ func Example_customChecker() {
 	request := httptest.NewRequest("GET", "/", nil)
 
 	results := testx.HTTPHandlerFunc(HandleNotFound).WithRequest(request).
-		// check.HTTPResponse.StatusCode accepts an IntChecker,
-		// StatusOKChecker satisfies IntChecker interface.
+		// check.HTTPResponse.StatusCode accepts a Checker[int],
+		// StatusOKChecker satisfies Checker[int] interface.
 		Response(check.HTTPResponse.StatusCode(StatusOKChecker{})).
 		DryRun()
 
@@ -49,6 +49,6 @@ func Example_customChecker() {
 	// false
 	// 404
 	// http response:
-	// exp status code to pass IntChecker
+	// exp status code to pass Checker[int]
 	// got explanation: status code: got bad http code: 404
 }

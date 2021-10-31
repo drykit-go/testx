@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/drykit-go/testx"
-	"github.com/drykit-go/testx/checkconv"
 )
 
 /*
@@ -27,13 +26,13 @@ type Complex128Checker struct {
 
 // Pass do not satisfy any interface declared by check, but has a valid
 // signature Pass(got T) bool, allowing Complex128Checker to be casted
-// as a ValueChecker using checkconv.Cast.
+// as a Checker[any] using checkconv.Cast.
 func (c Complex128Checker) Pass(got complex128) bool {
 	return c.pass(got)
 }
 
 // Explain satisfies check.Explainer interface.
-func (c Complex128Checker) Explain(label string, got interface{}) string {
+func (c Complex128Checker) Explain(label string, got any) string {
 	return c.explain(label, got)
 }
 
@@ -57,13 +56,11 @@ func checkComplex128ImagIsInRange(lo, hi float64) Complex128Checker {
 func Example_customCheckerClosures() {
 	const testedValue = 42i
 
-	// We first cast our custom checkers to a typed ValueChecker.
-	checkers, _ := checkconv.CastMany(
+	results := testx.Value(testedValue).Pass(
 		checkComplex128ImagIsInRange(41, 43), // pass
 		checkComplex128ImagIsInRange(0, 1),   // fail
-	)
+	).DryRun()
 
-	results := testx.Value(testedValue).Pass(checkers...).DryRun()
 	fmt.Println(results.Checks())
 
 	// Output:
