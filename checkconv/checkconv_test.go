@@ -89,7 +89,7 @@ func isEvenExpl(_ string, got any) string {
 
 // Test helpers
 
-func assertValidValueChecker(t *testing.T, c check.ValueChecker, tc checkerTestcase) {
+func assertValidValueChecker(t *testing.T, c check.Checker[any], tc checkerTestcase) {
 	t.Helper()
 	if pass := c.Pass(tc.in); pass != tc.expPass {
 		t.Errorf(

@@ -14,7 +14,7 @@ type (
 		get      getfunc
 		getLabel func() string
 		label    string
-		checker  check.ValueChecker
+		checker  check.Checker[any]
 	}
 )
 
