@@ -45,13 +45,13 @@ func TestCast(t *testing.T) {
 	t.Run("custom checker", func(t *testing.T) {
 		cases := []checkerTestcase{
 			{
-				checker: check.NewIntChecker(isEven, isEvenExpl),
+				checker: check.NewChecker(isEven, isEvenExpl),
 				in:      0,
 				expPass: true,
 				expExpl: "",
 			},
 			{
-				checker: check.NewIntChecker(isEven, isEvenExpl),
+				checker: check.NewChecker(isEven, isEvenExpl),
 				in:      1,
 				expPass: false,
 				expExpl: "expect value to be even, got 1",

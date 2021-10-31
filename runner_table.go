@@ -156,7 +156,7 @@ func (r *tableRunner) Cases(cases []Case) TableRunner {
 			return fmtexpl.TableCaseLabel(r.rfunc.Name, i, tc.Lab, r.args)
 		}
 
-		addCaseCheck := func(c check.ValueChecker) {
+		addCaseCheck := func(c check.Checker[any]) {
 			r.addCheck(baseCheck{
 				get:      get,
 				getLabel: getLabel,
