@@ -2,7 +2,7 @@ package check
 
 //go:generate ../bin/gen -kind types -name check
 //go:generate ../bin/gen -kind types -name checkers
-//go:generate ../bin/gen -kind interfaces -name providers
+// //go:generate ../bin/gen -kind interfaces -name providers
 
 // For every type {N,T} defined in ./gen/types.go, running go generate
 // will create the following definitions:
