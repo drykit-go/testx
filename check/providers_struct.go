@@ -14,49 +14,49 @@ type structCheckerProvider struct{ valueCheckerProvider }
 // FieldsEqual checks all given fields equal the exp value.
 // It panics if the fields do not exist or are not exported,
 // or if the tested value is not a struct.
-func (p structCheckerProvider) FieldsEqual(exp interface{}, fields []string) ValueChecker {
+func (p structCheckerProvider) FieldsEqual(exp any, fields []string) Checker[any] {
 	var bads []string
-	pass := func(got interface{}) bool {
+	pass := func(got any) bool {
 		reflectutil.MustBeOfKind(got, reflect.Struct)
-		bads = p.badFields(got, fields, func(k string, v interface{}) bool {
+		bads = p.badFields(got, fields, func(k string, v any) bool {
 			return p.deq(v, exp)
 		})
 		return len(bads) == 0
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explain(label,
 			fmt.Sprintf("fields [%s] to equal %v", p.formatFields(fields), exp),
 			strings.Join(bads, ", "),
 		)
 	}
-	return NewValueChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
-// CheckFields checks all given fields pass the ValueChecker.
+// CheckFields checks all given fields pass the Checker[any].
 // It panics if the fields do not exist or are not exported,
 // or if the tested value is not a struct.
-func (p structCheckerProvider) CheckFields(c ValueChecker, fields []string) ValueChecker {
+func (p structCheckerProvider) CheckFields(c Checker[any], fields []string) Checker[any] {
 	var bads []string
-	pass := func(got interface{}) bool {
+	pass := func(got any) bool {
 		reflectutil.MustBeOfKind(got, reflect.Struct)
-		bads = p.badFields(got, fields, func(k string, v interface{}) bool {
+		bads = p.badFields(got, fields, func(k string, v any) bool {
 			return c.Pass(v)
 		})
 		return len(bads) == 0
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainCheck(label,
-			fmt.Sprintf("fields [%s] to pass ValueChecker", p.formatFields(fields)),
+			fmt.Sprintf("fields [%s] to pass Checker[any]", p.formatFields(fields)),
 			c.Explain("fields", strings.Join(bads, ", ")),
 		)
 	}
-	return NewValueChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 func (p structCheckerProvider) badFields(
-	gotstruct interface{},
+	gotstruct any,
 	fields []string,
-	pass func(k string, v interface{}) bool,
+	pass func(k string, v any) bool,
 ) (bads []string) {
 	vstruct := reflect.ValueOf(gotstruct)
 	for _, k := range fields {

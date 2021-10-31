@@ -1,6 +1,6 @@
 module github.com/drykit-go/testx
 
-go 1.16
+go 1.18
 
 require (
 	github.com/drykit-go/cond v0.1.0

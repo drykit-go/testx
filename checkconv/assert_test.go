@@ -58,8 +58,8 @@ func TestAssert(t *testing.T) {
 func TestAssertMany(t *testing.T) {
 	t.Run("all provided checkers", func(t *testing.T) {
 		testcases := []struct {
-			checker interface{}
-			in      interface{}
+			checker any
+			in      any
 		}{
 			{checker: check.Bool.Is(true), in: true},
 			{checker: check.Bytes.Is([]byte{'a'}), in: []byte{'a'}},
@@ -77,7 +77,7 @@ func TestAssertMany(t *testing.T) {
 			{checker: check.Struct.NotZero(), in: struct{ n int }{1}},
 		}
 
-		providedCheckers := func() (checkers []interface{}) {
+		providedCheckers := func() (checkers []any) {
 			for _, tc := range testcases {
 				checkers = append(checkers, tc.checker)
 			}
@@ -104,8 +104,8 @@ func TestAssertMany(t *testing.T) {
 	})
 
 	t.Run("custom checkers known type", func(t *testing.T) {
-		knownCheckers := []interface{}{
-			check.Value.Custom("", func(_ interface{}) bool { return true }),
+		knownCheckers := []any{
+			check.Value.Custom("", func(_ any) bool { return true }),
 			check.NewIntChecker(isEven, validExplainFunc),
 			validCheckerInt{},
 			validCheckerInterface{},
@@ -118,7 +118,7 @@ func TestAssertMany(t *testing.T) {
 
 	t.Run("custom checkers unknown type", func(t *testing.T) {
 		defer testutil.AssertPanicMessage(t, "assert from unknown checker type")
-		unknownCheckers := []interface{}{validCheckerFloat32{}}
+		unknownCheckers := []any{validCheckerFloat32{}}
 		checkconv.AssertMany(unknownCheckers...)
 	})
 }

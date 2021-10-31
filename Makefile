@@ -9,9 +9,9 @@ default:
 .PHONY: gen
 gen:
 	@echo "🛠  Building gen binary"
-	@go build -o ./bin/gen ./cmd/gen/main.go
+	@gotip build -o ./bin/gen ./cmd/gen/main.go
 	@echo "✅ Done\n"
-	@go generate ./...
+	@gotip generate ./...
 
 # Check code
 
@@ -26,7 +26,7 @@ lint:
 
 .PHONY: tests
 tests:
-	@go test ./...
+	@gotip test ./...
 
 .PHONY: test-cov
 test-cov: # Unit tests with coverage, excluding gen-related files
@@ -43,7 +43,7 @@ endif
 
 .PHONY: test
 test:
-	@go test -timeout 30s -run $(TEST_FUNC) $(TEST_PKG)
+	@gotip test -timeout 30s -run $(TEST_FUNC) $(TEST_PKG)
 
 # Docs
 

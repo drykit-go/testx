@@ -31,7 +31,7 @@ func AssertPanic(t *testing.T) {
 	assertPanicked(t, r, "", false)
 }
 
-func assertPanicked(t *testing.T, rec interface{}, msg string, checkmsg bool) {
+func assertPanicked(t *testing.T, rec any, msg string, checkmsg bool) {
 	t.Helper()
 	if rec == nil {
 		t.Error("expected to panic but did not")

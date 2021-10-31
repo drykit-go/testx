@@ -6,7 +6,7 @@ import (
 	"github.com/drykit-go/testx/check"
 )
 
-// Cast returns a check.ValueChecker built upon the given checker
+// Cast returns a check.Checker[any] built upon the given checker
 // and a bool indicating whether it was successful.
 //
 // Contrary to Assert, it can perform conversions from checker types
@@ -15,20 +15,20 @@ import (
 //
 // However, Assert should be the first choice for a known checker type
 // as Cast is about 10 times slower.
-func Cast(anyChecker interface{}) (c check.ValueChecker, ok bool) {
+func Cast(anyChecker any) (c check.Checker[any], ok bool) {
 	if !IsChecker(anyChecker) {
 		return
 	}
 
 	v := reflect.ValueOf(anyChecker)
-	c = check.NewValueChecker(
-		func(got interface{}) bool {
+	c = check.NewChecker(
+		func(got any) bool {
 			gotv := reflect.ValueOf(got)
 			return v.MethodByName(signaturePass.Name).
 				Call([]reflect.Value{gotv})[0].
 				Bool()
 		},
-		func(label string, got interface{}) string {
+		func(label string, got any) string {
 			labv := reflect.ValueOf(label)
 			gotv := reflect.ValueOf(got)
 			return v.MethodByName(signatureExpl.Name).
@@ -47,7 +47,7 @@ func Cast(anyChecker interface{}) (c check.ValueChecker, ok bool) {
 // An invalid checker in the args list is silently dismissed,
 // this the resulting checkers length can be inferior to the number of args
 // if ok === false.
-func CastMany(anyCheckers ...interface{}) (checkers []check.ValueChecker, ok bool) {
+func CastMany(anyCheckers ...any) (checkers []check.Checker[any], ok bool) {
 	ok = true
 	for _, in := range anyCheckers {
 		c, valid := Cast(in)

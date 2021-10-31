@@ -7,7 +7,7 @@ type baseChecker struct {
 
 // Explain returns a string explaining the reason of a failed check
 // for the gotten value.
-func (c baseChecker) Explain(label string, got interface{}) string {
+func (c baseChecker) Explain(label string, got any) string {
 	return c.explFunc(label, got)
 }
 

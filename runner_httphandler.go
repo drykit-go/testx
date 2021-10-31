@@ -28,7 +28,7 @@ func (r *httpHandlerRunner) WithRequest(request *http.Request) HTTPHandlerRunner
 	}
 }
 
-func (r *httpHandlerRunner) Duration(checkers ...check.DurationChecker) HTTPHandlerRunner {
+func (r *httpHandlerRunner) Duration(checkers ...check.Checker[time.Duration]) HTTPHandlerRunner {
 	for _, c := range checkers {
 		r.addCheck(baseCheck{
 			label:   "handling duration",
@@ -39,7 +39,7 @@ func (r *httpHandlerRunner) Duration(checkers ...check.DurationChecker) HTTPHand
 	return r
 }
 
-func (r *httpHandlerRunner) Request(checkers ...check.HTTPRequestChecker) HTTPHandlerRunner {
+func (r *httpHandlerRunner) Request(checkers ...check.Checker[*http.Request]) HTTPHandlerRunner {
 	for _, c := range checkers {
 		r.addCheck(baseCheck{
 			label:   "http request",
@@ -50,7 +50,7 @@ func (r *httpHandlerRunner) Request(checkers ...check.HTTPRequestChecker) HTTPHa
 	return r
 }
 
-func (r *httpHandlerRunner) Response(checkers ...check.HTTPResponseChecker) HTTPHandlerRunner {
+func (r *httpHandlerRunner) Response(checkers ...check.Checker[*http.Response]) HTTPHandlerRunner {
 	for _, c := range checkers {
 		r.addCheck(baseCheck{
 			label:   "http response",

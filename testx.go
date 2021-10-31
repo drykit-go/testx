@@ -23,17 +23,17 @@ type Runner interface {
 }
 
 // ValueRunner provides methods to perform tests on a single value.
-type ValueRunner interface {
+type ValueRunner[T any] interface {
 	Runner
 	// DryRun returns a Resulter to access test results
 	// without running *testing.T.
 	DryRun() Resulter
 	// Exp adds an equality check on the tested value.
-	Exp(value interface{}) ValueRunner
+	Exp(value T) ValueRunner[T]
 	// Not adds inequality checks on the tested value.
-	Not(values ...interface{}) ValueRunner
+	Not(values ...T) ValueRunner[T]
 	// Pass adds checkers on the tested value.
-	Pass(checkers ...check.ValueChecker) ValueRunner
+	Pass(checkers ...check.Checker[T]) ValueRunner[T]
 }
 
 // TableRunner provides methods to run a series of test cases
@@ -63,11 +63,11 @@ type HTTPHandlerRunner interface {
 	WithRequest(*http.Request) HTTPHandlerRunner
 	// Request adds checkers on the resulting request,
 	// after the last middleware is called and before the handler is called.
-	Request(...check.HTTPRequestChecker) HTTPHandlerRunner
+	Request(...check.Checker[*http.Request]) HTTPHandlerRunner
 	// Response adds checkers on the written response.
-	Response(...check.HTTPResponseChecker) HTTPHandlerRunner
+	Response(...check.Checker[*http.Response]) HTTPHandlerRunner
 	// Duration adds checkers on the handler's execution time;
-	Duration(...check.DurationChecker) HTTPHandlerRunner
+	Duration(...check.Checker[time.Duration]) HTTPHandlerRunner
 }
 
 /*
@@ -139,7 +139,7 @@ func (cr CheckResult) String() string {
 */
 
 // Value returns a ValueRunner to run tests on a single value.
-func Value(v interface{}) ValueRunner {
+func Value[T any](v T) ValueRunner[T] {
 	return newValueRunner(v)
 }
 
@@ -170,6 +170,6 @@ func HTTPHandlerFunc(
 // Table returns a TableRunner to run test cases on a func. By default,
 // it works with funcs having a single input and output value.
 // Use TableRunner.Config to configure it for a more complex functions.
-func Table(testedFunc interface{}) TableRunner {
+func Table(testedFunc any) TableRunner {
 	return newTableRunner(testedFunc)
 }
