@@ -22,11 +22,11 @@ func TestValueCheckerProvider(t *testing.T) {
 		emptyMap   map[int]bool
 		emptySlice []float32
 
-		zeros   = []interface{}{0, "", 0i + 0, vzero, emptyMap, emptySlice}
-		nozeros = []interface{}{1, "hi", 0i + 1, vorig, map[int]bool{}, []float32{}}
+		zeros   = []any{0, "", 0i + 0, vzero, emptyMap, emptySlice}
+		nozeros = []any{1, "hi", 0i + 1, vorig, map[int]bool{}, []float32{}}
 	)
 
-	itf := func(v interface{}) interface{} {
+	itf := func(v any) any {
 		return v
 	}
 
@@ -84,7 +84,7 @@ func TestValueCheckerProvider(t *testing.T) {
 		}
 	})
 
-	isEvenInt := func(n interface{}) bool {
+	isEvenInt := func(n any) bool {
 		nint, ok := n.(int)
 		return ok && nint&1 == 0
 	}
@@ -100,7 +100,7 @@ func TestValueCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("SameJSON pass", func(t *testing.T) {
-		mapequiv := map[string]interface{}{
+		mapequiv := map[string]any{
 			"Name": "hi",
 		}
 		c := check.Value.SameJSON(mapequiv)
@@ -108,7 +108,7 @@ func TestValueCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("SameJSON fail", func(t *testing.T) {
-		mapdiff := map[string]interface{}{
+		mapdiff := map[string]any{
 			"Name": "bad",
 		}
 		c := check.Value.SameJSON(mapdiff)

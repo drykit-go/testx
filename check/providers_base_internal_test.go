@@ -14,7 +14,7 @@ func TestBaseCheckerProvider_sameJSON(t *testing.T) {
 	)
 
 	t.Run("bad dst type", func(t *testing.T) {
-		var x map[string]interface{}
+		var x map[string]any
 		var y int
 		defer testutil.AssertPanicMessage(t,
 			"json: cannot unmarshal object into Go value of type int",
@@ -25,14 +25,14 @@ func TestBaseCheckerProvider_sameJSON(t *testing.T) {
 	})
 
 	t.Run("same json", func(t *testing.T) {
-		var x, y map[string]interface{}
+		var x, y map[string]any
 		if !(baseCheckerProvider{}).sameJSON(borig, bsame, &x, &y) {
 			t.Error("exp true, got false", x, y)
 		}
 	})
 
 	t.Run("diff json", func(t *testing.T) {
-		var x, y map[string]interface{}
+		var x, y map[string]any
 		if (baseCheckerProvider{}).sameJSON(borig, bdiff, &x, &y) {
 			t.Error("exp false, got true")
 		}
@@ -45,26 +45,26 @@ func TestBaseCheckerProvider_sameJSONProduced(t *testing.T) {
 			ID   int    `json:"id"`
 			Name string `json:"name"`
 		}{ID: 42, Name: "Marcel Patulacci"}
-		same = map[string]interface{}{"id": 42, "name": "Marcel Patulacci"}
-		diff = map[string]interface{}{"id": 42, "name": "Robert Robichet"}
+		same = map[string]any{"id": 42, "name": "Marcel Patulacci"}
+		diff = map[string]any{"id": 42, "name": "Robert Robichet"}
 	)
 
 	t.Run("same json produced", func(t *testing.T) {
-		var x, y map[string]interface{}
+		var x, y map[string]any
 		if !(baseCheckerProvider{}).sameJSONProduced(orig, same, &x, &y) {
 			t.Error("exp true, got false", x, y)
 		}
 	})
 
 	t.Run("diff json produced", func(t *testing.T) {
-		var x, y map[string]interface{}
+		var x, y map[string]any
 		if (baseCheckerProvider{}).sameJSONProduced(orig, diff, &x, &y) {
 			t.Error("exp false, got true")
 		}
 	})
 
 	t.Run("bad input", func(t *testing.T) {
-		var x, y map[string]interface{}
+		var x, y map[string]any
 		badinput := make(chan int)
 		defer testutil.AssertPanicMessage(t,
 			"json: unsupported type: chan int",

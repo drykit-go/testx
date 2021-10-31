@@ -16,7 +16,7 @@ func TestBytesCheckerProvider(t *testing.T) {
 		eqJSON = []byte("{\n\"id\":   42,\n\n\n  \"name\":\"Marcel Patulacci\" } ")
 	)
 
-	mapof := func(b []byte) (m map[string]interface{}) {
+	mapof := func(b []byte) (m map[string]any) {
 		json.Unmarshal(b, &m) //nolint:errcheck
 		return
 	}

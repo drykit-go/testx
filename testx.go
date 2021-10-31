@@ -170,6 +170,6 @@ func HTTPHandlerFunc(
 // Table returns a TableRunner to run test cases on a func. By default,
 // it works with funcs having a single input and output value.
 // Use TableRunner.Config to configure it for a more complex functions.
-func Table(testedFunc interface{}) TableRunner {
+func Table(testedFunc any) TableRunner {
 	return newTableRunner(testedFunc)
 }

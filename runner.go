@@ -7,7 +7,7 @@ import (
 )
 
 type (
-	gottype interface{}
+	gottype any
 	getfunc func() gottype
 
 	baseCheck struct {
@@ -59,7 +59,7 @@ func (r *baseRunner) dryRun() baseResults {
 	return res
 }
 
-func (r *baseRunner) explainCheck(bc baseCheck, got interface{}, passed bool) string {
+func (r *baseRunner) explainCheck(bc baseCheck, got any, passed bool) string {
 	if passed {
 		return ""
 	}

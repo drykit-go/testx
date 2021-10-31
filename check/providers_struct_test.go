@@ -19,7 +19,7 @@ func TestStructCheckerProvider(t *testing.T) {
 	)
 	s := structTest{A: vAB, B: vAB, X: vXY, Y: vXY}
 	// FIXME: remove forced conversion
-	itf := func(v structTest) interface{} {
+	itf := func(v structTest) any {
 		return v
 	}
 
@@ -50,7 +50,7 @@ func TestStructCheckerProvider(t *testing.T) {
 			[]string{"A", "B", "X", "Y"},
 		)
 		assertFailChecker(t, "Struct.CheckFields", c, itf(s), makeExpl(
-			"fields [.A, .B, .X, .Y] to pass Checker[interface{}]",
+			"fields [.A, .B, .X, .Y] to pass Checker[any]",
 			"explanation: fields:\n"+makeExpl("< 11", ".X=20, .Y=20"),
 		))
 	})

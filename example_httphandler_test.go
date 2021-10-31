@@ -55,7 +55,7 @@ func ExampleHTTPHandler_middlewares() {
 
 	// withContextValue middleware attaches the input key-val pair
 	// to the request context.
-	withContextValue := func(key, val interface{}) func(http.Handler) http.Handler {
+	withContextValue := func(key, val any) func(http.Handler) http.Handler {
 		return func(next http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				ctx := context.WithValue(r.Context(), key, val)

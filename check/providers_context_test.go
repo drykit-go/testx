@@ -17,7 +17,7 @@ func TestContextCheckerProvider(t *testing.T) {
 		cancel()
 		return ctx
 	}
-	ctxVal := func(key, val interface{}) context.Context {
+	ctxVal := func(key, val any) context.Context {
 		return context.WithValue(context.Background(), key, val)
 	}
 

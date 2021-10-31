@@ -18,8 +18,8 @@ type baseCheckerProvider struct{}
 // with unmarshaled x and y respectively.
 //
 // It panics on the first error encountered in the process.
-func (p baseCheckerProvider) sameJSON(x, y []byte, xptr, yptr interface{}) bool {
-	mustUnmarshal := func(b []byte, ptr interface{}) {
+func (p baseCheckerProvider) sameJSON(x, y []byte, xptr, yptr any) bool {
+	mustUnmarshal := func(b []byte, ptr any) {
 		if err := json.Unmarshal(b, &ptr); err != nil {
 			panic(err)
 		}
@@ -35,8 +35,8 @@ func (p baseCheckerProvider) sameJSON(x, y []byte, xptr, yptr interface{}) bool 
 // with marshaled+unmarshaled json from xdata and ydata respectively.
 //
 // It panics on the first error encountered in the process.
-func (p baseCheckerProvider) sameJSONProduced(xdata, ydata, xptr, yptr interface{}) bool {
-	mustMarshal := func(in interface{}) []byte {
+func (p baseCheckerProvider) sameJSONProduced(xdata, ydata, xptr, yptr any) bool {
+	mustMarshal := func(in any) []byte {
 		b, err := json.Marshal(in)
 		if err != nil {
 			panic(err)
@@ -56,15 +56,15 @@ func (p baseCheckerProvider) formatList(values []string) string {
 	return b.String()
 }
 
-func (p baseCheckerProvider) deq(a, b interface{}) bool {
+func (p baseCheckerProvider) deq(a, b any) bool {
 	return reflect.DeepEqual(a, b)
 }
 
-func (baseCheckerProvider) explain(label string, exp, got interface{}) string {
+func (baseCheckerProvider) explain(label string, exp, got any) string {
 	return fmtexpl.Default(label, exp, got)
 }
 
-func (p baseCheckerProvider) explainNot(label string, exp, got interface{}) string {
+func (p baseCheckerProvider) explainNot(label string, exp, got any) string {
 	return p.explain(label, fmt.Sprintf("not %v", exp), got)
 }
 
@@ -78,7 +78,7 @@ func (p baseHTTPCheckerProvider) explainContentLengthFunc(
 	c Checker[int],
 	got func() int,
 ) ExplainFunc {
-	return func(label string, _ interface{}) string {
+	return func(label string, _ any) string {
 		return p.explainCheck(label,
 			"content length to pass Checker[int]",
 			c.Explain("content length", got()),
@@ -90,7 +90,7 @@ func (p baseHTTPCheckerProvider) explainHeaderFunc(
 	c Checker[http.Header],
 	got func() http.Header,
 ) ExplainFunc {
-	return func(label string, _ interface{}) string {
+	return func(label string, _ any) string {
 		return p.explainCheck(label,
 			"header to pass Checker[http.Header]",
 			c.Explain("http.Header", got()),
@@ -102,7 +102,7 @@ func (p baseHTTPCheckerProvider) explainBodyFunc(
 	c Checker[[]byte],
 	got func() []byte,
 ) ExplainFunc {
-	return func(label string, _ interface{}) string {
+	return func(label string, _ any) string {
 		return p.explainCheck(label,
 			"body to pass Checker[[]byte]",
 			c.Explain("bytes", got()),

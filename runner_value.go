@@ -30,7 +30,7 @@ func (r *valueRunner[T]) Exp(value T) ValueRunner[T] {
 
 func (r *valueRunner[T]) Not(values ...T) ValueRunner[T] {
 	// TODO: find a way to cast properly
-	valuesitf := []interface{}{}
+	valuesitf := []any{}
 	for _, v := range values {
 		valuesitf = append(valuesitf, v)
 	}

@@ -23,7 +23,7 @@ func (c StatusOKChecker) Pass(got int) bool {
 }
 
 // Explain satisfies Explainer interface.
-func (c StatusOKChecker) Explain(label string, got interface{}) string {
+func (c StatusOKChecker) Explain(label string, got any) string {
 	return fmt.Sprintf("%s: got bad http code: %v", label, got)
 }
 

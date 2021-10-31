@@ -18,7 +18,7 @@ func (p httpRequestCheckerProvider) ContentLength(c Checker[int]) Checker[*http.
 		clen = int(got.ContentLength)
 		return c.Pass(clen)
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainContentLengthFunc(c, func() int { return clen })(label, got)
 	}
 	return NewChecker(pass, expl)
@@ -32,7 +32,7 @@ func (p httpRequestCheckerProvider) Header(c Checker[http.Header]) Checker[*http
 		header = got.Header
 		return c.Pass(header)
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainHeaderFunc(c, func() http.Header { return header })(label, got)
 	}
 	return NewChecker(pass, expl)
@@ -47,7 +47,7 @@ func (p httpRequestCheckerProvider) Body(c Checker[[]byte]) Checker[*http.Reques
 		body = ioutil.NopRead(&got.Body)
 		return c.Pass(body)
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainBodyFunc(c, func() []byte { return body })(label, got)
 	}
 	return NewChecker(pass, expl)
@@ -61,7 +61,7 @@ func (p httpRequestCheckerProvider) Context(c Checker[context.Context]) Checker[
 		ctx = got.Context()
 		return c.Pass(ctx)
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainCheck(label,
 			"context to pass Checker[context.Context]",
 			c.Explain("context", ctx),

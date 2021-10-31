@@ -23,14 +23,14 @@ var (
 // IsChecker returns true if the provided value is a valid checker.
 // A valid checker is any type exposing two methods:
 // 	- Pass(got T) bool
-// 	- Explain(label string, got interface{}) string
+// 	- Explain(label string, got any) string
 // Any custom implementation is considered valid whether or not it uses
 // the package check.
 //
 // Note: The nature of Pass(got T) method, whose signature depend on the
 // type of the tested value, prevents using a regular interface to identify
 // a checker, hence the need of this helper.
-func IsChecker(in interface{}) bool {
+func IsChecker(in any) bool {
 	v := reflect.ValueOf(in)
 	return isPasser(v) && isExplainer(v)
 }

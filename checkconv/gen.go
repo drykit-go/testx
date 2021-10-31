@@ -7,7 +7,7 @@ package checkconv
 //
 //	func FromN(c check.NChecker) check.ValueChecker {
 //		return check.NewValueCheck(
-//			func(got interface{}) bool { return c.Pass(got.(T) },
+//			func(got any) bool { return c.Pass(got.(T) },
 //			c.Explain,
 //		)
 //	}

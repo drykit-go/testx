@@ -21,7 +21,7 @@ import (
 // func fields pass and explain respectively.
 type Complex128Checker struct {
 	pass    func(got complex128) bool
-	explain func(label string, got interface{}) string
+	explain func(label string, got any) string
 }
 
 // Pass do not satisfy any interface declared by check, but has a valid
@@ -44,7 +44,7 @@ func checkComplex128ImagIsInRange(lo, hi float64) Complex128Checker {
 		gotImag = imag(got)
 		return lo <= gotImag && gotImag <= hi
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return fmt.Sprintf(
 			"%s: exp imag(%v) in range [%.0f:%.0f], got %.0f",
 			label, got, lo, hi, gotImag,

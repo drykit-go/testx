@@ -12,12 +12,12 @@ import (
 )
 
 func TestHTTPRequestCheckerProvider(t *testing.T) {
-	newCtx := func(key, val interface{}) context.Context {
+	newCtx := func(key, val any) context.Context {
 		return context.WithValue(context.Background(), key, val)
 	}
 	newReq := func() *http.Request {
 		ctx := newCtx("userID", 42)
-		body, _ := json.Marshal(map[string]interface{}{"answer": 42})
+		body, _ := json.Marshal(map[string]any{"answer": 42})
 		r, _ := http.NewRequestWithContext(ctx, "GET", "/endpoint?id=42", bytes.NewReader(body))
 		r.Header.Set("Content-Type", "application/json")
 		return r

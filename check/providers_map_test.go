@@ -9,13 +9,13 @@ import (
 )
 
 func TestMapCheckerProvider(t *testing.T) {
-	m := map[string]interface{}{
+	m := map[string]any{
 		"name":    "Marcel Patulacci",
 		"age":     42,
 		"friends": []string{"Robert Robichet", "Jean-Pierre Avidol"},
 	}
 	// FIXME: remove forced conversion
-	itf := func(m map[string]interface{}) interface{} {
+	itf := func(m map[string]any) any {
 		return m
 	}
 
@@ -104,7 +104,7 @@ func TestMapCheckerProvider(t *testing.T) {
 		// 	"age", "badkey",
 		// )
 		// assertFailChecker(t, "Map.CheckValues", c, itf(m), makeExpl(
-		// 	"values for keys [age badkey] to pass Checker[interface{}]",
+		// 	"values for keys [age badkey] to pass Checker[any]",
 		// 	"explanation: values:\n"+makeExpl(
 		// 		"not in range [41:43]",
 		// 		"[age:42, badkey:<nil>]",
@@ -114,7 +114,7 @@ func TestMapCheckerProvider(t *testing.T) {
 		// all keys
 		c := check.Map.CheckValues(check.Value.Is("Marcel Patulacci"))
 		assertFailChecker(t, "Map.CheckValues", c, itf(m), makeExpl(
-			"values for all keys to pass Checker[interface{}]",
+			"values for all keys to pass Checker[any]",
 			"explanation: values:\n"+makeExpl(
 				"Marcel Patulacci",
 				"[age:42, friends:[Robert Robichet Jean-Pierre Avidol]]",

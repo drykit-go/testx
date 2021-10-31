@@ -18,7 +18,7 @@ func (p contextCheckerProvider) Done(expectDone bool) Checker[context.Context] {
 		err = got.Err()
 		return done() == expectDone
 	}
-	expl := func(label string, _ interface{}) string {
+	expl := func(label string, _ any) string {
 		notString := cond.String("", "not ", expectDone)
 		expString := fmt.Sprintf("context %sto be done", notString)
 		gotString := cond.String(fmt.Sprint(err), "context not done", done())
@@ -28,7 +28,7 @@ func (p contextCheckerProvider) Done(expectDone bool) Checker[context.Context] {
 }
 
 // HasKeys checks the gotten context has the given keys set.
-func (p contextCheckerProvider) HasKeys(keys ...interface{}) Checker[context.Context] {
+func (p contextCheckerProvider) HasKeys(keys ...any) Checker[context.Context] {
 	var missing []string
 	pass := func(got context.Context) bool {
 		for _, expk := range keys {
@@ -39,7 +39,7 @@ func (p contextCheckerProvider) HasKeys(keys ...interface{}) Checker[context.Con
 		}
 		return len(missing) == 0
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explain(label,
 			"to have keys "+p.formatList(missing),
 			"keys not set",
@@ -54,13 +54,13 @@ func (p contextCheckerProvider) HasKeys(keys ...interface{}) Checker[context.Con
 // Examples:
 // 	Context.Value("userID", Value.Is("abcde"))
 // 	Context.Value("userID", checkconv.Assert(String.Contains("abc")))
-func (p contextCheckerProvider) Value(key interface{}, c Checker[interface{}]) Checker[context.Context] {
-	var v interface{}
+func (p contextCheckerProvider) Value(key any, c Checker[any]) Checker[context.Context] {
+	var v any
 	pass := func(got context.Context) bool {
 		v = got.Value(key)
 		return v != nil && c.Pass(v)
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainCheck(label,
 			fmt.Sprintf("value for key %v to pass ValueChecker", key),
 			c.Explain("value", v),

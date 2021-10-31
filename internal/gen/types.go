@@ -16,5 +16,5 @@ var types = []struct {
 	{N: "HTTPHeader", T: "http.Header"},
 	{N: "HTTPRequest", T: "*http.Request"},
 	{N: "HTTPResponse", T: "*http.Response"},
-	{N: "Value", T: "interface{}"},
+	{N: "Value", T: "any"},
 }

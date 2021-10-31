@@ -15,7 +15,7 @@ func TestHTTPResponseCheckerProvider(t *testing.T) {
 	newResp := func() *http.Response {
 		rr := httptest.NewRecorder()
 		rq := httptest.NewRequest("GET", "/", nil)
-		body, _ := json.Marshal(map[string]interface{}{"answer": 42})
+		body, _ := json.Marshal(map[string]any{"answer": 42})
 		clen := len(body)
 
 		func(w http.ResponseWriter, _ *http.Request) {

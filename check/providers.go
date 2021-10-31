@@ -17,9 +17,9 @@ type (
 	// BytesCheckerProvider provides checks on type []byte.
 	BytesCheckerProvider interface {
 		// AsMap checks the gotten []byte passes the given mapChecker
-		// once json-unmarshaled to a map[string]interface{}.
+		// once json-unmarshaled to a map[string]any.
 		// It fails if it is not a valid JSON.
-		AsMap(mapChecker Checker[interface{}]) Checker[[]byte]
+		AsMap(mapChecker Checker[any]) Checker[[]byte]
 		// AsString checks the gotten []byte passes the given Checker[string]
 		// once converted to a string.
 		AsString(c Checker[string]) Checker[[]byte]
@@ -44,14 +44,14 @@ type (
 		// Done checks the gotten context is done.
 		Done(expectDone bool) Checker[context.Context]
 		// HasKeys checks the gotten context has the given keys set.
-		HasKeys(keys ...interface{}) Checker[context.Context]
+		HasKeys(keys ...any) Checker[context.Context]
 		// Value checks the gotten context's value for the given key passes
-		// the given Checker[interface{}]. It fails if value is nil.
+		// the given Checker[any]. It fails if value is nil.
 		//
 		// Examples:
 		// 	Context.Value("userID", Value.Is("abcde"))
 		// 	Context.Value("userID", checkconv.Assert(String.Contains("abc")))
-		Value(key interface{}, c Checker[interface{}]) Checker[context.Context]
+		Value(key any, c Checker[any]) Checker[context.Context]
 	}
 
 	// DurationCheckerProvider provides checks on type time.Duration.
@@ -171,17 +171,17 @@ type (
 		// CheckValues checks the gotten map's values corresponding to the given keys
 		// pass the given checker. A key not found is considered a fail.
 		// If len(keys) == 0, the check is made on all map values.
-		CheckValues(c Checker[interface{}], keys ...interface{}) Checker[interface{}]
+		CheckValues(c Checker[any], keys ...any) Checker[any]
 		// HasKeys checks the gotten map has the given keys set.
-		HasKeys(keys ...interface{}) Checker[interface{}]
+		HasKeys(keys ...any) Checker[any]
 		// HasNotKeys checks the gotten map has the given keys set.
-		HasNotKeys(keys ...interface{}) Checker[interface{}]
+		HasNotKeys(keys ...any) Checker[any]
 		// HasNotValues checks the gotten map has not the given values set.
-		HasNotValues(values ...interface{}) Checker[interface{}]
+		HasNotValues(values ...any) Checker[any]
 		// HasValues checks the gotten map has the given values set.
-		HasValues(values ...interface{}) Checker[interface{}]
+		HasValues(values ...any) Checker[any]
 		// Len checks the gotten map passes the given Checker[int].
-		Len(c Checker[int]) Checker[interface{}]
+		Len(c Checker[int]) Checker[any]
 	}
 
 	// SliceCheckerProvider provides checks on kind slice.
@@ -189,16 +189,16 @@ type (
 		ValueCheckerProvider
 
 		// Cap checks the capacity of the gotten slice passes the given Checker[int].
-		Cap(c Checker[int]) Checker[interface{}]
-		// CheckValues checks the values of the gotten slice pass the given Checker[interface{}].
+		Cap(c Checker[int]) Checker[any]
+		// CheckValues checks the values of the gotten slice pass the given Checker[any].
 		// If a filterFunc is provided, the values not passing it are ignored.
-		CheckValues(c Checker[interface{}], filters ...func(i int, v interface{}) bool) Checker[interface{}]
+		CheckValues(c Checker[any], filters ...func(i int, v any) bool) Checker[any]
 		// HasNotValues checks the gotten slice has not the given values set.
-		HasNotValues(values ...interface{}) Checker[interface{}]
+		HasNotValues(values ...any) Checker[any]
 		// HasValues checks the gotten slice has the given values set.
-		HasValues(values ...interface{}) Checker[interface{}]
+		HasValues(values ...any) Checker[any]
 		// Len checks the length of the gotten slice passes the given Checker[int].
-		Len(c Checker[int]) Checker[interface{}]
+		Len(c Checker[int]) Checker[any]
 	}
 
 	// StringCheckerProvider provides checks on type string.
@@ -224,36 +224,36 @@ type (
 	StructCheckerProvider interface {
 		ValueCheckerProvider
 
-		// CheckFields checks all given fields pass the Checker[interface{}].
+		// CheckFields checks all given fields pass the Checker[any].
 		// It panics if the fields do not exist or are not exported,
 		// or if the tested value is not a struct.
-		CheckFields(c Checker[interface{}], fields []string) Checker[interface{}]
+		CheckFields(c Checker[any], fields []string) Checker[any]
 		// FieldsEqual checks all given fields equal the exp value.
 		// It panics if the fields do not exist or are not exported,
 		// or if the tested value is not a struct.
-		FieldsEqual(exp interface{}, fields []string) Checker[interface{}]
+		FieldsEqual(exp any, fields []string) Checker[any]
 	}
 
-	// ValueCheckerProvider provides checks on type interface{}.
+	// ValueCheckerProvider provides checks on type any.
 	ValueCheckerProvider interface {
-		// Custom checks the gotten value passes the given PassFunc[interface{}].
+		// Custom checks the gotten value passes the given PassFunc[any].
 		// The description should give information about the expected value,
 		// as it outputs in format "exp <desc>" in case of failure.
-		Custom(desc string, f PassFunc[interface{}]) Checker[interface{}]
+		Custom(desc string, f PassFunc[any]) Checker[any]
 		// Is checks the gotten value is equal to the target.
-		Is(tar interface{}) Checker[interface{}]
+		Is(tar any) Checker[any]
 		// IsZero checks the gotten value is a zero value, indicating it might not
 		// have been initialized.
-		IsZero() Checker[interface{}]
+		IsZero() Checker[any]
 		// Not checks the gotten value is not equal to the target.
-		Not(values ...interface{}) Checker[interface{}]
+		Not(values ...any) Checker[any]
 		// NotZero checks the gotten struct contains at least 1 non-zero value,
 		// meaning it has been initialized.
-		NotZero() Checker[interface{}]
+		NotZero() Checker[any]
 		// SameJSON checks the gotten value and the target value
 		// produce the same JSON, ignoring formatting and keys order.
 		// It panics if any error occurs in the marshaling process.
-		SameJSON(tar interface{}) Checker[interface{}]
+		SameJSON(tar any) Checker[any]
 	}
 )
 

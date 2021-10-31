@@ -31,7 +31,7 @@ func (c MyTypeValidityChecker) Pass(got MyType) bool {
 }
 
 // Explain satisfies Explainer interface.
-func (c MyTypeValidityChecker) Explain(label string, got interface{}) string {
+func (c MyTypeValidityChecker) Explain(label string, got any) string {
 	return fmt.Sprintf("%s: got bad CustomType value: %v", label, got)
 }
 

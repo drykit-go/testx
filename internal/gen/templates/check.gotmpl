@@ -13,7 +13,7 @@ type (
 	// ExplainFunc is the required method to implement Explainer.
 	// It returns a string explaining why the gotten value failed the check.
 	// The label provides some context, such as "response code".
-	ExplainFunc func(label string, got interface{}) string
+	ExplainFunc func(label string, got any) string
 )
 
 type (
@@ -24,7 +24,7 @@ type (
 	{{end}}
 
 	// Explainer provides a method Explain describing the reason of a failed check.
-	Explainer interface { Explain(label string, got interface{}) string }
+	Explainer interface { Explain(label string, got any) string }
 )
 
 type (

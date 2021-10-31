@@ -8,7 +8,7 @@ import (
 
 func TestIsChecker(t *testing.T) {
 	t.Run("invalid checkers", func(t *testing.T) {
-		values := append([]interface{}{
+		values := append([]any{
 			"a string",
 			42,
 			func(int) bool { return true },

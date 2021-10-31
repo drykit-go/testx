@@ -18,7 +18,7 @@ var tplFuncs = template.FuncMap{
 type config struct {
 	name, tpl, out string
 	tplFuncs       template.FuncMap
-	data           interface{}
+	data           any
 }
 
 // Types generates checkers declarations in packages check and checkconv

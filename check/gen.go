@@ -23,7 +23,7 @@ package check
 //
 //	func (c nChecker) Pass(got T) bool { return c.passFunc(got) }
 //
-//	func (c nChecker) Explain(label string, got interface{}) string { return c.explFunc(label, got) }
+//	func (c nChecker) Explain(label string, got any) string { return c.explFunc(label, got) }
 //
 //	func NewNChecker(passFunc NPassFunc, explainFunc ExplainFunc) NChecker {
 //		return nChecker{passFunc: passFunc, explFunc: explainFunc}

@@ -13,7 +13,7 @@ type httpHeaderCheckerProvider struct{ baseCheckerProvider }
 // for that key passes the check.
 func (p httpHeaderCheckerProvider) HasKey(key string) Checker[http.Header] {
 	pass := func(got http.Header) bool { return p.hasKey(got, key) }
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explain(label, `to have key "`+key+`"`, got)
 	}
 	return NewChecker(pass, expl)
@@ -23,7 +23,7 @@ func (p httpHeaderCheckerProvider) HasKey(key string) Checker[http.Header] {
 // a specific key set.
 func (p httpHeaderCheckerProvider) HasNotKey(key string) Checker[http.Header] {
 	pass := func(got http.Header) bool { return !p.hasKey(got, key) }
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainNot(label, `to have key "`+key+`"`, got)
 	}
 	return NewChecker(pass, expl)
@@ -33,7 +33,7 @@ func (p httpHeaderCheckerProvider) HasNotKey(key string) Checker[http.Header] {
 // It only compares the first result for each key.
 func (p httpHeaderCheckerProvider) HasValue(val string) Checker[http.Header] {
 	pass := func(got http.Header) bool { return p.hasValue(got, val) }
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explain(label, "to have value "+val, got)
 	}
 	return NewChecker(pass, expl)
@@ -43,7 +43,7 @@ func (p httpHeaderCheckerProvider) HasValue(val string) Checker[http.Header] {
 // It only compares the first result for each key.
 func (p httpHeaderCheckerProvider) HasNotValue(val string) Checker[http.Header] {
 	pass := func(got http.Header) bool { return !p.hasValue(got, val) }
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainNot(label, "to have value "+val, got)
 	}
 	return NewChecker(pass, expl)
@@ -62,7 +62,7 @@ func (p httpHeaderCheckerProvider) CheckValue(key string, c Checker[string]) Che
 		val = v
 		return c.Pass(v)
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainCheck(label,
 			fmt.Sprintf(`value for key "%s" to pass Checker[string]`, key),
 			c.Explain(`http.Header["`+key+`"]`, val),

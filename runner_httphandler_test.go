@@ -13,7 +13,7 @@ import (
 
 func TestHTTPHandlerRunner(t *testing.T) {
 	hf := func(w http.ResponseWriter, _ *http.Request) {
-		b, _ := json.Marshal(map[string]interface{}{"message": "Hello, World!"})
+		b, _ := json.Marshal(map[string]any{"message": "Hello, World!"})
 		w.WriteHeader(200)
 		w.Write(b)
 	}

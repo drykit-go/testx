@@ -16,45 +16,45 @@ func (onlyPasser) Pass(int) bool { return true }
 
 type onlyExplainer struct{}
 
-func (onlyExplainer) PassX(int) bool                     { return true }
-func (onlyExplainer) Explain(string, interface{}) string { return "" }
+func (onlyExplainer) PassX(int) bool             { return true }
+func (onlyExplainer) Explain(string, any) string { return "" }
 
 type badPasser struct{}
 
-func (badPasser) Pass(int) int                       { return 0 }
-func (badPasser) Explain(string, interface{}) string { return "" }
+func (badPasser) Pass(int) int               { return 0 }
+func (badPasser) Explain(string, any) string { return "" }
 
 type badExplainerIn struct{}
 
-func (badExplainerIn) Pass(int) bool                           { return true }
-func (badExplainerIn) Explain(interface{}, interface{}) string { return "" }
+func (badExplainerIn) Pass(int) bool           { return true }
+func (badExplainerIn) Explain(any, any) string { return "" }
 
 type badExplainerOut struct{}
 
-func (badExplainerOut) Pass(int) bool                           { return true }
-func (badExplainerOut) Explain(string, interface{}) interface{} { return "" }
+func (badExplainerOut) Pass(int) bool           { return true }
+func (badExplainerOut) Explain(string, any) any { return "" }
 
 type checkerAsFields struct {
 	Pass    func(int) bool
-	Explain func(string, interface{}) string
+	Explain func(string, any) string
 }
 
 type validCheckerInt struct{}
 
-func (validCheckerInt) Pass(int) bool                      { return true }
-func (validCheckerInt) Explain(string, interface{}) string { return "ok" }
+func (validCheckerInt) Pass(int) bool              { return true }
+func (validCheckerInt) Explain(string, any) string { return "ok" }
 
 type validCheckerFloat32 struct{}
 
-func (validCheckerFloat32) Pass(float32) bool                  { return true }
-func (validCheckerFloat32) Explain(string, interface{}) string { return "ok" }
+func (validCheckerFloat32) Pass(float32) bool          { return true }
+func (validCheckerFloat32) Explain(string, any) string { return "ok" }
 
 type validCheckerInterface struct{}
 
-func (validCheckerInterface) Pass(interface{}) bool              { return true }
-func (validCheckerInterface) Explain(string, interface{}) string { return "ok" }
+func (validCheckerInterface) Pass(any) bool              { return true }
+func (validCheckerInterface) Explain(string, any) string { return "ok" }
 
-var badCheckers = []interface{}{
+var badCheckers = []any{
 	-1,
 	"hi",
 	errors.New(""),
@@ -65,17 +65,17 @@ var badCheckers = []interface{}{
 	badExplainerOut{},
 	checkerAsFields{
 		Pass:    func(int) bool { return true },
-		Explain: func(string, interface{}) string { return "" },
+		Explain: func(string, any) string { return "" },
 	},
 }
 
-var goodCheckers = []interface{}{
+var goodCheckers = []any{
 	validCheckerInt{},
 	validCheckerFloat32{},
 	validCheckerInterface{},
 }
 
-func validExplainFunc(_ string, _ interface{}) string {
+func validExplainFunc(_ string, _ any) string {
 	return "ok"
 }
 
@@ -83,7 +83,7 @@ func validExplainFunc(_ string, _ interface{}) string {
 func isEven(n int) bool { return n&1 == 0 }
 
 // isEvenExpl is a dummy explainFunc for custom checkers
-func isEvenExpl(_ string, got interface{}) string {
+func isEvenExpl(_ string, got any) string {
 	return fmt.Sprintf("expect value to be even, got %v", got)
 }
 

@@ -17,7 +17,7 @@ func (p httpResponseCheckerProvider) StatusCode(c Checker[int]) Checker[*http.Re
 		code = got.StatusCode
 		return c.Pass(code)
 	}
-	expl := func(label string, _ interface{}) string {
+	expl := func(label string, _ any) string {
 		return p.explainCheck(label,
 			"status code to pass Checker[int]",
 			c.Explain("status code", code),
@@ -34,7 +34,7 @@ func (p httpResponseCheckerProvider) Status(c Checker[string]) Checker[*http.Res
 		status = got.Status
 		return c.Pass(status)
 	}
-	expl := func(label string, _ interface{}) string {
+	expl := func(label string, _ any) string {
 		return p.explainCheck(label,
 			"status to pass Checker[string]",
 			c.Explain("status", status),
@@ -51,7 +51,7 @@ func (p httpResponseCheckerProvider) ContentLength(c Checker[int]) Checker[*http
 		clen = int(got.ContentLength)
 		return c.Pass(clen)
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainContentLengthFunc(c, func() int { return clen })(label, got)
 	}
 	return NewChecker(pass, expl)
@@ -65,7 +65,7 @@ func (p httpResponseCheckerProvider) Header(c Checker[http.Header]) Checker[*htt
 		header = got.Header
 		return c.Pass(header)
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainHeaderFunc(c, func() http.Header { return header })(label, got)
 	}
 	return NewChecker(pass, expl)
@@ -80,7 +80,7 @@ func (p httpResponseCheckerProvider) Body(c Checker[[]byte]) Checker[*http.Respo
 		body = ioutil.NopRead(&got.Body)
 		return c.Pass(body)
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainBodyFunc(c, func() []byte { return body })(label, got)
 	}
 	return NewChecker(pass, expl)

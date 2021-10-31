@@ -9,9 +9,9 @@ import (
 )
 
 func TestSliceCheckerProvider(t *testing.T) {
-	s := []interface{}{"hello", 42, "Marcel Patulacci", []float32{3.14}}
+	s := []any{"hello", 42, "Marcel Patulacci", []float32{3.14}}
 	// FIXME: remove forced conversion
-	itf := func(v []interface{}) interface{} {
+	itf := func(v []any) any {
 		return v
 	}
 
@@ -70,7 +70,7 @@ func TestSliceCheckerProvider(t *testing.T) {
 	// t.Run("CheckValues pass", func(t *testing.T) {
 	// 	c := check.Slice.CheckValues(
 	// 		checkconv.FromInt(check.Int.InRange(41, 43)),
-	// 		func(_ int, v interface{}) bool { _, ok := v.(int); return ok },
+	// 		func(_ int, v any) bool { _, ok := v.(int); return ok },
 	// 	)
 	// 	assertPassChecker(t, "Slice.CheckValues", c, itf(s))
 	// })
@@ -78,10 +78,10 @@ func TestSliceCheckerProvider(t *testing.T) {
 	t.Run("CheckValues fail", func(t *testing.T) {
 		c := check.Slice.CheckValues(
 			checkconv.FromInt(check.Int.OutRange(41, 43)),
-			func(_ int, v interface{}) bool { _, ok := v.(int); return ok },
+			func(_ int, v any) bool { _, ok := v.(int); return ok },
 		)
 		assertFailChecker(t, "Slice.CheckValues", c, itf(s), makeExpl(
-			"values to pass Checker[interface{}]",
+			"values to pass Checker[any]",
 			"explanation: values:\n"+makeExpl("not in range [41:43]", "[1:42]"),
 		))
 	})

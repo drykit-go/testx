@@ -12,7 +12,7 @@ type bytesCheckerProvider struct{ baseCheckerProvider }
 // Is checks the gotten []byte is equal to the target.
 func (p bytesCheckerProvider) Is(tar []byte) Checker[[]byte] {
 	pass := func(got []byte) bool { return p.eq(got, tar) }
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explain(label, tar, got)
 	}
 	return NewChecker(pass, expl)
@@ -30,7 +30,7 @@ func (p bytesCheckerProvider) Not(values ...[]byte) Checker[[]byte] {
 		}
 		return true
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainNot(label, match, got)
 	}
 	return NewChecker(pass, expl)
@@ -39,11 +39,11 @@ func (p bytesCheckerProvider) Not(values ...[]byte) Checker[[]byte] {
 // SameJSON checks the gotten []byte and the target read as the same
 // JSON value, ignoring formatting and keys order.
 func (p bytesCheckerProvider) SameJSON(tar []byte) Checker[[]byte] {
-	var decGot, decTar interface{}
+	var decGot, decTar any
 	pass := func(got []byte) bool {
 		return p.sameJSON(got, tar, &decGot, &decTar)
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explain(label,
 			fmt.Sprintf("json data: %v", decTar),
 			fmt.Sprintf("json data: %v", decGot),
@@ -56,7 +56,7 @@ func (p bytesCheckerProvider) SameJSON(tar []byte) Checker[[]byte] {
 // Checker[int].
 func (p bytesCheckerProvider) Len(c Checker[int]) Checker[[]byte] {
 	pass := func(got []byte) bool { return c.Pass(len(got)) }
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainCheck(label,
 			"length to pass Checker[int]",
 			c.Explain("length", len(got.([]byte))),
@@ -68,7 +68,7 @@ func (p bytesCheckerProvider) Len(c Checker[int]) Checker[[]byte] {
 // Contains checks the gotten []byte contains a specific subslice.
 func (p bytesCheckerProvider) Contains(subslice []byte) Checker[[]byte] {
 	pass := func(got []byte) bool { return bytes.Contains(got, subslice) }
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explain(label,
 			fmt.Sprintf("to contain subslice %v", subslice),
 			got,
@@ -80,7 +80,7 @@ func (p bytesCheckerProvider) Contains(subslice []byte) Checker[[]byte] {
 // NotContains checks the gotten []byte contains a specific subslice.
 func (p bytesCheckerProvider) NotContains(subslice []byte) Checker[[]byte] {
 	pass := func(got []byte) bool { return !bytes.Contains(got, subslice) }
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainNot(label,
 			fmt.Sprintf("to contain subslice %v", subslice),
 			got,
@@ -90,16 +90,16 @@ func (p bytesCheckerProvider) NotContains(subslice []byte) Checker[[]byte] {
 }
 
 // AsMap checks the gotten []byte passes the given mapChecker
-// once json-unmarshaled to a map[string]interface{}.
+// once json-unmarshaled to a map[string]any.
 // It fails if it is not a valid JSON.
-func (p bytesCheckerProvider) AsMap(mapChecker Checker[interface{}]) Checker[[]byte] {
-	var m map[string]interface{}
+func (p bytesCheckerProvider) AsMap(mapChecker Checker[any]) Checker[[]byte] {
+	var m map[string]any
 	var goterr error
 	pass := func(got []byte) bool {
 		goterr = json.NewDecoder(bytes.NewReader(got)).Decode(&m)
 		return goterr == nil && mapChecker.Pass(m)
 	}
-	expl := func(label string, _ interface{}) string {
+	expl := func(label string, _ any) string {
 		if goterr != nil {
 			return p.explain(label,
 				"to pass MapChecker",
@@ -122,7 +122,7 @@ func (p bytesCheckerProvider) AsString(c Checker[string]) Checker[[]byte] {
 		s = string(got)
 		return c.Pass(s)
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainCheck(label,
 			"to pass Checker[string]",
 			c.Explain("converted bytes", s),

@@ -6,32 +6,32 @@ import (
 	"github.com/drykit-go/testx/internal/reflectutil"
 )
 
-// valueCheckerProvider provides checks on type interface{}.
+// valueCheckerProvider provides checks on type any.
 type valueCheckerProvider struct{ baseCheckerProvider }
 
-// Custom checks the gotten value passes the given PassFunc[interface{}].
+// Custom checks the gotten value passes the given PassFunc[any].
 // The description should give information about the expected value,
 // as it outputs in format "exp <desc>" in case of failure.
-func (p valueCheckerProvider) Custom(desc string, f PassFunc[interface{}]) Checker[interface{}] {
-	expl := func(label string, got interface{}) string {
+func (p valueCheckerProvider) Custom(desc string, f PassFunc[any]) Checker[any] {
+	expl := func(label string, got any) string {
 		return p.explain(label, desc, got)
 	}
 	return NewChecker(f, expl)
 }
 
 // Is checks the gotten value is equal to the target.
-func (p valueCheckerProvider) Is(tar interface{}) Checker[interface{}] {
-	pass := func(got interface{}) bool { return p.deq(got, tar) }
-	expl := func(label string, got interface{}) string {
+func (p valueCheckerProvider) Is(tar any) Checker[any] {
+	pass := func(got any) bool { return p.deq(got, tar) }
+	expl := func(label string, got any) string {
 		return p.explain(label, tar, got)
 	}
 	return NewChecker(pass, expl)
 }
 
 // Not checks the gotten value is not equal to the target.
-func (p valueCheckerProvider) Not(values ...interface{}) Checker[interface{}] {
-	var match interface{}
-	pass := func(got interface{}) bool {
+func (p valueCheckerProvider) Not(values ...any) Checker[any] {
+	var match any
+	pass := func(got any) bool {
 		for _, v := range values {
 			if p.deq(got, v) {
 				match = v
@@ -40,7 +40,7 @@ func (p valueCheckerProvider) Not(values ...interface{}) Checker[interface{}] {
 		}
 		return true
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explainNot(label, match, got)
 	}
 	return NewChecker(pass, expl)
@@ -48,8 +48,8 @@ func (p valueCheckerProvider) Not(values ...interface{}) Checker[interface{}] {
 
 // IsZero checks the gotten value is a zero value, indicating it might not
 // have been initialized.
-func (p valueCheckerProvider) IsZero() Checker[interface{}] {
-	expl := func(label string, got interface{}) string {
+func (p valueCheckerProvider) IsZero() Checker[any] {
+	expl := func(label string, got any) string {
 		return p.explain(label, "to be a zero value", got)
 	}
 	return NewChecker(reflectutil.IsZero, expl)
@@ -57,9 +57,9 @@ func (p valueCheckerProvider) IsZero() Checker[interface{}] {
 
 // NotZero checks the gotten struct contains at least 1 non-zero value,
 // meaning it has been initialized.
-func (p valueCheckerProvider) NotZero() Checker[interface{}] {
-	pass := func(got interface{}) bool { return !reflectutil.IsZero(got) }
-	expl := func(label string, got interface{}) string {
+func (p valueCheckerProvider) NotZero() Checker[any] {
+	pass := func(got any) bool { return !reflectutil.IsZero(got) }
+	expl := func(label string, got any) string {
 		return p.explainNot(label, "to be a zero value", got)
 	}
 	return NewChecker(pass, expl)
@@ -68,12 +68,12 @@ func (p valueCheckerProvider) NotZero() Checker[interface{}] {
 // SameJSON checks the gotten value and the target value
 // produce the same JSON, ignoring formatting and keys order.
 // It panics if any error occurs in the marshaling process.
-func (p valueCheckerProvider) SameJSON(tar interface{}) Checker[interface{}] {
-	var gotDec, tarDec interface{}
-	pass := func(got interface{}) bool {
+func (p valueCheckerProvider) SameJSON(tar any) Checker[any] {
+	var gotDec, tarDec any
+	pass := func(got any) bool {
 		return p.sameJSONProduced(got, tar, &gotDec, &tarDec)
 	}
-	expl := func(label string, got interface{}) string {
+	expl := func(label string, got any) string {
 		return p.explain(label,
 			fmt.Sprintf("json data: %v", tarDec),
 			fmt.Sprintf("json data: %v", gotDec),
