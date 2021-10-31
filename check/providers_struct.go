@@ -14,7 +14,7 @@ type structCheckerProvider struct{ valueCheckerProvider }
 // FieldsEqual checks all given fields equal the exp value.
 // It panics if the fields do not exist or are not exported,
 // or if the tested value is not a struct.
-func (p structCheckerProvider) FieldsEqual(exp interface{}, fields []string) ValueChecker {
+func (p structCheckerProvider) FieldsEqual(exp interface{}, fields []string) Checker[interface{}] {
 	var bads []string
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Struct)
@@ -29,13 +29,13 @@ func (p structCheckerProvider) FieldsEqual(exp interface{}, fields []string) Val
 			strings.Join(bads, ", "),
 		)
 	}
-	return NewValueChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
-// CheckFields checks all given fields pass the ValueChecker.
+// CheckFields checks all given fields pass the Checker[interface{}].
 // It panics if the fields do not exist or are not exported,
 // or if the tested value is not a struct.
-func (p structCheckerProvider) CheckFields(c ValueChecker, fields []string) ValueChecker {
+func (p structCheckerProvider) CheckFields(c Checker[interface{}], fields []string) Checker[interface{}] {
 	var bads []string
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Struct)
@@ -46,11 +46,11 @@ func (p structCheckerProvider) CheckFields(c ValueChecker, fields []string) Valu
 	}
 	expl := func(label string, got interface{}) string {
 		return p.explainCheck(label,
-			fmt.Sprintf("fields [%s] to pass ValueChecker", p.formatFields(fields)),
+			fmt.Sprintf("fields [%s] to pass Checker[interface{}]", p.formatFields(fields)),
 			c.Explain("fields", strings.Join(bads, ", ")),
 		)
 	}
-	return NewValueChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 func (p structCheckerProvider) badFields(

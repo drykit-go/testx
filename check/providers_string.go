@@ -10,16 +10,16 @@ import (
 type stringCheckerProvider struct{ baseCheckerProvider }
 
 // Is checks the gotten string is equal to the target.
-func (p stringCheckerProvider) Is(tar string) StringChecker {
+func (p stringCheckerProvider) Is(tar string) Checker[string] {
 	pass := func(got string) bool { return got == tar }
 	expl := func(label string, got interface{}) string {
 		return p.explain(label, tar, got)
 	}
-	return NewStringChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // Not checks the gotten string is not equal to the target.
-func (p stringCheckerProvider) Not(values ...string) StringChecker {
+func (p stringCheckerProvider) Not(values ...string) Checker[string] {
 	var match string
 	pass := func(got string) bool {
 		for _, v := range values {
@@ -33,23 +33,23 @@ func (p stringCheckerProvider) Not(values ...string) StringChecker {
 	expl := func(label string, got interface{}) string {
 		return p.explainNot(label, match, got)
 	}
-	return NewStringChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
-// Len checks the gotten string's length passes the given IntChecker.
-func (p stringCheckerProvider) Len(c IntChecker) StringChecker {
+// Len checks the gotten string's length passes the given Checker[int].
+func (p stringCheckerProvider) Len(c Checker[int]) Checker[string] {
 	pass := func(got string) bool { return c.Pass(len(got)) }
 	expl := func(label string, got interface{}) string {
 		return p.explainCheck(label,
-			"length to pass IntChecker",
+			"length to pass Checker[int]",
 			c.Explain("length", len(got.(string))),
 		)
 	}
-	return NewStringChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // Match checks the gotten string matches the given regexp.
-func (p stringCheckerProvider) Match(rgx *regexp.Regexp) StringChecker {
+func (p stringCheckerProvider) Match(rgx *regexp.Regexp) Checker[string] {
 	pass := func(got string) bool { return rgx.MatchString(got) }
 	expl := func(label string, got interface{}) string {
 		return p.explain(label,
@@ -57,11 +57,11 @@ func (p stringCheckerProvider) Match(rgx *regexp.Regexp) StringChecker {
 			got,
 		)
 	}
-	return NewStringChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // NotMatch checks the gotten string do not match the given regexp.
-func (p stringCheckerProvider) NotMatch(rgx *regexp.Regexp) StringChecker {
+func (p stringCheckerProvider) NotMatch(rgx *regexp.Regexp) Checker[string] {
 	pass := func(got string) bool { return !rgx.MatchString(got) }
 	expl := func(label string, got interface{}) string {
 		return p.explainNot(label,
@@ -69,24 +69,24 @@ func (p stringCheckerProvider) NotMatch(rgx *regexp.Regexp) StringChecker {
 			got,
 		)
 	}
-	return NewStringChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // Contains checks the gotten string contains the target substring.
-func (p stringCheckerProvider) Contains(sub string) StringChecker {
+func (p stringCheckerProvider) Contains(sub string) Checker[string] {
 	pass := func(got string) bool { return strings.Contains(got, sub) }
 	expl := func(label string, got interface{}) string {
 		return p.explain(label, "to contain substring "+sub, got)
 	}
-	return NewStringChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // NotContains checks the gotten string do not contain the target
 // substring.
-func (p stringCheckerProvider) NotContains(sub string) StringChecker {
+func (p stringCheckerProvider) NotContains(sub string) Checker[string] {
 	pass := func(got string) bool { return !strings.Contains(got, sub) }
 	expl := func(label string, got interface{}) string {
 		return p.explainNot(label, "to contain substring "+sub, got)
 	}
-	return NewStringChecker(pass, expl)
+	return NewChecker(pass, expl)
 }

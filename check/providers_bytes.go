@@ -10,16 +10,16 @@ import (
 type bytesCheckerProvider struct{ baseCheckerProvider }
 
 // Is checks the gotten []byte is equal to the target.
-func (p bytesCheckerProvider) Is(tar []byte) BytesChecker {
+func (p bytesCheckerProvider) Is(tar []byte) Checker[[]byte] {
 	pass := func(got []byte) bool { return p.eq(got, tar) }
 	expl := func(label string, got interface{}) string {
 		return p.explain(label, tar, got)
 	}
-	return NewBytesChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // Not checks the gotten []byte is not equal to the target.
-func (p bytesCheckerProvider) Not(values ...[]byte) BytesChecker {
+func (p bytesCheckerProvider) Not(values ...[]byte) Checker[[]byte] {
 	match := []byte{}
 	pass := func(got []byte) bool {
 		for _, v := range values {
@@ -33,12 +33,12 @@ func (p bytesCheckerProvider) Not(values ...[]byte) BytesChecker {
 	expl := func(label string, got interface{}) string {
 		return p.explainNot(label, match, got)
 	}
-	return NewBytesChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // SameJSON checks the gotten []byte and the target read as the same
 // JSON value, ignoring formatting and keys order.
-func (p bytesCheckerProvider) SameJSON(tar []byte) BytesChecker {
+func (p bytesCheckerProvider) SameJSON(tar []byte) Checker[[]byte] {
 	var decGot, decTar interface{}
 	pass := func(got []byte) bool {
 		return p.sameJSON(got, tar, &decGot, &decTar)
@@ -49,24 +49,24 @@ func (p bytesCheckerProvider) SameJSON(tar []byte) BytesChecker {
 			fmt.Sprintf("json data: %v", decGot),
 		)
 	}
-	return NewBytesChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // Len checks the gotten []byte's length passes the provided
-// IntChecker.
-func (p bytesCheckerProvider) Len(c IntChecker) BytesChecker {
+// Checker[int].
+func (p bytesCheckerProvider) Len(c Checker[int]) Checker[[]byte] {
 	pass := func(got []byte) bool { return c.Pass(len(got)) }
 	expl := func(label string, got interface{}) string {
 		return p.explainCheck(label,
-			"length to pass IntChecker",
+			"length to pass Checker[int]",
 			c.Explain("length", len(got.([]byte))),
 		)
 	}
-	return NewBytesChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // Contains checks the gotten []byte contains a specific subslice.
-func (p bytesCheckerProvider) Contains(subslice []byte) BytesChecker {
+func (p bytesCheckerProvider) Contains(subslice []byte) Checker[[]byte] {
 	pass := func(got []byte) bool { return bytes.Contains(got, subslice) }
 	expl := func(label string, got interface{}) string {
 		return p.explain(label,
@@ -74,11 +74,11 @@ func (p bytesCheckerProvider) Contains(subslice []byte) BytesChecker {
 			got,
 		)
 	}
-	return NewBytesChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // NotContains checks the gotten []byte contains a specific subslice.
-func (p bytesCheckerProvider) NotContains(subslice []byte) BytesChecker {
+func (p bytesCheckerProvider) NotContains(subslice []byte) Checker[[]byte] {
 	pass := func(got []byte) bool { return !bytes.Contains(got, subslice) }
 	expl := func(label string, got interface{}) string {
 		return p.explainNot(label,
@@ -86,13 +86,13 @@ func (p bytesCheckerProvider) NotContains(subslice []byte) BytesChecker {
 			got,
 		)
 	}
-	return NewBytesChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // AsMap checks the gotten []byte passes the given mapChecker
 // once json-unmarshaled to a map[string]interface{}.
 // It fails if it is not a valid JSON.
-func (p bytesCheckerProvider) AsMap(mapChecker ValueChecker) BytesChecker {
+func (p bytesCheckerProvider) AsMap(mapChecker Checker[interface{}]) Checker[[]byte] {
 	var m map[string]interface{}
 	var goterr error
 	pass := func(got []byte) bool {
@@ -111,12 +111,12 @@ func (p bytesCheckerProvider) AsMap(mapChecker ValueChecker) BytesChecker {
 			mapChecker.Explain("json map", m),
 		)
 	}
-	return NewBytesChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
-// AsString checks the gotten []byte passes the given StringChecker
+// AsString checks the gotten []byte passes the given Checker[string]
 // once converted to a string.
-func (p bytesCheckerProvider) AsString(c StringChecker) BytesChecker {
+func (p bytesCheckerProvider) AsString(c Checker[string]) Checker[[]byte] {
 	var s string
 	pass := func(got []byte) bool {
 		s = string(got)
@@ -124,11 +124,11 @@ func (p bytesCheckerProvider) AsString(c StringChecker) BytesChecker {
 	}
 	expl := func(label string, got interface{}) string {
 		return p.explainCheck(label,
-			"to pass StringChecker",
+			"to pass Checker[string]",
 			c.Explain("converted bytes", s),
 		)
 	}
-	return NewBytesChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 func (bytesCheckerProvider) eq(a, b []byte) bool {

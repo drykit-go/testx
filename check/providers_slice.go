@@ -10,8 +10,8 @@ import (
 // sliceCheckerProvider provides checks on kind slice.
 type sliceCheckerProvider struct{ valueCheckerProvider }
 
-// Len checks the length of the gotten slice passes the given IntChecker.
-func (p sliceCheckerProvider) Len(c IntChecker) ValueChecker {
+// Len checks the length of the gotten slice passes the given Checker[int].
+func (p sliceCheckerProvider) Len(c Checker[int]) Checker[interface{}] {
 	var gotlen int
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
@@ -20,15 +20,15 @@ func (p sliceCheckerProvider) Len(c IntChecker) ValueChecker {
 	}
 	expl := func(label string, got interface{}) string {
 		return p.explainCheck(label,
-			"length to pass IntChecker",
+			"length to pass Checker[int]",
 			c.Explain("length", gotlen),
 		)
 	}
-	return NewValueChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
-// Cap checks the capacity of the gotten slice passes the given IntChecker.
-func (p sliceCheckerProvider) Cap(c IntChecker) ValueChecker {
+// Cap checks the capacity of the gotten slice passes the given Checker[int].
+func (p sliceCheckerProvider) Cap(c Checker[int]) Checker[interface{}] {
 	var gotcap int
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
@@ -37,15 +37,15 @@ func (p sliceCheckerProvider) Cap(c IntChecker) ValueChecker {
 	}
 	expl := func(label string, got interface{}) string {
 		return p.explainCheck(label,
-			"capacity to pass IntChecker",
+			"capacity to pass Checker[int]",
 			c.Explain("capacity", gotcap),
 		)
 	}
-	return NewValueChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // HasValues checks the gotten slice has the given values set.
-func (p sliceCheckerProvider) HasValues(values ...interface{}) ValueChecker {
+func (p sliceCheckerProvider) HasValues(values ...interface{}) Checker[interface{}] {
 	var missing []string
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
@@ -62,11 +62,11 @@ func (p sliceCheckerProvider) HasValues(values ...interface{}) ValueChecker {
 			got,
 		)
 	}
-	return NewValueChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // HasNotValues checks the gotten slice has not the given values set.
-func (p sliceCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
+func (p sliceCheckerProvider) HasNotValues(values ...interface{}) Checker[interface{}] {
 	var badvalues []string
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
@@ -83,12 +83,16 @@ func (p sliceCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
 			got,
 		)
 	}
-	return NewValueChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
-// CheckValues checks the values of the gotten slice pass the given ValueChecker.
+// CheckValues checks the values of the gotten slice passes
+// the given Checker[interface{}].
 // If a filterFunc is provided, the values not passing it are ignored.
-func (p sliceCheckerProvider) CheckValues(c ValueChecker, filters ...func(i int, v interface{}) bool) ValueChecker {
+func (p sliceCheckerProvider) CheckValues(
+	c Checker[interface{}],
+	filters ...func(i int, v interface{}) bool,
+) Checker[interface{}] {
 	var badvalues []string
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
@@ -101,11 +105,11 @@ func (p sliceCheckerProvider) CheckValues(c ValueChecker, filters ...func(i int,
 	}
 	expl := func(label string, _ interface{}) string {
 		return p.explainCheck(label,
-			"values to pass ValueChecker",
+			"values to pass Checker[interface{}]",
 			c.Explain("values", p.formatList(badvalues)),
 		)
 	}
-	return NewValueChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // Helpers

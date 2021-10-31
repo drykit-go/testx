@@ -13,8 +13,8 @@ import (
 // mapCheckerProvider provides checks on kind map.
 type mapCheckerProvider struct{ valueCheckerProvider }
 
-// Len checks the gotten map passes the given IntChecker.
-func (p mapCheckerProvider) Len(c IntChecker) ValueChecker {
+// Len checks the gotten map passes the given Checker[int].
+func (p mapCheckerProvider) Len(c Checker[int]) Checker[interface{}] {
 	var gotlen int
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
@@ -23,15 +23,15 @@ func (p mapCheckerProvider) Len(c IntChecker) ValueChecker {
 	}
 	expl := func(label string, got interface{}) string {
 		return p.explainCheck(label,
-			"length to pass IntChecker",
+			"length to pass Checker[int]",
 			c.Explain("length", gotlen),
 		)
 	}
-	return NewValueChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // HasKeys checks the gotten map has the given keys set.
-func (p mapCheckerProvider) HasKeys(keys ...interface{}) ValueChecker {
+func (p mapCheckerProvider) HasKeys(keys ...interface{}) Checker[interface{}] {
 	var missing []string
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
@@ -45,11 +45,11 @@ func (p mapCheckerProvider) HasKeys(keys ...interface{}) ValueChecker {
 	expl := func(label string, got interface{}) string {
 		return p.explain(label, "to have keys "+p.formatList(missing), got)
 	}
-	return NewValueChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // HasNotKeys checks the gotten map has the given keys set.
-func (p mapCheckerProvider) HasNotKeys(keys ...interface{}) ValueChecker {
+func (p mapCheckerProvider) HasNotKeys(keys ...interface{}) Checker[interface{}] {
 	var badkeys []string
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
@@ -63,11 +63,11 @@ func (p mapCheckerProvider) HasNotKeys(keys ...interface{}) ValueChecker {
 	expl := func(label string, got interface{}) string {
 		return p.explainNot(label, "to have keys "+p.formatList(badkeys), got)
 	}
-	return NewValueChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // HasValues checks the gotten map has the given values set.
-func (p mapCheckerProvider) HasValues(values ...interface{}) ValueChecker {
+func (p mapCheckerProvider) HasValues(values ...interface{}) Checker[interface{}] {
 	var missing []string
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
@@ -81,11 +81,11 @@ func (p mapCheckerProvider) HasValues(values ...interface{}) ValueChecker {
 	expl := func(label string, got interface{}) string {
 		return p.explain(label, "to have values "+p.formatList(missing), got)
 	}
-	return NewValueChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // HasNotValues checks the gotten map has not the given values set.
-func (p mapCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
+func (p mapCheckerProvider) HasNotValues(values ...interface{}) Checker[interface{}] {
 	var badvalues []string
 	pass := func(got interface{}) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
@@ -99,13 +99,13 @@ func (p mapCheckerProvider) HasNotValues(values ...interface{}) ValueChecker {
 	expl := func(label string, got interface{}) string {
 		return p.explainNot(label, "to have values "+p.formatList(badvalues), got)
 	}
-	return NewValueChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // CheckValues checks the gotten map's values corresponding to the given keys
 // pass the given checker. A key not found is considered a fail.
 // If len(keys) == 0, the check is made on all map values.
-func (p mapCheckerProvider) CheckValues(c ValueChecker, keys ...interface{}) ValueChecker { //nolint: gocognit // TODO: refactor
+func (p mapCheckerProvider) CheckValues(c Checker[interface{}], keys ...interface{}) Checker[interface{}] { //nolint: gocognit // TODO: refactor
 	var badentries []string
 	allKeys := len(keys) == 0
 	pass := func(got interface{}) bool {
@@ -130,11 +130,11 @@ func (p mapCheckerProvider) CheckValues(c ValueChecker, keys ...interface{}) Val
 	expl := func(label string, _ interface{}) string {
 		checkedKeys := cond.String("all keys", fmt.Sprintf("keys %v", keys), allKeys)
 		return p.explainCheck(label,
-			fmt.Sprintf("values for %s to pass ValueChecker", checkedKeys),
+			fmt.Sprintf("values for %s to pass Checker[interface{}]", checkedKeys),
 			c.Explain("values", p.formatList(badentries)),
 		)
 	}
-	return NewValueChecker(pass, expl)
+	return NewChecker(pass, expl)
 }
 
 // get returns gotmap[key] and a bool representing whether a match is found.
