@@ -26,7 +26,7 @@ func (r *baseRunner) addCheck(bc baseCheck) {
 	r.checks = append(r.checks, bc)
 }
 
-func (r *baseRunner) addChecks(label string, get getfunc, checkers []check.ValueChecker) {
+func (r *baseRunner) addChecks(label string, get getfunc, checkers []check.Checker[any]) {
 	for _, c := range checkers {
 		r.addCheck(baseCheck{label: label, get: get, checker: c})
 	}
