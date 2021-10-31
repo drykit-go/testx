@@ -39,7 +39,7 @@ type IntPasser interface { Pass(got int) bool }
 
 
 // Explainer provides a method Explain to describe the reason of a failed check.
-type Explainer interface { Explain(label string, got interface{}) string }
+type Explainer interface { Explain(label string, got any) string }
 ```
 
 ## Provided checkers
@@ -148,7 +148,7 @@ Package `check` provides a collection of basic checkers for common types and kin
         </td>
       </tr>
       <tr>
-        <td><code>interface{}</code></td>
+        <td><code>any</code></td>
         <td><code>check.Value</code></td>
         <td>
           <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#ValueCheckerProvider">
@@ -214,7 +214,7 @@ and an `ExplainFunc`, then returns a checker for that type.
 func Test42IsEven(t *testing.T) {
     checkIsEven := check.NewIntChecker(
         func(got int) bool { return got&1 == 0 },
-        func(label string, got interface{}) string {
+        func(label string, got any) string {
             return fmt.Sprintf("%s: expect even int, got %v", label, got)
         },
       )
@@ -235,7 +235,7 @@ Related examples:
 func Test42IsEven(t *testing.T) {
     checkIsEven := check.Value.Custom(
         "even int",
-        func(got interface{}) bool {
+        func(got any) bool {
           gotInt, ok := got.(int)
           return ok && got&1 == 0
         },

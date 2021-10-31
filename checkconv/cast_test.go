@@ -8,8 +8,8 @@ import (
 )
 
 type checkerTestcase struct {
-	checker interface{}
-	in      interface{}
+	checker any
+	in      any
 	expPass bool
 	expExpl string
 }
@@ -30,7 +30,7 @@ func TestCast(t *testing.T) {
 				expExpl: "value:\nexp in range [41:43]\ngot -1",
 			},
 			{
-				checker: check.Value.Custom("", func(got interface{}) bool { return true }),
+				checker: check.Value.Custom("", func(got any) bool { return true }),
 				in:      "",
 				expPass: true,
 				expExpl: "",
@@ -122,7 +122,7 @@ func assertCastable(t *testing.T, tc checkerTestcase) {
 	assertValidValueChecker(t, c, tc)
 }
 
-func assertNotCastable(t *testing.T, badChecker interface{}) {
+func assertNotCastable(t *testing.T, badChecker any) {
 	t.Helper()
 	got, ok := checkconv.Cast(badChecker)
 	if ok {

@@ -8,14 +8,14 @@ import (
 )
 
 // Default computes and return an explain string in the default format.
-func Default(label string, exp, got interface{}) string {
+func Default(label string, exp, got any) string {
 	return fmt.Sprintf("%s:\nexp %v\ngot %v", label, exp, got)
 }
 
 // Pretty computes and return an explain string in a pretty output.
 // Compatibility is not guaranteed, usage should be restricted to
 // local tests -- not in checkers explain func.
-func Pretty(label string, exp, got interface{}) string {
+func Pretty(label string, exp, got any) string {
 	return "❌ " + Default(label, exp, got)
 }
 

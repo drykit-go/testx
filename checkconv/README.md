@@ -59,7 +59,7 @@ type StringChecker interface {
 
 As a consequence, there is no way to combine `IntChecker` and `StringChecker`
 into a generic `Checker` interface.
-For that reason, we use `check.ValueChecker` checker (checker on type `interface{}`),
+For that reason, we use `check.ValueChecker` checker (checker on type `any`),
 because it can wrap any checker type.
 
 That's what this package provides: functions to wrap any typed checker
@@ -89,8 +89,8 @@ testx.
 
 ### Assert functions
 
-- `Assert(checker interface{}) check.ValueChecker`
-- `AssertMany(checkers ...interface{}) []check.ValueChecker`
+- `Assert(checker any) check.ValueChecker`
+- `AssertMany(checkers ...any) []check.ValueChecker`
 
 Assert functions basically return `From<Type>(inputChecker)`
 if that `From<Type>` function exists for the input checker.
@@ -129,13 +129,13 @@ testx.
 
 ### Cast functions
 
-- `Cast(checker interface{}) (check.ValueChecker, bool)`
-- `CastMany(checkers ...interface{}) []check.ValueChecker`
+- `Cast(checker any) (check.ValueChecker, bool)`
+- `CastMany(checkers ...any) []check.ValueChecker`
 
 Cast functions serve the same purpose as Assert functions:
 they wrap the given checker in a `check.ValueChecker`.
 The difference is that it works with _any_ type that implement
-a checker interface (`Pass(T) bool` and `Explain(string, interface{} string`)
+a checker interface (`Pass(T) bool` and `Explain(string, any string`)
 while Assert functions are restricted to the types defined in package `check`.
 
 ### `Assert` vs `Cast`
@@ -145,7 +145,7 @@ There is a fundamental difference between `Assert` and `Cast` implementations:
 - `Assert` uses `From<Type>` functions that rely on type assertion
   to wrap the input checker:
   ```go
-  func Assert(knownChecker interface{}) check.ValueChecker {
+  func Assert(knownChecker any) check.ValueChecker {
     switch c := knownChecker.(type) {
     case check.StringChecker:
         return FromString(c)
@@ -159,7 +159,7 @@ There is a fundamental difference between `Assert` and `Cast` implementations:
 
   func FromString(c check.StringChecker) check.ValueChecker {
     return check.NewValueChecker(
-      func(got interface{}) bool { return c.Pass(got.(string)) },
+      func(got any) bool { return c.Pass(got.(string)) },
       c.Explain,                       // ^^^^^^^^^^^^^^^^^^^ got is safely asserted
     )
   }

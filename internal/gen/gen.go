@@ -18,7 +18,7 @@ var tplFuncs = template.FuncMap{
 type config struct {
 	name, tpl, out string
 	tplFuncs       template.FuncMap
-	data           interface{}
+	data           any
 }
 
 // Types generates checkers declarations in packages check and checkconv
@@ -86,7 +86,11 @@ func generate(cfg config) error {
 		return err
 	}
 
-	return runFormatter(cfg.out)
+	// FIXME: make goimports work with generics syntax
+	if err := runFormatter(cfg.out); err != nil {
+		fmt.Printf("goimports returned the following error (likely due to unsupported generics syntax):\n%s\n", err)
+	}
+	return nil
 }
 
 func newTemplate(name, src string, funcMap template.FuncMap) (*template.Template, error) {

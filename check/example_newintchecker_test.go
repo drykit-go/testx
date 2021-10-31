@@ -5,7 +5,6 @@ import (
 
 	"github.com/drykit-go/testx"
 	"github.com/drykit-go/testx/check"
-	"github.com/drykit-go/testx/checkconv"
 )
 
 /*
@@ -16,13 +15,13 @@ import (
 func Example_newIntChecker() {
 	checkIsEven := check.NewIntChecker(
 		func(got int) bool { return got&1 == 0 },
-		func(label string, got interface{}) string {
+		func(label string, got any) string {
 			return fmt.Sprintf("%s: expect even int, got %v", label, got)
 		},
 	)
 
-	resultPass := testx.Value(42).Pass(checkconv.FromInt(checkIsEven)).DryRun()
-	resultFail := testx.Value(43).Pass(checkconv.FromInt(checkIsEven)).DryRun()
+	resultPass := testx.Value(42).Pass(checkIsEven).DryRun()
+	resultFail := testx.Value(43).Pass(checkIsEven).DryRun()
 
 	fmt.Println(resultPass.Passed())
 	fmt.Println(resultFail.Passed())

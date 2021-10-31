@@ -14,7 +14,7 @@ func IsFunc(v reflect.Value) bool {
 
 // FuncName returns the name of the given func prefixed with
 // the name of the package it is from. It panics if f is not a func.
-func FuncName(fn interface{}) string {
+func FuncName(fn any) string {
 	return funcName(reflect.ValueOf(fn))
 }
 
@@ -38,13 +38,13 @@ type Func struct {
 
 // Call calls Func's underlying func with given args and returns the results
 // as a slice of empty interfaces.
-func (f *Func) Call(args []interface{}) []interface{} {
+func (f *Func) Call(args []any) []any {
 	return UnwrapValues(f.Value.Call(WrapValues(args)))
 }
 
 // NewFunc returns a *Func from the given func input, or a non-nil error
 // if fn's kind is not reflect.Func.'
-func NewFunc(fn interface{}) (*Func, error) {
+func NewFunc(fn any) (*Func, error) {
 	fval := reflect.ValueOf(fn)
 	if !IsFunc(fval) {
 		return nil, fmt.Errorf("%w: got %v", ErrNotAFunc, fn)

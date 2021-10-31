@@ -32,8 +32,8 @@ func assertEqualBaseResults(t *testing.T, res testx.Resulter, exp baseResults) {
 		// Validate remaining fields
 		for _, fv := range []struct {
 			lab string
-			got interface{}
-			exp interface{}
+			got any
+			exp any
 		}{
 			{lab: "passed", got: got.passed, exp: exp.passed},
 			{lab: "failed", got: got.failed, exp: exp.failed},
@@ -74,7 +74,7 @@ func failWithErrors(t *testing.T, label string, errs ...string) {
 	t.Errorf("bad results: %s\n%s", label, strings.Join(errs, "\n"))
 }
 
-func failBadResults(t *testing.T, label string, got, exp interface{}) {
+func failBadResults(t *testing.T, label string, got, exp any) {
 	t.Helper()
 	t.Errorf("bad results: %s\nexp %#v\ngot %#v", label, exp, got)
 }
