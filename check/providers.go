@@ -184,6 +184,27 @@ type (
 		Len(c Checker[int]) Checker[any]
 	}
 
+	// NumberCheckerProvider provides checks on numeric types:
+	// int, uint, float and their variants.
+	NumberCheckerProvider[T Numeric] interface {
+		// GT checks the gotten Number is greater than the target.
+		GT(tar T) Checker[T]
+		// GTE checks the gotten Number is greater or equal to the target.
+		GTE(tar T) Checker[T]
+		// InRange checks the gotten Number is in the closed interval [lo:hi].
+		InRange(lo, hi T) Checker[T]
+		// Is checks the gotten Number is equal to the target.
+		Is(tar T) Checker[T]
+		// LT checks the gotten Number is lesser than the target.
+		LT(tar T) Checker[T]
+		// LTE checks the gotten Number is lesser or equal to the target.
+		LTE(tar T) Checker[T]
+		// Not checks the gotten Number is not equal to the target.
+		Not(values ...T) Checker[T]
+		// OutRange checks the gotten Number is not in the closed interval [lo:hi].
+		OutRange(lo, hi T) Checker[T]
+	}
+
 	// SliceCheckerProvider provides checks on kind slice.
 	SliceCheckerProvider interface {
 		ValueCheckerProvider
@@ -258,6 +279,31 @@ type (
 )
 
 var (
+	// Int implements NumberCheckerProvider[int].
+	Int NumberCheckerProvider[int] = numberCheckerProvider[int]{}
+	// Int8 implements NumberCheckerProvider[int8].
+	Int8 NumberCheckerProvider[int8] = numberCheckerProvider[int8]{}
+	// Int16 implements NumberCheckerProvider[int16].
+	Int16 NumberCheckerProvider[int16] = numberCheckerProvider[int16]{}
+	// Int32 implements NumberCheckerProvider[int32].
+	Int32 NumberCheckerProvider[int32] = numberCheckerProvider[int32]{}
+	// Int64 implements NumberCheckerProvider[int64].
+	Int64 NumberCheckerProvider[int64] = numberCheckerProvider[int64]{}
+	// Uint implements NumberCheckerProvider[uint].
+	Uint NumberCheckerProvider[uint] = numberCheckerProvider[uint]{}
+	// Uint8 implements NumberCheckerProvider[uint8].
+	Uint8 NumberCheckerProvider[uint8] = numberCheckerProvider[uint8]{}
+	// Uint16 implements NumberCheckerProvider[uint16].
+	Uint16 NumberCheckerProvider[uint16] = numberCheckerProvider[uint16]{}
+	// Uint32 implements NumberCheckerProvider[uint32].
+	Uint32 NumberCheckerProvider[uint32] = numberCheckerProvider[uint32]{}
+	// Uint64 implements NumberCheckerProvider[uint64].
+	Uint64 NumberCheckerProvider[uint64] = numberCheckerProvider[uint64]{}
+	// Float32 implements NumberCheckerProvider[float32].
+	Float32 NumberCheckerProvider[float32] = numberCheckerProvider[float32]{}
+	// Float64 implements NumberCheckerProvider[float64].
+	Float64 NumberCheckerProvider[float64] = numberCheckerProvider[float64]{}
+
 	// Bool implements BoolCheckerProvider.
 	Bool BoolCheckerProvider = boolCheckerProvider{}
 	// Bytes implements BytesCheckerProvider.
@@ -266,16 +312,12 @@ var (
 	Context ContextCheckerProvider = contextCheckerProvider{}
 	// Duration implements DurationCheckerProvider.
 	Duration DurationCheckerProvider = durationCheckerProvider{}
-	// Float64 implements Float64CheckerProvider.
-	Float64 Float64CheckerProvider = float64CheckerProvider{}
 	// HTTPHeader implements HTTPHeaderCheckerProvider.
 	HTTPHeader HTTPHeaderCheckerProvider = httpHeaderCheckerProvider{}
 	// HTTPRequest implements HTTPRequestCheckerProvider.
 	HTTPRequest HTTPRequestCheckerProvider = httpRequestCheckerProvider{}
 	// HTTPResponse implements HTTPResponseCheckerProvider.
 	HTTPResponse HTTPResponseCheckerProvider = httpResponseCheckerProvider{}
-	// Int implements IntCheckerProvider.
-	Int IntCheckerProvider = intCheckerProvider{}
 	// Map implements MapCheckerProvider.
 	Map MapCheckerProvider = mapCheckerProvider{}
 	// Slice implements SliceCheckerProvider.
