@@ -9,6 +9,8 @@ import (
 	"io/fs"
 	"strings"
 
+	"github.com/drykit-go/slicex"
+
 	"github.com/drykit-go/testx/internal/gen/docparser"
 	"github.com/drykit-go/testx/internal/gen/metatype"
 )
@@ -27,10 +29,16 @@ func computeInterfaces() (ProvidersMetaData, error) {
 		return ProvidersMetaData{}, err
 	}
 
-	data := ProvidersMetaData{}
+	data := ProvidersMetaData{Vars: numericMetaVars()}
 	for _, t := range docp.Types {
 		data.Vars = append(data.Vars, computeMetaVar(t))
-		data.Interfaces = append(data.Interfaces, computeMetaInterface(t))
+
+		// FIXME: t.Method is empty for numberCheckerProvider,
+		// probably a bug due to it being type-parameterized.
+		// Thus we hardcode its interface in the template file.
+		if t.Name != "numberCheckerProvider" {
+			data.Interfaces = append(data.Interfaces, computeMetaInterface(t))
+		}
 	}
 
 	return data, nil
@@ -94,6 +102,31 @@ func newDocPackage(packageName string, filter func(fs.FileInfo) bool) (*doc.Pack
 		)
 	}
 	return doc.New(astp, "./", doc.AllDecls), nil
+}
+
+func numericMetaVars() []metatype.Var {
+	type namedType struct{ N, T string }
+	numerics := []namedType{
+		{N: "Int", T: "int"},
+		{N: "Int8", T: "int8"},
+		{N: "Int16", T: "int16"},
+		{N: "Int32", T: "int32"},
+		{N: "Int64", T: "int64"},
+		{N: "Uint", T: "uint"},
+		{N: "Uint8", T: "uint8"},
+		{N: "Uint16", T: "uint16"},
+		{N: "Uint32", T: "uint32"},
+		{N: "Uint64", T: "uint64"},
+		{N: "Float32", T: "float32"},
+		{N: "Float64", T: "float64"},
+	}
+	return slicex.Map(numerics, func(nt namedType) metatype.Var {
+		return metatype.Var{
+			Name:  nt.N,
+			Type:  "NumberCheckerProvider[" + nt.T + "]",
+			Value: "numberCheckerProvider[" + nt.T + "]{}",
+		}
+	})
 }
 
 func isProviderFile(file fs.FileInfo) bool {

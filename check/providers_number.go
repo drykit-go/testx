@@ -4,6 +4,13 @@ import (
 	"fmt"
 )
 
+// FIXME: The interface for this type can't be properly generated yet.
+// For the moment it is hardcoded in the template file located at
+// internal/gen/templates/providers.gotmpl.
+// As a consequence, changes made in this file won't update the generated
+// interface automatically: the template mentionned above must be updated
+// manually.
+
 // numberCheckerProvider provides checks on numeric types.
 type numberCheckerProvider[T Numeric] struct{ baseCheckerProvider }
 

@@ -1,7 +1,34 @@
 package check
 
+import (
+	"context"
+	"net/http"
+	"regexp"
+	"time"
+)
+
 type (
-	{{- range .Interfaces -}}
+	// NumberCheckerProvider provides checks on numeric types:
+	// int, uint, float and their variants.
+	NumberCheckerProvider[T Numeric] interface {
+		// GT checks the gotten Number is greater than the target.
+		GT(tar T) Checker[T]
+		// GTE checks the gotten Number is greater or equal to the target.
+		GTE(tar T) Checker[T]
+		// InRange checks the gotten Number is in the closed interval [lo:hi].
+		InRange(lo, hi T) Checker[T]
+		// Is checks the gotten Number is equal to the target.
+		Is(tar T) Checker[T]
+		// LT checks the gotten Number is lesser than the target.
+		LT(tar T) Checker[T]
+		// LTE checks the gotten Number is lesser or equal to the target.
+		LTE(tar T) Checker[T]
+		// Not checks the gotten Number is not equal to the target.
+		Not(values ...T) Checker[T]
+		// OutRange checks the gotten Number is not in the closed interval [lo:hi].
+		OutRange(lo, hi T) Checker[T]
+	}
+	{{range .Interfaces -}}
 	{{range .DocLines}}
 	// {{.}}
 	{{- end}}
@@ -22,7 +49,9 @@ type (
 
 var (
 	{{range .Vars -}}
+	{{if ne .Name "Number" -}}
 	// {{.Name}} implements {{.Type}}.
 	{{.Name}} {{.Type}} = {{.Value}}
+	{{end -}}
 	{{end}}
 )
