@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/drykit-go/testx/check"
-	"github.com/drykit-go/testx/checkconv"
 	"github.com/drykit-go/testx/internal/httpconv"
 	"github.com/drykit-go/testx/internal/ioutil"
 )
@@ -28,34 +27,34 @@ func (r *httpHandlerRunner) WithRequest(request *http.Request) HTTPHandlerRunner
 	}
 }
 
-func (r *httpHandlerRunner) Duration(checkers ...check.DurationChecker) HTTPHandlerRunner {
+func (r *httpHandlerRunner) Duration(checkers ...check.Checker[time.Duration]) HTTPHandlerRunner {
 	for _, c := range checkers {
 		r.addCheck(baseCheck{
 			label:   "handling duration",
 			get:     func() gottype { return r.got.duration },
-			checker: checkconv.FromDuration(c),
+			checker: check.Wrap(c),
 		})
 	}
 	return r
 }
 
-func (r *httpHandlerRunner) Request(checkers ...check.HTTPRequestChecker) HTTPHandlerRunner {
+func (r *httpHandlerRunner) Request(checkers ...check.Checker[*http.Request]) HTTPHandlerRunner {
 	for _, c := range checkers {
 		r.addCheck(baseCheck{
 			label:   "http request",
 			get:     func() gottype { return r.got.request },
-			checker: checkconv.FromHTTPRequest(c),
+			checker: check.Wrap(c),
 		})
 	}
 	return r
 }
 
-func (r *httpHandlerRunner) Response(checkers ...check.HTTPResponseChecker) HTTPHandlerRunner {
+func (r *httpHandlerRunner) Response(checkers ...check.Checker[*http.Response]) HTTPHandlerRunner {
 	for _, c := range checkers {
 		r.addCheck(baseCheck{
 			label:   "http response",
 			get:     func() gottype { return r.got.response },
-			checker: checkconv.FromHTTPResponse(c),
+			checker: check.Wrap(c),
 		})
 	}
 	return r

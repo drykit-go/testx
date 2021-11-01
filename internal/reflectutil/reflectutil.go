@@ -9,18 +9,18 @@ import (
 const AnyKind reflect.Kind = 27
 
 // IsZero returns true if v is a zero value.
-func IsZero(v interface{}) bool {
+func IsZero(v any) bool {
 	return reflect.ValueOf(v).IsZero()
 }
 
 // CallUnwrap calls fn with args and returns the output values
-// as []interface{}.
-func CallUnwrap(fval reflect.Value, args []interface{}) (output []interface{}) {
+// as []any.
+func CallUnwrap(fval reflect.Value, args []any) (output []any) {
 	return UnwrapValues(fval.Call(WrapValues(args)))
 }
 
 // WrapValues wraps the input values into reflect.Values.
-func WrapValues(values []interface{}) (wrapped []reflect.Value) {
+func WrapValues(values []any) (wrapped []reflect.Value) {
 	wrapped = make([]reflect.Value, len(values))
 	for i, v := range values {
 		wrapped[i] = reflect.ValueOf(v)
@@ -29,8 +29,8 @@ func WrapValues(values []interface{}) (wrapped []reflect.Value) {
 }
 
 // UnwrapValues unwraps reflect.Values to empty interfaces.
-func UnwrapValues(wrapped []reflect.Value) (values []interface{}) {
-	values = make([]interface{}, len(wrapped))
+func UnwrapValues(wrapped []reflect.Value) (values []any) {
+	values = make([]any, len(wrapped))
 	for i, w := range wrapped {
 		values[i] = w.Interface()
 	}
@@ -38,7 +38,7 @@ func UnwrapValues(wrapped []reflect.Value) (values []interface{}) {
 }
 
 // MustBeOfKind panics if v's kind is not exp.
-func MustBeOfKind(v interface{}, exp reflect.Kind) {
+func MustBeOfKind(v any, exp reflect.Kind) {
 	mustBeOfKind(reflect.ValueOf(v), exp)
 }
 

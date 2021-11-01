@@ -7,14 +7,14 @@ import (
 )
 
 type (
-	gottype interface{}
+	gottype any
 	getfunc func() gottype
 
 	baseCheck struct {
 		get      getfunc
 		getLabel func() string
 		label    string
-		checker  check.ValueChecker
+		checker  check.Checker[any]
 	}
 )
 
@@ -26,7 +26,7 @@ func (r *baseRunner) addCheck(bc baseCheck) {
 	r.checks = append(r.checks, bc)
 }
 
-func (r *baseRunner) addChecks(label string, get getfunc, checkers []check.ValueChecker) {
+func (r *baseRunner) addChecks(label string, get getfunc, checkers []check.Checker[any]) {
 	for _, c := range checkers {
 		r.addCheck(baseCheck{label: label, get: get, checker: c})
 	}
@@ -59,7 +59,7 @@ func (r *baseRunner) dryRun() baseResults {
 	return res
 }
 
-func (r *baseRunner) explainCheck(bc baseCheck, got interface{}, passed bool) string {
+func (r *baseRunner) explainCheck(bc baseCheck, got any, passed bool) string {
 	if passed {
 		return ""
 	}

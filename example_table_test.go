@@ -6,7 +6,6 @@ import (
 
 	"github.com/drykit-go/testx"
 	"github.com/drykit-go/testx/check"
-	"github.com/drykit-go/testx/checkconv"
 )
 
 func ExampleTable_monadic() {
@@ -19,7 +18,7 @@ func ExampleTable_monadic() {
 	// hence no config is needed
 	testx.Table(double).Cases([]testx.Case{
 		{In: 0.0, Exp: 0.0},
-		{In: -2.0, Pass: checkconv.AssertMany(check.Float64.InRange(-5, -3))},
+		{In: -2.0, Pass: check.WrapMany(check.Float64.InRange(-5, -3))},
 	}).Run(t)
 }
 
@@ -47,9 +46,9 @@ func ExampleTable_dyadic() {
 	// of 42.0 at position 0 (param x) for all cases.
 	testx.Table(divide).Config(testx.TableConfig{
 		// Positions start at 0
-		InPos:     1,                      // Case.In injected in param position 1 (y)
-		OutPos:    1,                      // Case.Exp compared to return value position 1 (error value)
-		FixedArgs: []interface{}{0: 42.0}, // param 0 (x) set to 42.0 for all cases
+		InPos:     1,              // Case.In injected in param position 1 (y)
+		OutPos:    1,              // Case.Exp compared to return value position 1 (error value)
+		FixedArgs: []any{0: 42.0}, // param 0 (x) set to 42.0 for all cases
 	}).Cases([]testx.Case{
 		{In: 1.0, Exp: testx.ExpNil},                // divide(42.0, 1.0) -> (_, nil)
 		{In: 0.0, Exp: errors.New("division by 0")}, // divide(42.0, 0.0) -> (_, err)

@@ -10,9 +10,9 @@ import (
 
 func TestIsZero(t *testing.T) {
 	t.Run("zeros", func(t *testing.T) {
-		var zeroMap map[string]interface{}
+		var zeroMap map[string]any
 		var zeroSlice []int
-		zeros := []interface{}{
+		zeros := []any{
 			0, "", 0i + 0, zeroMap, zeroSlice, struct{ n int }{n: 0},
 		}
 
@@ -24,7 +24,7 @@ func TestIsZero(t *testing.T) {
 	})
 
 	t.Run("non zeros", func(t *testing.T) {
-		nozeros := []interface{}{
+		nozeros := []any{
 			1, "hi", 0i + 1, map[int]bool{}, []float32{}, struct{ n int }{n: -1},
 		}
 
@@ -41,8 +41,8 @@ func TestCallUnwrap(t *testing.T) {
 		return y, x
 	}
 	fval := reflect.ValueOf(swap)
-	got := reflectutil.CallUnwrap(fval, []interface{}{-1., 1.})
-	exp := []interface{}{1., -1.}
+	got := reflectutil.CallUnwrap(fval, []any{-1., 1.})
+	exp := []any{1., -1.}
 	if !reflect.DeepEqual(got, exp) {
 		t.Errorf("unexpected output: exp %v, got %v", exp, got)
 	}
@@ -51,9 +51,9 @@ func TestCallUnwrap(t *testing.T) {
 func TestMustBeOfKind(t *testing.T) {
 	t.Run("bad kind", func(t *testing.T) {
 		const kind = reflect.Int8
-		badValues := []interface{}{"hi", 1, true, []int8{1}}
+		badValues := []any{"hi", 1, true, []int8{1}}
 		for _, v := range badValues {
-			func(v interface{}) {
+			func(v any) {
 				defer testutil.AssertPanicMessage(t,
 					"expect kind int8, got "+reflect.ValueOf(v).Kind().String(),
 				)
@@ -64,7 +64,7 @@ func TestMustBeOfKind(t *testing.T) {
 
 	t.Run("good kind", func(_ *testing.T) {
 		for _, tc := range []struct {
-			val interface{}
+			val any
 			exp reflect.Kind
 		}{
 			{val: 42, exp: reflect.Int},

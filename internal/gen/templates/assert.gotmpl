@@ -1,32 +1,42 @@
 // Package checkconv provides functions to convert typed checkers
 // into generic ones.
+//
+// TODO: delete package checkconv
 package checkconv
+
+import (
+	"context"
+	"net/http"
+	"time"
+
+	"github.com/drykit-go/testx/check"
+)
 
 {{range . -}}
 {{if ne .N "Value"}}
-// From{{.N}} returns a check.ValueChecker that wraps the given
-// check.{{.N}}Checker, so it can be used as a generic checker.
-func From{{.N}}(c check.{{.N}}Checker) check.ValueChecker {
-	return check.NewValueChecker(
-		func(got interface{}) bool { return c.Pass(got.({{.T}})) },
+// From{{.N}} returns a check.Checker[any] that wraps the given
+// check.Checker[{{.T}}], so it can be used as a generic checker.
+func From{{.N}}(c check.Checker[{{.T}}]) check.Checker[any] {
+	return check.NewChecker(
+		func(got any) bool { return c.Pass(got.({{.T}})) },
 		c.Explain,
 	)
 }
 {{end}}
 {{end}}
 
-// Assert returns a check.ValueChecker that wraps the given
-// check.<Type>Checker (such as check.IntChecker).
+// Assert returns a check.Checker[any] that wraps the given
+// check.Checker[T].
 //
 // It panics if checker is not a known checker type. For instance,
 // a custom checker that implements check.IntChecker will be successfully
 // converted, while a valid implementation of an unknown interface,
 // such as Complex128Checker, will panic.
 // For that matter, Cast should be used instead.
-func Assert(knownChecker interface{}) check.ValueChecker {
+func Assert(knownChecker any) check.Checker[any] {
 	switch c := knownChecker.(type) {
 	{{range . -}}
-	case check.{{.N}}Checker:
+	case check.Checker[{{.T}}]:
 	{{if ne .N "Value" -}}
 		return From{{.N}}(c)
 	{{else -}}
@@ -38,13 +48,13 @@ func Assert(knownChecker interface{}) check.ValueChecker {
 	}
 }
 
-// AssertMany returns a slice of check.ValueChecker that wrap the given
-// check.<Type>Checkers (such as check.IntChecker).
+// AssertMany returns a slice of check.Checker[any] that wrap the given
+// check.Checker[T].
 //
 // It panics if any checker is not a known checker type. See Assert
 // for further documentation.
-func AssertMany(knownCheckers ...interface{}) []check.ValueChecker {
-	valueCheckers := []check.ValueChecker{}
+func AssertMany(knownCheckers ...any) []check.Checker[any] {
+	valueCheckers := []check.Checker[any]{}
 	for _, c := range knownCheckers {
 		valueCheckers = append(valueCheckers, Assert(c))
 	}

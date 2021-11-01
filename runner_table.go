@@ -23,7 +23,7 @@ type Case struct {
 	Lab string
 
 	// In is the input value injected in the tested func.
-	In interface{}
+	In any
 
 	// Exp is the value expected to be returned when calling the tested func.
 	// If Case.Exp == nil (zero value), no check is added. This is a necessary
@@ -36,14 +36,14 @@ type Case struct {
 	// 		{In: 123, Exp: nil},          // Exp == nil, no Exp check added
 	// 		{In: 123, Exp: testx.ExpNil}, // Exp == ExpNil, expect nil value
 	// 	})
-	Exp interface{}
+	Exp any
 
 	// Not is a slice of values expected not to be returned by the tested func.
-	Not []interface{}
+	Not []any
 
 	// Pass is a slice of check.ValueChecker that the return value of the
 	// tested func is expected to pass.
-	Pass []check.ValueChecker
+	Pass []check.Checker[any]
 }
 
 // TableConfig is configuration object for TableRunner.
@@ -85,10 +85,10 @@ type TableConfig struct {
 	FixedArgs Args
 }
 
-// Args is an alias to []interface{}.
-type Args []interface{}
+// Args is an alias to []any.
+type Args []any
 
-func (args Args) replaceAt(pos int, arg interface{}) Args {
+func (args Args) replaceAt(pos int, arg any) Args {
 	if pos >= len(args) {
 		log.Panic("Args.replaceAt(i, v): i is out of range")
 	}
@@ -111,7 +111,7 @@ type tableRunner struct {
 	baseRunner
 
 	config TableConfig
-	get    func(in interface{}) gottype
+	get    func(in any) gottype
 
 	rfunc *reflectutil.Func
 	args  Args
@@ -138,7 +138,7 @@ func (r *tableRunner) setGetFunc() error {
 		return err
 	}
 
-	r.get = func(in interface{}) gottype {
+	r.get = func(in any) gottype {
 		pin, pout := r.config.InPos, r.config.OutPos
 		r.args = args.replaceAt(pin, in)
 		return r.rfunc.Call(r.args)[pout]
@@ -156,7 +156,7 @@ func (r *tableRunner) Cases(cases []Case) TableRunner {
 			return fmtexpl.TableCaseLabel(r.rfunc.Name, i, tc.Lab, r.args)
 		}
 
-		addCaseCheck := func(c check.ValueChecker) {
+		addCaseCheck := func(c check.Checker[any]) {
 			r.addCheck(baseCheck{
 				get:      get,
 				getLabel: getLabel,
@@ -189,7 +189,7 @@ func (r *tableRunner) Config(cfg TableConfig) TableRunner {
 	return r
 }
 
-func (r *tableRunner) setRfunc(in interface{}) error {
+func (r *tableRunner) setRfunc(in any) error {
 	rfunc, err := reflectutil.NewFunc(in)
 	if err != nil {
 		return fmt.Errorf("Table(func): %w", err)
@@ -240,7 +240,7 @@ func (r *tableRunner) makeFixedArgs(rfunc *reflectutil.Func, cfg TableConfig) (A
 	}
 }
 
-func newTableRunner(testedFunc interface{}) TableRunner {
+func newTableRunner(testedFunc any) TableRunner {
 	r := &tableRunner{}
 	cond.PanicOnErr(r.setRfunc(testedFunc))
 	return r

@@ -9,12 +9,11 @@ import (
 
 	"github.com/drykit-go/testx"
 	"github.com/drykit-go/testx/check"
-	"github.com/drykit-go/testx/checkconv"
 )
 
 // Tests
 
-var expFixedArgs = map[string]interface{}{
+var expFixedArgs = map[string]any{
 	"a0": []byte("arg0"),
 	"a2": map[rune][][]float64{'π': {[]float64{3.14}}},
 }
@@ -49,7 +48,7 @@ func TestTableRunner(t *testing.T) {
 	t.Run("multiple in single out", func(t *testing.T) {
 		testx.Table(evenMultipleIn).Config(testx.TableConfig{
 			InPos:     inPos,
-			FixedArgs: []interface{}{a0, a2}, // len(FixedArgs) == nparams-1
+			FixedArgs: []any{a0, a2}, // len(FixedArgs) == nparams-1
 		}).
 			Cases(cases).
 			Run(t)
@@ -59,7 +58,7 @@ func TestTableRunner(t *testing.T) {
 		testx.Table(evenMultipleInOut).Config(testx.TableConfig{
 			InPos:     inPos,
 			OutPos:    outPos,
-			FixedArgs: []interface{}{0: a0, 2: a2}, // len(FixedArgs) == nparams
+			FixedArgs: []any{0: a0, 2: a2}, // len(FixedArgs) == nparams
 		}).
 			Cases(cases).
 			Run(t)
@@ -68,14 +67,14 @@ func TestTableRunner(t *testing.T) {
 	t.Run("using check.IntChecker", func(t *testing.T) {
 		testx.Table(double).
 			Cases([]testx.Case{
-				{In: 21, Pass: checkconv.AssertMany(check.Int.Is(42))},
-				{In: -4, Pass: checkconv.AssertMany(check.Int.InRange(-10, 0))},
+				{In: 21, Pass: check.WrapMany(check.Int.Is(42))},
+				{In: -4, Pass: check.WrapMany(check.Int.InRange(-10, 0))},
 			}).
 			Run(t)
 	})
 
 	t.Run("expect nil value", func(t *testing.T) {
-		runner := testx.Table(func(wantnil bool) interface{} {
+		runner := testx.Table(func(wantnil bool) any {
 			if wantnil {
 				return nil
 			}
@@ -96,8 +95,8 @@ func TestTableRunner(t *testing.T) {
 	t.Run("Case.Not checks", func(t *testing.T) {
 		results := testx.Table(func(n int) int { return n }).
 			Cases([]testx.Case{
-				{In: 0, Not: []interface{}{-1, 1}}, // pass
-				{In: 0, Not: []interface{}{0}},     // fail
+				{In: 0, Not: []any{-1, 1}}, // pass
+				{In: 0, Not: []any{0}},     // fail
 			}).
 			DryRun()
 
@@ -139,7 +138,7 @@ func TestTableRunner(t *testing.T) {
 
 func TestExpNil(t *testing.T) {
 	t.Run("Exp=ExpNil expects nil", func(t *testing.T) {
-		f := func(int) interface{} { return nil }
+		f := func(int) any { return nil }
 		res := testx.Table(f).Cases([]testx.Case{
 			{In: 0, Exp: testx.ExpNil},
 		}).DryRun()
@@ -167,7 +166,7 @@ func TestExpNil(t *testing.T) {
 	})
 
 	t.Run("Exp=0 does not expect nil", func(t *testing.T) {
-		f := func(int) interface{} { return nil }
+		f := func(int) any { return nil }
 		res := testx.Table(f).Cases([]testx.Case{
 			{In: 0, Exp: 0},
 		}).DryRun()
@@ -251,7 +250,7 @@ func evenSingle(a1 int) bool {
 	return a1&1 == 0
 }
 
-func evenMultipleOut(a1 int) (string, interface{}, bool, int) {
+func evenMultipleOut(a1 int) (string, any, bool, int) {
 	return "", struct{}{}, evenSingle(a1), -1
 }
 
@@ -260,7 +259,7 @@ func evenMultipleIn(a0 []byte, a1 int, a2 map[rune][][]float64) bool {
 	return evenSingle(a1)
 }
 
-func evenMultipleInOut(a0 []byte, a1 int, a2 map[rune][][]float64) (string, interface{}, bool, int) {
+func evenMultipleInOut(a0 []byte, a1 int, a2 map[rune][][]float64) (string, any, bool, int) {
 	panicOnUnexpectedArgs(a0, a2)
 	return evenMultipleOut(a1)
 }
