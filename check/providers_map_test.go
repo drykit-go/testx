@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/drykit-go/testx/check"
-	"github.com/drykit-go/testx/checkconv"
 )
 
 func TestMapCheckerProvider(t *testing.T) {
@@ -87,7 +86,7 @@ func TestMapCheckerProvider(t *testing.T) {
 	t.Run("CheckValues pass", func(t *testing.T) {
 		// keys subset
 		c := check.Map.CheckValues(
-			checkconv.FromInt(check.Int.InRange(41, 43)),
+			check.Wrap(check.Int.InRange(41, 43)),
 			"age",
 		)
 		assertPassChecker(t, "Map.CheckValues", c, itf(m))
@@ -99,20 +98,20 @@ func TestMapCheckerProvider(t *testing.T) {
 
 	t.Run("CheckValues fail", func(t *testing.T) {
 		// keys subset
-		// c := check.Map.CheckValues(
-		// 	checkconv.FromInt(check.Int.OutRange(41, 43)),
-		// 	"age", "badkey",
-		// )
-		// assertFailChecker(t, "Map.CheckValues", c, itf(m), makeExpl(
-		// 	"values for keys [age badkey] to pass Checker[any]",
-		// 	"explanation: values:\n"+makeExpl(
-		// 		"not in range [41:43]",
-		// 		"[age:42, badkey:<nil>]",
-		// 	),
-		// ))
+		c := check.Map.CheckValues(
+			check.Wrap(check.Int.OutRange(41, 43)),
+			"age", "badkey",
+		)
+		assertFailChecker(t, "Map.CheckValues", c, itf(m), makeExpl(
+			"values for keys [age badkey] to pass Checker[any]",
+			"explanation: values:\n"+makeExpl(
+				"not in range [41:43]",
+				"[age:42, badkey:<nil>]",
+			),
+		))
 
 		// all keys
-		c := check.Map.CheckValues(check.Value.Is("Marcel Patulacci"))
+		c = check.Map.CheckValues(check.Value.Is("Marcel Patulacci"))
 		assertFailChecker(t, "Map.CheckValues", c, itf(m), makeExpl(
 			"values for all keys to pass Checker[any]",
 			"explanation: values:\n"+makeExpl(

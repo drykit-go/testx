@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/drykit-go/testx/check"
-	"github.com/drykit-go/testx/checkconv"
 )
 
 type structTest struct {
@@ -38,7 +37,7 @@ func TestStructCheckerProvider(t *testing.T) {
 
 	t.Run("CheckFields pass", func(t *testing.T) {
 		c := check.Struct.CheckFields(
-			checkconv.FromInt(check.Int.LT(vAB+1)),
+			check.Wrap(check.Int.LT(vAB+1)),
 			[]string{"A", "B"},
 		)
 		assertPassChecker(t, "Struct.CheckFields", c, itf(s))
@@ -46,7 +45,7 @@ func TestStructCheckerProvider(t *testing.T) {
 
 	t.Run("CheckFields fail", func(t *testing.T) {
 		c := check.Struct.CheckFields(
-			checkconv.FromInt(check.Int.LT(vAB+1)),
+			check.Wrap(check.Int.LT(vAB+1)),
 			[]string{"A", "B", "X", "Y"},
 		)
 		assertFailChecker(t, "Struct.CheckFields", c, itf(s), makeExpl(
