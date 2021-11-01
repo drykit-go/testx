@@ -1,8 +1,8 @@
 package gen
 
-// types is a slice of source types used to generate
+// checkertypes is a slice of source types used to generate
 // their subsequent definitions.
-var types = []struct {
+var checkertypes = []struct {
 	// Name, underlying Type
 	N, T string
 }{
