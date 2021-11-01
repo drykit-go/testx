@@ -62,7 +62,7 @@ func (p contextCheckerProvider) Value(key any, c Checker[any]) Checker[context.C
 	}
 	expl := func(label string, got any) string {
 		return p.explainCheck(label,
-			fmt.Sprintf("value for key %v to pass ValueChecker", key),
+			fmt.Sprintf("value for key %v to pass Checker[any]", key),
 			c.Explain("value", v),
 		)
 	}

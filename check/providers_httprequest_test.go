@@ -89,7 +89,7 @@ func TestHTTPRequestCheckerProvider(t *testing.T) {
 		assertFailChecker(t, "HTTPRequest.Context", c, newReq(), makeExpl(
 			"context to pass Checker[context.Context]",
 			"explanation: context:\n"+makeExpl(
-				"value for key userID to pass ValueChecker",
+				"value for key userID to pass Checker[any]",
 				"explanation: value:\n"+makeExpl(
 					"not 42",
 					"42",
