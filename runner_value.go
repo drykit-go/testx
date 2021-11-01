@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/drykit-go/testx/check"
-	"github.com/drykit-go/testx/checkconv"
 )
 
 var _ ValueRunner[any] = (*valueRunner[any])(nil)
@@ -40,11 +39,7 @@ func (r *valueRunner[T]) Not(values ...T) ValueRunner[T] {
 
 func (r *valueRunner[T]) Pass(checkers ...check.Checker[T]) ValueRunner[T] {
 	for _, c := range checkers {
-		cc, ok := checkconv.Cast(c)
-		if !ok {
-			panic("ValueRunner.Pass: bad conversion")
-		}
-		r.addValueCheck(cc)
+		r.addValueCheck(check.Wrap(c))
 	}
 	return r
 }

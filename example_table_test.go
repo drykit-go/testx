@@ -6,7 +6,6 @@ import (
 
 	"github.com/drykit-go/testx"
 	"github.com/drykit-go/testx/check"
-	"github.com/drykit-go/testx/checkconv"
 )
 
 func ExampleTable_monadic() {
@@ -19,7 +18,7 @@ func ExampleTable_monadic() {
 	// hence no config is needed
 	testx.Table(double).Cases([]testx.Case{
 		{In: 0.0, Exp: 0.0},
-		{In: -2.0, Pass: checkconv.AssertMany(check.Float64.InRange(-5, -3))},
+		{In: -2.0, Pass: check.WrapMany(check.Float64.InRange(-5, -3))},
 	}).Run(t)
 }
 

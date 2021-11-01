@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/drykit-go/testx/check"
-	"github.com/drykit-go/testx/checkconv"
 )
 
 func TestContextCheckerProvider(t *testing.T) {
@@ -65,7 +64,7 @@ func TestContextCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("Value pass", func(t *testing.T) {
-		c := check.Context.Value("userID", checkconv.FromInt(check.Int.GT(0)))
+		c := check.Context.Value("userID", check.Wrap(check.Int.GT(0)))
 		ctx := ctxVal("userID", 42)
 		assertPassChecker(t, "Context.Value", c, ctx)
 	})
