@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/drykit-go/testx/check"
-	"github.com/drykit-go/testx/checkconv"
 )
 
 func TestSliceCheckerProvider(t *testing.T) {
@@ -67,17 +66,17 @@ func TestSliceCheckerProvider(t *testing.T) {
 		))
 	})
 
-	// t.Run("CheckValues pass", func(t *testing.T) {
-	// 	c := check.Slice.CheckValues(
-	// 		checkconv.FromInt(check.Int.InRange(41, 43)),
-	// 		func(_ int, v any) bool { _, ok := v.(int); return ok },
-	// 	)
-	// 	assertPassChecker(t, "Slice.CheckValues", c, itf(s))
-	// })
+	t.Run("CheckValues pass", func(t *testing.T) {
+		c := check.Slice.CheckValues(
+			check.Wrap(check.Int.InRange(41, 43)),
+			func(_ int, v any) bool { _, ok := v.(int); return ok },
+		)
+		assertPassChecker(t, "Slice.CheckValues", c, itf(s))
+	})
 
 	t.Run("CheckValues fail", func(t *testing.T) {
 		c := check.Slice.CheckValues(
-			checkconv.FromInt(check.Int.OutRange(41, 43)),
+			check.Wrap(check.Int.OutRange(41, 43)),
 			func(_ int, v any) bool { _, ok := v.(int); return ok },
 		)
 		assertFailChecker(t, "Slice.CheckValues", c, itf(s), makeExpl(
