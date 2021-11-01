@@ -32,7 +32,13 @@ func computeInterfaces() (ProvidersMetaData, error) {
 	data := ProvidersMetaData{Vars: numericMetaVars()}
 	for _, t := range docp.Types {
 		data.Vars = append(data.Vars, computeMetaVar(t))
-		data.Interfaces = append(data.Interfaces, computeMetaInterface(t))
+
+		// FIXME: t.Method is empty for numberCheckerProvider,
+		// probably a bug due to it being type-parameterized.
+		// Thus we hardcode its interface in the template file.
+		if t.Name != "numberCheckerProvider" {
+			data.Interfaces = append(data.Interfaces, computeMetaInterface(t))
+		}
 	}
 
 	return data, nil
