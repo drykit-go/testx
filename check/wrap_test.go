@@ -3,8 +3,8 @@ package check_test
 import (
 	"testing"
 
+	"github.com/drykit-go/slicex"
 	"github.com/drykit-go/testx/check"
-	"github.com/drykit-go/testx/internal/slices"
 )
 
 type checkerTestcase[T any] struct {
@@ -112,7 +112,7 @@ func TestWrapMany(t *testing.T) {
 			expexpl: "bad",
 		},
 	}
-	wrappedCheckers := check.WrapMany(slices.Map(testcases,
+	wrappedCheckers := check.WrapMany(slicex.Map(testcases,
 		func(v checkerTestcase[complex128]) check.Checker[complex128] {
 			return v.checker
 		},
