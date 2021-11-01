@@ -7,51 +7,12 @@ import (
 	"strings"
 	"text/template"
 	"time"
-
-	"github.com/drykit-go/strcase"
 )
-
-var tplFuncs = template.FuncMap{
-	"camelcase": strcase.Camel,
-}
 
 type config struct {
 	name, tpl, out string
 	src            interface{}
 	tplFuncs       template.FuncMap
-}
-
-// Types generates checkers declarations in packages check and checkconv
-// for each type defined in var `checkertypes`. It should be run every time
-// that list is modified.
-//
-// For instance, the following entry:
-// 	{N: "Int", T: "int"},
-// generates the following declarations:
-//
-// 	// file check/check.go
-// 	type IntPassFunc func(got int) bool
-// 	type IntPasser interface { Pass(got int) bool }
-// 	type IntChecker interface { IntPasser; Explainer }
-//
-// 	// file check/checkers.go
-// 	type intChecker struct { ... }
-// 	func (c intChecker) Pass(got int) bool { ... }
-// 	func NewIntChecker(passFunc IntPassFunc, explainFunc ExplainFunc) IntChecker { ... }
-//
-// 	// file checkconv/assert.go
-// 	func FromInt(c check.IntChecker) check.ValueChecker { ... }
-// 	// also adds a case in checkconv.Assert:
-// 		case check.IntChecker:
-// 			return FromInt(c)
-func Types(tpl, out string) error {
-	return generate(config{
-		name:     "types",
-		tplFuncs: tplFuncs,
-		tpl:      tpl,
-		out:      out,
-		src:      checkertypes,
-	})
 }
 
 // Interfaces generates the public interfaces for checker providers
