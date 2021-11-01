@@ -3,7 +3,6 @@
 	<tr>
 		<td>testx</td>
 		<td><a href="./check/README.md">testx/check</a></td>
-		<td><a href="./checkconv/README.md">testx/checkconv</a></td>
 	</tr>
 </table>
 
@@ -185,7 +184,3 @@ Related examples:
 
 - Package `check` 📄 [Readme](./check/README.md)
   > Package `check` provides extensible and customizable checkers to perform checks on typed values.
-
-- Package `checkconv` 📄 [Readme](./checkconv/README.md)
-  > Package `checkconv` provides conversion utilities to convert any typed checker to a `check.ValueChecker`
-  

@@ -4,7 +4,6 @@
 	<tr>
 		<td><a href="../README.md">testx</a></td>
 		<td>testx/check</td>
-		<td><a href="../checkconv/README.md">testx/checkconv</a></td>
 	</tr>
 </table>
 
@@ -24,22 +23,14 @@ for `testx` test runners.
 
 ## Checker interfaces
 
-A checker is a type-specific interface composed of 2 funcs `Pass` and `Explain`:
+A _checker_ is a generic interface composed of 2 methods `Pass` and `Explain`:
 
 ```go
-// IntChecker provides methods to run checks on type int.
-type IntChecker interface {
-    IntPasser
-    Explainer
+// Checker provides methods to run checks on any typed value.
+type Checker[T any] interface {
+    Pass(got T) bool
+    Explain(label string, got interface{}) string
 }
-
-// IntPasser provides a method Pass(got int) bool to determinate
-// whether the got int passes a check.
-type IntPasser interface { Pass(got int) bool }
-
-
-// Explainer provides a method Explain to describe the reason of a failed check.
-type Explainer interface { Explain(label string, got any) string }
 ```
 
 ## Provided checkers
@@ -58,29 +49,38 @@ Package `check` provides a collection of basic checkers for common types and kin
     </thead>
     <tbody>
       <tr>
+        <td><code>int</code>, <code>intN</code> (8, 16, 32, 64)</td>
+        <td><code>check.Int</code>, <code>check.IntN</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#NumberCheckerProvider">
+            <code>NumberCheckerProvider[int]</code>, <code>NumberCheckerProvider[intN]</code>
+          </a>
+        </td>
+      </tr>
+      <tr>
+        <td><code>uint</code>, <code>uintN</code> (8, 16, 32, 64)</td>
+        <td><code>check.Uint</code>, <code>check.UintN</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#NumberCheckerProvider">
+            <code>NumberCheckerProvider[uint]</code>, <code>NumberCheckerProvider[uintN]</code>
+          </a>
+        </td>
+      </tr>
+      <tr>
+        <td><code>floatN</code> (32, 64)</td>
+        <td><code>check.FloatN</code></td>
+        <td>
+          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#NumberCheckerProvider">
+            <code>NumberCheckerProvider[floatN]</code>
+          </a>
+        </td>
+      </tr>
+      <tr>
         <td><code>bool</code></td>
         <td><code>check.Bool</code></td>
         <td>
           <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#BoolCheckerProvider">
-            <code>TypeCheckerProvider</code>
-          </a>
-        </td>
-      </tr>
-      <tr>
-        <td><code>int</code></td>
-        <td><code>check.Int</code></td>
-        <td>
-          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#IntCheckerProvider">
-            <code>IntCheckerProvider</code>
-          </a>
-        </td>
-      </tr>
-      <tr>
-        <td><code>float64</code></td>
-        <td><code>check.Float64</code></td>
-        <td>
-          <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#Float64CheckerProvider">
-            <code>Float64CheckerProvider</code>
+            <code>BoolCheckerProvider</code>
           </a>
         </td>
       </tr>
@@ -184,7 +184,7 @@ Package `check` provides a collection of basic checkers for common types and kin
       </tr>
       <tr>
         <td><code>struct</code></td>
-        <td><code>check.Bool</code></td>
+        <td><code>check.Struct</code></td>
         <td>
           <a href="https://pkg.go.dev/github.com/drykit-go/testx/check#StructCheckerProvider">
             <code>StructCheckerProvider</code>
@@ -205,14 +205,15 @@ There are 2 ways to extend a provided checker.
 
 #### Using a `New` function
 
-With every `<Type>` covered by this package comes a `New<Type>Checker` function.
+Package `check` provides a `NewChecker` function to create a custom checker.
 
-It takes a `PassFunc` for the corresponding type (`func(got Type) bool`)
-and an `ExplainFunc`, then returns a checker for that type.
+It takes a `PassFunc` that determinates if a got value passes the check
+and an `ExplainFunc` that outputs the reason of a failed check,
+then returns a checker for that type.
 
 ```go
 func Test42IsEven(t *testing.T) {
-    checkIsEven := check.NewIntChecker(
+    checkIsEven := check.NewChecker(
         func(got int) bool { return got&1 == 0 },
         func(label string, got any) string {
             return fmt.Sprintf("%s: expect even int, got %v", label, got)
@@ -227,7 +228,7 @@ func Test42IsEven(t *testing.T) {
 
 Related examples:
 
-- [NewIntChecker](https://pkg.go.dev/github.com/drykit-go/testx/check#example-package-NewIntChecker)
+- [NewChecker](https://pkg.go.dev/github.com/drykit-go/testx/check#example-package-NewChecker)
 
 #### Using `check.Value.Custom`
 
@@ -263,9 +264,7 @@ can be used for `testx` runners via `checkconv.Cast`.
 Related examples:
 
 - [CustomChecker](https://pkg.go.dev/github.com/drykit-go/testx/check#example-package-CustomChecker):
-  implementation of a custom checker that implements `IntChecker`
-- [CustomCheckerUnknownType](https://pkg.go.dev/github.com/drykit-go/testx/check#example-package-CustomCheckerUnknownType):
-  implementation of a custom checker for a local type `MyType` struct
+  implementation of a custom checker.
 - [CustomCheckerClosures](https://pkg.go.dev/github.com/drykit-go/testx/check#example-package-CustomCheckerClosures):
   advanced implementation of a parameterized custom checker
   for uncovered type `complex128`, using closures.
