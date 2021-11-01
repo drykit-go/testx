@@ -8,11 +8,10 @@ import (
 )
 
 /*
-	Example: implementation of a custom checker of a type
-	defined by package check
+	Example: implementation of a custom checker using check.NewChecker
 */
 
-func Example_newIntChecker() {
+func Example_newChecker() {
 	checkIsEven := check.NewChecker(
 		func(got int) bool { return got&1 == 0 },
 		func(label string, got any) string {

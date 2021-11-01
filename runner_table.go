@@ -41,7 +41,7 @@ type Case struct {
 	// Not is a slice of values expected not to be returned by the tested func.
 	Not []any
 
-	// Pass is a slice of check.ValueChecker that the return value of the
+	// Pass is a slice of checkers that the return value of the
 	// tested func is expected to pass.
 	Pass []check.Checker[any]
 }

@@ -24,8 +24,8 @@ func TestPretty(t *testing.T) {
 }
 
 func TestChecker(t *testing.T) {
-	exp := "int value:\nexp to pass IntChecker\ngot explanation: Oh hi Mark!"
-	got := fmtexpl.Checker("int value", "to pass IntChecker", "Oh hi Mark!")
+	exp := "int value:\nexp to pass Checker[int]\ngot explanation: Oh hi Mark!"
+	got := fmtexpl.Checker("int value", "to pass Checker[int]", "Oh hi Mark!")
 	if got != exp {
 		t.Errorf("\nexp %s\ngot %s", exp, got)
 	}

@@ -64,7 +64,7 @@ func TestTableRunner(t *testing.T) {
 			Run(t)
 	})
 
-	t.Run("using check.IntChecker", func(t *testing.T) {
+	t.Run("using checkers", func(t *testing.T) {
 		testx.Table(double).
 			Cases([]testx.Case{
 				{In: 21, Pass: check.WrapMany(check.Int.Is(42))},
