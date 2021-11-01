@@ -17,13 +17,13 @@ var tplFuncs = template.FuncMap{
 
 type config struct {
 	name, tpl, out string
+	src            interface{}
 	tplFuncs       template.FuncMap
-	data           any
 }
 
 // Types generates checkers declarations in packages check and checkconv
-// for each type defined in var `types`. It should be run every time this
-// list is modified.
+// for each type defined in var `checkertypes`. It should be run every time
+// that list is modified.
 //
 // For instance, the following entry:
 // 	{N: "Int", T: "int"},
@@ -47,10 +47,10 @@ type config struct {
 func Types(tpl, out string) error {
 	return generate(config{
 		name:     "types",
+		tplFuncs: tplFuncs,
 		tpl:      tpl,
 		out:      out,
-		tplFuncs: tplFuncs,
-		data:     types,
+		src:      checkertypes,
 	})
 }
 
@@ -59,7 +59,7 @@ func Types(tpl, out string) error {
 // every time their API is modified (method signature change, doc comment,
 // new method, method removal, ...)
 func Interfaces(tpl, out string) error {
-	data, err := computeInterfaces()
+	src, err := computeInterfaces()
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func Interfaces(tpl, out string) error {
 		name: "interfaces",
 		tpl:  tpl,
 		out:  out,
-		data: data,
+		src:  src,
 	})
 }
 
@@ -82,7 +82,7 @@ func generate(cfg config) error {
 		return err
 	}
 
-	if err := t.Execute(f, cfg.data); err != nil {
+	if err := t.Execute(f, cfg.src); err != nil {
 		return err
 	}
 

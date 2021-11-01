@@ -5,12 +5,12 @@ import (
 	"go/doc"
 	"go/parser"
 	"go/token"
+	"go/types"
 	"io/fs"
 	"strings"
 
 	"github.com/drykit-go/testx/internal/gen/docparser"
 	"github.com/drykit-go/testx/internal/gen/metatype"
-	"github.com/drykit-go/testx/internal/gen/serialize"
 )
 
 // ProvidersMetaData is a representation of the parsed doc for providers files
@@ -62,7 +62,7 @@ func computeMetaInterface(t *doc.Type) metatype.Interface {
 			continue
 		}
 		mitf.AddFunc(metatype.Func{
-			Sign:     serialize.FuncSignature(m.Name, m.Decl.Type),
+			Sign:     m.Name + strings.TrimPrefix(types.ExprString(m.Decl.Type), "func"),
 			DocLines: docparser.ParseDocLines(m.Doc, nil),
 		})
 	}
