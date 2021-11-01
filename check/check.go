@@ -1,5 +1,11 @@
 package check
 
+import "constraints"
+
+type Numeric interface {
+	constraints.Integer | constraints.Float
+}
+
 type (
 	// PassFunc is the required method to implement Passer.
 	// It returns a boolean that indicates whether the got value
