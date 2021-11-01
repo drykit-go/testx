@@ -55,47 +55,19 @@ The main documentation can help understand how the repository globally works:
 We use code generation to reduce code repetition, and consequently
 reduce the complexity of implementations and the risks of errors.
 
-We have 2 use cases for that:
-- Generate repetitive declarations for each checker type declared in `internal/gen/types.go`.
-- Generate public interfaces of checker providers from their implementation.
+We have 1 use case for that: generate public interfaces of checker providers
+from their implementation.
 
 #### Generated files
 
 The following files are generated:
 
-<details>
-  <summary>Generated files</summary>
-  <table>
-    <thead>
-      <tr>
-        <th>File</th>
-        <th>Use case</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>check/check.go</code></td>
-        <td>Checkers types declarations</td>
-      </tr>
-      <tr>
-        <td><code>check/checkers.go</code></td>
-        <td>Checkers types declarations</td>
-      </tr>
-      <tr>
-        <td><code>check/providers.go</code></td>
-        <td>Checkers providers interfaces</td>
-      </tr>
-      <tr>
-        <td><code>checkconv/assert.go</code></td>
-        <td>Checkers types declarations</td>
-      </tr>
-    </tbody>
-  </table>
-</details>
+- `check/providers.go`
 
 These files should **never** be manually edited, as specified
 in their header (your IDE will likely inform you it shouldn't be edited
 if you attempt to).
+If an update is needed, re-generated them using the command described below.
 
 #### Command
 
@@ -111,11 +83,8 @@ then runs all `//go:generate` directives found in the whole repository.
 Located in `gen.go` files, these directives execute `bin/gen` binary
 with various arguments.
 
-Run this command each time:
-
-- you declare a new checker type (in file `internal/gen/types.go`)
-- you implement a new `check.<Type>CheckerProvider` or update one
-in a way that changes its public interface, which includes:
+Run this command each time you implement a new `check.<Type>CheckerProvider`
+or update one in a way that changes its public interface, which includes:
   - Adding/removing a method
   - Changing a method signature (a parameter name change counts)
   - Editing a doc comment for a method
@@ -125,18 +94,6 @@ in a way that changes its public interface, which includes:
 To illustrate the process described above, let's implement
 `check.Complex128`, a `check.Complex128CheckerProvider`
 that performs checks on type `complex128`:
-
-1. In file `internal/gen/types.go`, add a new entry to `types`:
-    ```go
-    {N: "Complex128", T: "complex128"},
-    ```
-    Note: `N` is the **Name** of the checker provider, while **T** refers
-    to the **Type** of the value it checks. Technically, the former could be
-    any valid name, whereas the second must be a valid Go type.
-
-1. Run `make gen`  
-This generates `check.Complex128Checker` interface along with other
-necessary declarations to work with this new type.
 
 1. Create file `check/providers_complex128.go` and implement
 `complex128CheckerProvider` following the existing models.
@@ -157,11 +114,13 @@ Here are some contributing suggestions:
 
 ## Dev environment
 
-For an optimal dev experience, we recommend:
+This branches uses Go 1.18 type parameters, which is yet to be released.
+As a consequence it has specific requirements:
 
-- Go 1.16 or higher ([download](https://golang.org/dl/))
+- Go 1.18 (we recommand using the wrapper [`gotip`](https://pkg.go.dev/golang.org/dl/gotip))
 - `make` commands available (native on Unix-based systems)
 - `golangci-lint` to run linters locally ([installation](https://golangci-lint.run/usage/install/#local-installation))
+  Note: it currently doesn't work properly with type parameters syntax.
 
 ## Conventions
 
@@ -169,6 +128,8 @@ For an optimal dev experience, we recommend:
 
 Code style conventions are enforced by `golangci-lint`.
 Run `make lint` to ensure your code is compliant.
+
+Note: the linter currently doesn't work properly with type parameters syntax.
 
 ### Unit tests
 

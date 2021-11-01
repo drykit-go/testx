@@ -31,7 +31,6 @@ var (
 
 var kindsFuncs = map[string]func(tpl, out string) error{
 	"interfaces": gen.Interfaces,
-	"types":      gen.Types,
 }
 
 func main() {
