@@ -220,9 +220,7 @@ func Test42IsEven(t *testing.T) {
         },
       )
 
-    testx.Value(42).
-        Pass(checkconv.FromInt(checkIsEven)).
-        Run(t)
+    testx.Value(42).Pass(checkIsEven).Run(t)
 }
 ```
 
@@ -242,24 +240,17 @@ func Test42IsEven(t *testing.T) {
         },
       )
 
-    testx.Value(42).
-        Pass(checkIsEven).
-        Run(t)
+    testx.Value(42).Pass(checkIsEven).Run(t)
 }
 ```
 
-### Custom checkers of any type
+### Custom checker implementation
 
-At some point you may need a checker for a type that is not (yet?) covered
-by `check`, such as `float32` or `complex128`.  
-You may also want custom checkers for your own local types, like `User`.  
+Any type that implements `check.Checker[T any]` interface is a valid checker
+and can be used for `testx` runners.
 
-Fortunately, because _checkers_ are interfaces, it is easy to implement
-a custom checker for any type.
-
-In practice, any type that implements `func Pass(got Type) bool`
-and `Explainer` interface is recognized as a valid checker and
-can be used for `testx` runners via `checkconv.Cast`.
+For runners that require a `check.Checker[interface{}]` specifically
+(such as `testx.Case.Pass`), use `check.Wrap` to perform the conversion.
 
 Related examples:
 
@@ -267,7 +258,7 @@ Related examples:
   implementation of a custom checker.
 - [CustomCheckerClosures](https://pkg.go.dev/github.com/drykit-go/testx/check#example-package-CustomCheckerClosures):
   advanced implementation of a parameterized custom checker
-  for uncovered type `complex128`, using closures.
+  for type `complex128`, using closures.
 
 ### Contribute!
 

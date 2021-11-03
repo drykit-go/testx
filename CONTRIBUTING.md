@@ -26,7 +26,6 @@ The main documentation can help understand how the repository globally works:
 - [Go package documentation](https://pkg.go.dev/github.com/drykit-go/testx#section-documentation)
 - [Main Readme](./README.md)
 - [Package `check` Readme](./check/README.md)
-- [Package `checkconv` Readme](./checkconv/README.md)
 
 ## Internal documentation
 
@@ -36,7 +35,6 @@ The main documentation can help understand how the repository globally works:
 .                     # Package testx (test runners)
 ├── bin               # Binary files (for code generation)
 ├── check             # Package check (checkers interfaces & providers)
-├── checkconv         # Package checkconv (checkers conversion)
 ├── cmd               # Runnable source files
 │   └── gen           # Code generation main command
 └── internal          # Cross-packages utilities for internal use only
