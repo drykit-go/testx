@@ -38,16 +38,16 @@ type ValueRunner[T any] interface {
 
 // TableRunner provides methods to run a series of test cases
 // on a single function.
-type TableRunner interface {
+type TableRunner[In, Exp any] interface {
 	Runner
 	// DryRun returns a TableResulter to access test results
 	// without running *testing.T.
 	DryRun() TableResulter
 	// Config sets configures the TableRunner for functions of multiple
 	// parameters or multiple return values.
-	Config(cfg TableConfig) TableRunner
+	Config(cfg TableConfig) TableRunner[In, Exp]
 	// Cases adds test cases to be run on the tested func.
-	Cases(cases []Case) TableRunner
+	Cases(cases []Case[In, Exp]) TableRunner[In, Exp]
 }
 
 // HTTPHandlerRunner provides methods to run tests on http handlers
@@ -170,6 +170,6 @@ func HTTPHandlerFunc(
 // Table returns a TableRunner to run test cases on a func. By default,
 // it works with funcs having a single input and output value.
 // Use TableRunner.Config to configure it for a more complex functions.
-func Table(testedFunc any) TableRunner {
-	return newTableRunner(testedFunc)
+func Table[In, Exp any](testedFunc any) TableRunner[In, Exp] {
+	return newTableRunner[In, Exp](testedFunc)
 }
