@@ -21,7 +21,7 @@
 </p>
 
 `testx` is a Go testing library that provides test runners to write reliable
-and expressive unit tests effortlessly, with minimal boilerplate.
+and expressive unit tests with minimal boilerplate.
 
 ## Table of contents
 
@@ -57,11 +57,11 @@ go get -u github.com/drykit-go/testx
 func TestGet42(t *testing.T) {
     testx.Value(Get42()).
         Exp(42).                       // expect 42
-        Not(3, "hello").               // expect not 3 nor "hello"
-        Pass(checkconv.AssertMany(     // expect to pass input checkers:
+        Not(3, 4, 5).                  // expect not 3 nor 4 nor 5
+        Pass(                          // expect to pass all input checkers:
             check.Int.InRange(41, 43), //     expect in range [41:43]
             // ...
-        )...).
+        ).
         Run(t)
 }
 ```
