@@ -1,5 +1,7 @@
 github.com/drykit-go/cond v0.1.0 h1:y7MNxREQLT83vGfcfSKjyFPLC/ZDjYBNp6KuaVVjOg4=
 github.com/drykit-go/cond v0.1.0/go.mod h1:7MXBFjjaB5ZCEB8Q4w2euNOaWuTqf7NjOFZAyV1Jpfg=
+github.com/drykit-go/slices v0.0.4 h1:DNdJwPKJ3O4aq3oaXGQFZMTBYrrs9458ucN9uuX4txo=
+github.com/drykit-go/slices v0.0.4/go.mod h1:xU3NP7e7CFy3lZpECQDCjn/jLdcLBeA7+duOyOFsLRg=
 github.com/drykit-go/slicex v0.0.1 h1:w8+9x3opWIN4cwhmPLUOgzxgE3vWZV/sDuo42a6eCig=
 github.com/drykit-go/slicex v0.0.1/go.mod h1:l68Za0PIxhCJ9Sm25dlIJEw1nYVonyfoBBc3aKfajaM=
 github.com/drykit-go/strcase v0.2.0 h1:Yzb2DZB6PcOzwMXKYOOQqaNYp5FqqlvZ1nfbGhlLvLU=

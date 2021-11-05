@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/drykit-go/cond"
+	"github.com/drykit-go/slices"
 
 	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/internal/fmtexpl"
@@ -14,7 +15,7 @@ import (
 )
 
 // Case represents a Table test case. It must be provided values for
-// Case.In, and Case.Exp or Case.Not or Case.Pass at least.
+// Case.In at least.
 type Case[In, Exp any] struct {
 	// Lab is the label of the current case to be printed if the current
 	// case fails.
@@ -24,23 +25,17 @@ type Case[In, Exp any] struct {
 	In In
 
 	// Exp is the value expected to be returned when calling the tested func.
-	// If Case.Exp == nil (zero value), no check is added. This is a necessary
-	// behavior if one wants to use Case.Pass or Case.Not but not Case.Exp.
-	// To specifically check for a nil value, use ExpNil.
-	//
-	// 	testx.Table(myFunc, nil).Cases([]testx.Case{
-	// 		{In: 123, Pass: checkers},    // Exp == nil, no Exp check added
-	// 		{In: 123},                    // Exp == nil, no Exp check added
-	// 		{In: 123, Exp: nil},          // Exp == nil, no Exp check added
-	// 		{In: 123, Exp: testx.ExpNil}, // Exp == ExpNil, expect nil value
-	// 	})
+	// It is ignored if Case.Not or Case.Pass is not empty.
+	// Otherwise Case.Exp is always evaluated even if not set.
 	Exp Exp
 
 	// Not is a slice of values expected not to be returned by the tested func.
+	// If set, Case.Exp is ignored.
 	Not []Exp
 
 	// Pass is a slice of checkers that the return value of the
 	// tested func is expected to pass.
+	// If set, Case.Exp is ignored.
 	Pass []check.Checker[Exp]
 }
 
@@ -139,7 +134,12 @@ func (r *tableRunner[In, Exp]) setGetFunc() error {
 	r.get = func(in In) Exp {
 		pin, pout := r.config.InPos, r.config.OutPos
 		r.args = args.replaceAt(pin, in)
-		return r.rfunc.Call(r.args)[pout].(Exp)
+		out, ok := r.rfunc.Call(r.args)[pout].(Exp)
+		if !ok {
+			var vnil Exp
+			return vnil
+		}
+		return out
 	}
 	return nil
 }
@@ -163,22 +163,23 @@ func (r *tableRunner[In, Exp]) Cases(cases []Case[In, Exp]) TableRunner[In, Exp]
 			})
 		}
 
-		// FIXME: broken ExpNil
-		// add Case.Exp check
-		var theexp interface{} = tc.Exp
-		if theexp != nil {
-			exp := cond.Value(nil, tc.Exp, theexp == ExpNil)
-			addCaseCheck(check.Value.Is(exp))
-		}
+		hasNotChecks := len(tc.Not) != 0
+		hasPassChecks := len(tc.Pass) != 0
+		hasExpCheck := !hasNotChecks && !hasPassChecks
 
 		// add Case.Not checks
-		if len(tc.Not) != 0 {
-			addCaseCheck(check.Value.Not(toInterfaceSlice(tc.Not)...))
+		if hasNotChecks {
+			addCaseCheck(check.Value.Not(slices.AsAny(tc.Not)...))
 		}
 
 		// add Case.Pass checks
-		if len(tc.Pass) != 0 {
+		if hasPassChecks {
 			r.addChecks(tc.Lab, get, check.WrapMany(tc.Pass...))
+		}
+
+		// add Case.Exp checks
+		if hasExpCheck {
+			addCaseCheck(check.Value.Is(tc.Exp))
 		}
 	}
 	return r
@@ -240,14 +241,6 @@ func (r *tableRunner[In, Exp]) makeFixedArgs(rfunc *reflectutil.Func, cfg TableC
 	}
 }
 
-func toInterfaceSlice[T any](s []T) []interface{} {
-	out := make([]interface{}, len(s))
-	for i, v := range s {
-		out[i] = v
-	}
-	return out
-}
-
 func newTableRunner[In, Exp any](testedFunc any) TableRunner[In, Exp] {
 	r := &tableRunner[In, Exp]{}
 	cond.PanicOnErr(r.setRfunc(testedFunc))
@@ -285,12 +278,3 @@ func (res tableResults) PassedLabel(label string) bool {
 func (res tableResults) FailedLabel(label string) bool {
 	return !res.PassedLabel(label)
 }
-
-/*
-	ExpNil
-*/
-
-type expNil int
-
-// ExpNil is a special value for Case.Exp that sets the expected value to nil.
-const ExpNil expNil = 0
