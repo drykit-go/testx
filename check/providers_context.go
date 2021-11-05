@@ -53,7 +53,7 @@ func (p contextCheckerProvider) HasKeys(keys ...any) Checker[context.Context] {
 //
 // Examples:
 // 	Context.Value("userID", Value.Is("abcde"))
-// 	Context.Value("userID", checkconv.Assert(String.Contains("abc")))
+// 	Context.Value("userID", Wrap(String.Contains("abc")))
 func (p contextCheckerProvider) Value(key any, c Checker[any]) Checker[context.Context] {
 	var v any
 	pass := func(got context.Context) bool {

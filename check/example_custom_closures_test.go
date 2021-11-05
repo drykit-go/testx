@@ -24,14 +24,12 @@ type Complex128Checker struct {
 	explain func(label string, got any) string
 }
 
-// Pass do not satisfy any interface declared by check, but has a valid
-// signature Pass(got T) bool, allowing Complex128Checker to be casted
-// as a Checker[any] using checkconv.Cast.
+// Pass implements check.Passer[complex128] interface.
 func (c Complex128Checker) Pass(got complex128) bool {
 	return c.pass(got)
 }
 
-// Explain satisfies check.Explainer interface.
+// Explain implements check.Explainer interface.
 func (c Complex128Checker) Explain(label string, got any) string {
 	return c.explain(label, got)
 }
