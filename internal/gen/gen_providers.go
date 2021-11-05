@@ -97,7 +97,8 @@ func numericMetaVars() []metatype.Var {
 func isProviderFile(file fs.FileInfo) bool {
 	return strings.HasPrefix(file.Name(), "providers_") &&
 		!isTestFile(file) &&
-		!isBaseFile(file)
+		!isBaseFile(file) &&
+		!isBlacklisted(file)
 }
 
 func isTestFile(file fs.FileInfo) bool {
@@ -106,6 +107,15 @@ func isTestFile(file fs.FileInfo) bool {
 
 func isBaseFile(file fs.FileInfo) bool {
 	return strings.HasSuffix(file.Name(), "_base.go")
+}
+
+func isBlacklisted(file fs.FileInfo) bool {
+	blacklist := map[string]struct{}{
+		"providers_number.go": {},
+		"providers_map.go":    {},
+	}
+	_, inBlacklist := blacklist[file.Name()]
+	return inBlacklist
 }
 
 // String helpers
