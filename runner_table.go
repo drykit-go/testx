@@ -7,43 +7,36 @@ import (
 	"testing"
 
 	"github.com/drykit-go/cond"
+	"github.com/drykit-go/slices"
 
 	"github.com/drykit-go/testx/check"
 	"github.com/drykit-go/testx/internal/fmtexpl"
 	"github.com/drykit-go/testx/internal/reflectutil"
 )
 
-var _ TableRunner = (*tableRunner)(nil)
-
 // Case represents a Table test case. It must be provided values for
-// Case.In, and Case.Exp or Case.Not or Case.Pass at least.
-type Case struct {
+// Case.In at least.
+type Case[In, Exp any] struct {
 	// Lab is the label of the current case to be printed if the current
 	// case fails.
 	Lab string
 
 	// In is the input value injected in the tested func.
-	In any
+	In In
 
 	// Exp is the value expected to be returned when calling the tested func.
-	// If Case.Exp == nil (zero value), no check is added. This is a necessary
-	// behavior if one wants to use Case.Pass or Case.Not but not Case.Exp.
-	// To specifically check for a nil value, use ExpNil.
-	//
-	// 	testx.Table(myFunc, nil).Cases([]testx.Case{
-	// 		{In: 123, Pass: checkers},    // Exp == nil, no Exp check added
-	// 		{In: 123},                    // Exp == nil, no Exp check added
-	// 		{In: 123, Exp: nil},          // Exp == nil, no Exp check added
-	// 		{In: 123, Exp: testx.ExpNil}, // Exp == ExpNil, expect nil value
-	// 	})
-	Exp any
+	// It is ignored if Case.Not or Case.Pass is not empty.
+	// Otherwise Case.Exp is always evaluated even if not set.
+	Exp Exp
 
 	// Not is a slice of values expected not to be returned by the tested func.
-	Not []any
+	// If set, Case.Exp is ignored.
+	Not []Exp
 
 	// Pass is a slice of checkers that the return value of the
 	// tested func is expected to pass.
-	Pass []check.Checker[any]
+	// If set, Case.Exp is ignored.
+	Pass []check.Checker[Exp]
 }
 
 // TableConfig is configuration object for TableRunner.
@@ -107,28 +100,28 @@ func (args Args) String() string {
 	return b.String()
 }
 
-type tableRunner struct {
+type tableRunner[In, Exp any] struct {
 	baseRunner
 
 	config TableConfig
-	get    func(in any) gottype
+	get    func(in In) Exp
 
 	rfunc *reflectutil.Func
 	args  Args
 }
 
-func (r *tableRunner) Run(t *testing.T) {
+func (r *tableRunner[In, Exp]) Run(t *testing.T) {
 	t.Helper()
 	cond.PanicOnErr(r.setGetFunc())
 	r.run(t)
 }
 
-func (r *tableRunner) DryRun() TableResulter {
+func (r *tableRunner[In, Exp]) DryRun() TableResulter {
 	cond.PanicOnErr(r.setGetFunc())
 	return tableResults{baseResults: r.dryRun()}
 }
 
-func (r *tableRunner) setGetFunc() error {
+func (r *tableRunner[In, Exp]) setGetFunc() error {
 	if err := r.validateConfig(); err != nil {
 		return err
 	}
@@ -138,15 +131,20 @@ func (r *tableRunner) setGetFunc() error {
 		return err
 	}
 
-	r.get = func(in any) gottype {
+	r.get = func(in In) Exp {
 		pin, pout := r.config.InPos, r.config.OutPos
 		r.args = args.replaceAt(pin, in)
-		return r.rfunc.Call(r.args)[pout]
+		out, ok := r.rfunc.Call(r.args)[pout].(Exp)
+		if !ok {
+			var vnil Exp
+			return vnil
+		}
+		return out
 	}
 	return nil
 }
 
-func (r *tableRunner) Cases(cases []Case) TableRunner {
+func (r *tableRunner[In, Exp]) Cases(cases []Case[In, Exp]) TableRunner[In, Exp] {
 	for i, tc := range cases {
 		i, tc := i, tc
 
@@ -165,31 +163,34 @@ func (r *tableRunner) Cases(cases []Case) TableRunner {
 			})
 		}
 
-		// add Case.Exp check
-		if tc.Exp != nil {
-			exp := cond.Value(nil, tc.Exp, tc.Exp == ExpNil)
-			addCaseCheck(check.Value.Is(exp))
-		}
+		hasNotChecks := len(tc.Not) != 0
+		hasPassChecks := len(tc.Pass) != 0
+		hasExpCheck := !hasNotChecks && !hasPassChecks
 
 		// add Case.Not checks
-		if len(tc.Not) != 0 {
-			addCaseCheck(check.Value.Not(tc.Not...))
+		if hasNotChecks {
+			addCaseCheck(check.Value.Not(slices.AsAny(tc.Not)...))
 		}
 
 		// add Case.Pass checks
-		if len(tc.Pass) != 0 {
-			r.addChecks(tc.Lab, get, tc.Pass)
+		if hasPassChecks {
+			r.addChecks(tc.Lab, get, check.WrapMany(tc.Pass...))
+		}
+
+		// add Case.Exp checks
+		if hasExpCheck {
+			addCaseCheck(check.Value.Is(tc.Exp))
 		}
 	}
 	return r
 }
 
-func (r *tableRunner) Config(cfg TableConfig) TableRunner {
+func (r *tableRunner[In, Exp]) Config(cfg TableConfig) TableRunner[In, Exp] {
 	r.config = cfg
 	return r
 }
 
-func (r *tableRunner) setRfunc(in any) error {
+func (r *tableRunner[In, Exp]) setRfunc(in any) error {
 	rfunc, err := reflectutil.NewFunc(in)
 	if err != nil {
 		return fmt.Errorf("Table(func): %w", err)
@@ -205,7 +206,7 @@ func (r *tableRunner) setRfunc(in any) error {
 	return nil
 }
 
-func (r *tableRunner) validateConfig() error {
+func (r *tableRunner[In, Exp]) validateConfig() error {
 	validPos := func(pos, max int) bool { return pos >= 0 && pos < max }
 	ftyp := r.rfunc.Value.Type()
 	if pin, nin := r.config.InPos, ftyp.NumIn(); !validPos(pin, nin) {
@@ -217,7 +218,7 @@ func (r *tableRunner) validateConfig() error {
 	return nil
 }
 
-func (r *tableRunner) makeFixedArgs(rfunc *reflectutil.Func, cfg TableConfig) (Args, error) {
+func (r *tableRunner[In, Exp]) makeFixedArgs(rfunc *reflectutil.Func, cfg TableConfig) (Args, error) {
 	nparams := rfunc.Value.Type().NumIn()
 	nargs := len(cfg.FixedArgs)
 
@@ -240,8 +241,8 @@ func (r *tableRunner) makeFixedArgs(rfunc *reflectutil.Func, cfg TableConfig) (A
 	}
 }
 
-func newTableRunner(testedFunc any) TableRunner {
-	r := &tableRunner{}
+func newTableRunner[In, Exp any](testedFunc any) TableRunner[In, Exp] {
+	r := &tableRunner[In, Exp]{}
 	cond.PanicOnErr(r.setRfunc(testedFunc))
 	return r
 }
@@ -277,12 +278,3 @@ func (res tableResults) PassedLabel(label string) bool {
 func (res tableResults) FailedLabel(label string) bool {
 	return !res.PassedLabel(label)
 }
-
-/*
-	ExpNil
-*/
-
-type expNil int
-
-// ExpNil is a special value for Case.Exp that sets the expected value to nil.
-const ExpNil expNil = 0
