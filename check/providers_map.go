@@ -11,12 +11,12 @@ import (
 )
 
 // MapCheckerProvider provides checks on kind map.
-type MapCheckerProvider struct{ ValueCheckerProvider }
+type MapCheckerProvider[K comparable, V any] struct{ ValueCheckerProvider }
 
 // Len checks the gotten map passes the given Checker[int].
-func (p MapCheckerProvider) Len(c Checker[int]) Checker[any] {
+func (p MapCheckerProvider[K, V]) Len(c Checker[int]) Checker[map[K]V] {
 	var gotlen int
-	pass := func(got any) bool {
+	pass := func(got map[K]V) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
 		gotlen = reflect.ValueOf(got).Len()
 		return c.Pass(gotlen)
@@ -31,9 +31,9 @@ func (p MapCheckerProvider) Len(c Checker[int]) Checker[any] {
 }
 
 // HasKeys checks the gotten map has the given keys set.
-func (p MapCheckerProvider) HasKeys(keys ...any) Checker[any] {
+func (p MapCheckerProvider[K, V]) HasKeys(keys ...K) Checker[map[K]V] {
 	var missing []string
-	pass := func(got any) bool {
+	pass := func(got map[K]V) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
 		for _, expk := range keys {
 			if _, found := p.get(got, expk); !found {
@@ -49,9 +49,9 @@ func (p MapCheckerProvider) HasKeys(keys ...any) Checker[any] {
 }
 
 // HasNotKeys checks the gotten map has the given keys set.
-func (p MapCheckerProvider) HasNotKeys(keys ...any) Checker[any] {
+func (p MapCheckerProvider[K, V]) HasNotKeys(keys ...K) Checker[map[K]V] {
 	var badkeys []string
-	pass := func(got any) bool {
+	pass := func(got map[K]V) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
 		for _, expk := range keys {
 			if _, found := p.get(got, expk); found {
@@ -67,9 +67,9 @@ func (p MapCheckerProvider) HasNotKeys(keys ...any) Checker[any] {
 }
 
 // HasValues checks the gotten map has the given values set.
-func (p MapCheckerProvider) HasValues(values ...any) Checker[any] {
+func (p MapCheckerProvider[K, V]) HasValues(values ...V) Checker[map[K]V] {
 	var missing []string
-	pass := func(got any) bool {
+	pass := func(got map[K]V) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
 		for _, expv := range values {
 			if !p.hasValue(got, expv) {
@@ -85,9 +85,9 @@ func (p MapCheckerProvider) HasValues(values ...any) Checker[any] {
 }
 
 // HasNotValues checks the gotten map has not the given values set.
-func (p MapCheckerProvider) HasNotValues(values ...any) Checker[any] {
+func (p MapCheckerProvider[K, V]) HasNotValues(values ...V) Checker[map[K]V] {
 	var badvalues []string
-	pass := func(got any) bool {
+	pass := func(got map[K]V) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
 		for _, badv := range values {
 			if p.hasValue(got, badv) {
@@ -105,15 +105,15 @@ func (p MapCheckerProvider) HasNotValues(values ...any) Checker[any] {
 // CheckValues checks the gotten map's values corresponding to the given keys
 // pass the given checker. A key not found is considered a fail.
 // If len(keys) == 0, the check is made on all map values.
-func (p MapCheckerProvider) CheckValues(c Checker[any], keys ...any) Checker[any] { //nolint: gocognit // TODO: refactor
+func (p MapCheckerProvider[K, V]) CheckValues(c Checker[V], keys ...K) Checker[map[K]V] { //nolint: gocognit // TODO: refactor
 	var badentries []string
 	allKeys := len(keys) == 0
-	pass := func(got any) bool {
+	pass := func(got map[K]V) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
 		if allKeys {
-			p.walk(got, func(gotk, gotv any) {
+			p.walk(got, func(gotk K, gotv V) {
 				if !c.Pass(gotv) {
-					badentries = append(badentries, fmt.Sprintf("%s:%v", gotk, gotv))
+					badentries = append(badentries, fmt.Sprintf("%v:%v", gotk, gotv))
 				}
 			})
 			sort.Strings(badentries)
@@ -121,7 +121,7 @@ func (p MapCheckerProvider) CheckValues(c Checker[any], keys ...any) Checker[any
 			for _, expk := range keys {
 				gotv, ok := p.get(got, expk)
 				if !ok || !c.Pass(gotv) {
-					badentries = append(badentries, fmt.Sprintf("%s:%v", expk, gotv))
+					badentries = append(badentries, fmt.Sprintf("%v:%v", expk, gotv))
 				}
 			}
 		}
@@ -130,7 +130,7 @@ func (p MapCheckerProvider) CheckValues(c Checker[any], keys ...any) Checker[any
 	expl := func(label string, _ any) string {
 		checkedKeys := cond.String("all keys", fmt.Sprintf("keys %v", keys), allKeys)
 		return p.explainCheck(label,
-			fmt.Sprintf("values for %s to pass Checker[any]", checkedKeys),
+			fmt.Sprintf("values for %s to pass Checker[map[K]V]", checkedKeys),
 			c.Explain("values", p.formatList(badentries)),
 		)
 	}
@@ -138,18 +138,24 @@ func (p MapCheckerProvider) CheckValues(c Checker[any], keys ...any) Checker[any
 }
 
 // get returns gotmap[key] and a bool representing whether a match is found.
-func (p MapCheckerProvider) get(gotmap, key any) (any, bool) {
+func (p MapCheckerProvider[K, V]) get(gotmap map[K]V, key K) (V, bool) {
 	iter := reflect.ValueOf(gotmap).MapRange()
 	for iter.Next() {
 		if k := iter.Key().Interface(); p.deq(k, key) {
-			return iter.Value().Interface(), true
+			v, ok := iter.Value().Interface().(V)
+			if !ok {
+				var vnil V
+				return vnil, true
+			}
+			return v, true
 		}
 	}
-	return nil, false
+	var vnil V
+	return vnil, false
 }
 
 // hasValue returns true if gotmap matches the specified value.
-func (p MapCheckerProvider) hasValue(gotmap, value any) bool {
+func (p MapCheckerProvider[K, V]) hasValue(gotmap map[K]V, value V) bool {
 	iter := reflect.ValueOf(gotmap).MapRange()
 	for iter.Next() {
 		if gotv := iter.Value().Interface(); p.deq(gotv, value) {
@@ -159,12 +165,20 @@ func (p MapCheckerProvider) hasValue(gotmap, value any) bool {
 	return false
 }
 
-func (MapCheckerProvider) walk(gotmap any, f func(k, v any)) {
+func (MapCheckerProvider[K, V]) walk(gotmap map[K]V, f func(k K, v V)) {
 	vmap := reflect.ValueOf(gotmap)
 	iter := vmap.MapRange()
 	for iter.Next() {
-		k := iter.Key().Interface()
-		v := iter.Value().Interface()
+		var knil K
+		k, ok := iter.Key().Interface().(K)
+		if !ok {
+			k = knil
+		}
+		var vnil V
+		v, ok := iter.Value().Interface().(V)
+		if !ok {
+			v = vnil
+		}
 		f(k, v)
 	}
 }
