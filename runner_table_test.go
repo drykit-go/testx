@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/drykit-go/testx"
@@ -80,14 +81,19 @@ func TestTableRunner(t *testing.T) {
 			return 0
 		}).Cases([]testx.Case[bool, any]{
 			{In: false, Exp: 0},
-			{In: true},                    // Exp == nil, no check added
-			{In: true, Exp: testx.ExpNil}, // expect nil value
+			{In: true, Exp: nil}, // expect nil
+			{In: true},           // expect nil
 		})
 
 		runner.Run(t)
 
-		if n := runner.DryRun().NChecks(); n != 2 {
-			t.Errorf("exp 2 checks, got %d", n)
+		results := runner.DryRun()
+
+		if n := results.NChecks(); n != 3 {
+			t.Errorf("exp 3 checks, got %d", n)
+		}
+		if results.Failed() {
+			t.Error("exp to pass, failed")
 		}
 	})
 
@@ -110,73 +116,83 @@ func TestTableRunner(t *testing.T) {
 		}
 	})
 
-	// FIXME: ExpNil typing issues
-	// t.Run("test case labels", func(t *testing.T) {
-	// 	results := testx.Table[float64, error](divide).Config(testx.TableConfig{
-	// 		InPos:     1,
-	// 		OutPos:    1,
-	// 		FixedArgs: testx.Args{42.0},
-	// 	}).Cases([]testx.Case[float64, error]{
-	// 		{In: 0.0, Exp: testx.ExpNil, Lab: "zeroth case"}, // fail
-	// 		{In: 0.0, Exp: testx.ExpNil, Lab: "first case"},  // fail
-	// 	}).DryRun()
+	t.Run("test case labels", func(t *testing.T) {
+		results := testx.Table[float64, error](divide).Config(testx.TableConfig{
+			InPos:     1,
+			OutPos:    1,
+			FixedArgs: testx.Args{42.0},
+		}).Cases([]testx.Case[float64, error]{
+			{In: 0.0, Exp: nil, Lab: "zeroth case"}, // fail
+			{In: 0.0, Exp: nil, Lab: "first case"},  // fail
+		}).DryRun()
 
-	// 	expLabels := []string{
-	// 		`Table.Cases[0] "zeroth case" testx_test.divide(42, 0)`,
-	// 		`Table.Cases[1] "first case" testx_test.divide(42, 0)`,
-	// 	}
+		expLabelPrefixes := []string{
+			`Table.Cases[0] "zeroth case" testx_test.divide(42, 0)`,
+			`Table.Cases[1] "first case" testx_test.divide(42, 0)`,
+		}
 
-	// 	for i, c := range results.Checks() {
-	// 		got := c.Reason
-	// 		exp := expLabels[i]
-	// 		if !strings.HasPrefix(got, exp) {
-	// 			t.Errorf("bad label output\nexp %s\ngot %s", got, exp)
-	// 		}
-	// 	}
-	// })
+		for i, c := range results.Checks() {
+			got := c.Reason
+			exp := expLabelPrefixes[i]
+			if !strings.HasPrefix(got, exp) {
+				t.Errorf("bad label output\nexp %s\ngot %s", got, exp)
+			}
+		}
+	})
 }
 
 func TestExpNil(t *testing.T) {
-	t.Run("Exp=ExpNil expects nil", func(t *testing.T) {
-		f := func(int) any { return nil }
-		res := testx.Table[int, any](f).Cases([]testx.Case[int, any]{
-			{In: 0, Exp: testx.ExpNil},
+	f := func(int) int { return 42 }
+
+	t.Run("Case.Not overrides Case.Exp", func(t *testing.T) {
+		res := testx.Table[int, int](f).Cases([]testx.Case[int, int]{
+			{In: 0, Exp: -1, Not: []int{1, 2}},
 		}).DryRun()
 
 		if n := res.NChecks(); n != 1 {
 			t.Errorf("exp 1 check, got %d", n)
 		}
 		if res.Failed() {
-			t.Error("nil did not pass Case.Exp == ExpNil")
+			t.Error("exp to pass, failed")
 		}
 	})
 
-	// FIXME: ExpNil typing issues
-	// t.Run("Exp=ExpNil does not expect 0", func(t *testing.T) {
-	// 	f := func(int) int { return 0 }
-	// 	res := testx.Table[int, int](f).Cases([]testx.Case[int, int]{
-	// 		{In: 0, Exp: testx.ExpNil},
-	// 	}).DryRun()
-
-	// 	if n := res.NChecks(); n != 1 {
-	// 		t.Errorf("exp 1 check, got %d", n)
-	// 	}
-	// 	if res.Passed() {
-	// 		t.Error("0 did pass Case.Exp == ExpNil")
-	// 	}
-	// })
-
-	t.Run("Exp=0 does not expect nil", func(t *testing.T) {
-		f := func(int) any { return nil }
-		res := testx.Table[int, any](f).Cases([]testx.Case[int, any]{
-			{In: 0, Exp: 0},
+	t.Run("Case.Pass overrides Case.Exp", func(t *testing.T) {
+		res := testx.Table[int, int](f).Cases([]testx.Case[int, int]{
+			{In: 0, Exp: -1, Pass: []check.Checker[int]{check.Int.InRange(41, 43)}},
 		}).DryRun()
 
 		if n := res.NChecks(); n != 1 {
 			t.Errorf("exp 1 check, got %d", n)
 		}
-		if res.Passed() {
-			t.Error("nil did pass Case.Exp == 0")
+		if res.Failed() {
+			t.Error("exp to pass, failed")
+		}
+	})
+
+	t.Run("Case.Exp used if Case.Not and Case.Pass not set", func(t *testing.T) {
+		res := testx.Table[int, int](f).Cases([]testx.Case[int, int]{
+			{In: 0, Exp: 42},
+		}).DryRun()
+
+		if n := res.NChecks(); n != 1 {
+			t.Errorf("exp 1 check, got %d", n)
+		}
+		if res.Failed() {
+			t.Error("exp to pass, failed")
+		}
+	})
+
+	t.Run("Case.Exp used if no value set", func(t *testing.T) {
+		res := testx.Table[int, int](f).Cases([]testx.Case[int, int]{
+			{},
+		}).DryRun()
+
+		if n := res.NChecks(); n != 1 {
+			t.Errorf("exp 1 check, got %d", n)
+		}
+		if expl := res.Checks()[0].Reason; !strings.Contains(expl, "exp 0\ngot 42") {
+			t.Error("got unexpected explain:\n" + expl)
 		}
 	})
 }
