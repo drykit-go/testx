@@ -40,18 +40,14 @@ func TestTableRunner(t *testing.T) {
 	t.Run("single in multiple out", func(t *testing.T) {
 		testx.Table[int, bool](evenMultipleOut).Config(testx.TableConfig{
 			OutPos: outPos,
-		}).
-			Cases(cases).
-			Run(t)
+		}).Cases(cases).Run(t)
 	})
 
 	t.Run("multiple in single out", func(t *testing.T) {
 		testx.Table[int, bool](evenMultipleIn).Config(testx.TableConfig{
 			InPos:     inPos,
 			FixedArgs: []any{a0, a2}, // len(FixedArgs) == nparams-1
-		}).
-			Cases(cases).
-			Run(t)
+		}).Cases(cases).Run(t)
 	})
 
 	t.Run("multiple in multiple out", func(t *testing.T) {
@@ -59,89 +55,11 @@ func TestTableRunner(t *testing.T) {
 			InPos:     inPos,
 			OutPos:    outPos,
 			FixedArgs: []any{0: a0, 2: a2}, // len(FixedArgs) == nparams
-		}).
-			Cases(cases).
-			Run(t)
-	})
-
-	t.Run("using checkers", func(t *testing.T) {
-		testx.Table[int, int](double).
-			Cases([]testx.Case[int, int]{
-				{In: 21, Pass: []check.Checker[int]{check.Int.Is(42)}},
-				{In: -4, Pass: []check.Checker[int]{check.Int.InRange(-10, 0)}},
-			}).
-			Run(t)
-	})
-
-	t.Run("expect nil value", func(t *testing.T) {
-		runner := testx.Table[bool, any](func(wantnil bool) any {
-			if wantnil {
-				return nil
-			}
-			return 0
-		}).Cases([]testx.Case[bool, any]{
-			{In: false, Exp: 0},
-			{In: true, Exp: nil}, // expect nil
-			{In: true},           // expect nil
-		})
-
-		runner.Run(t)
-
-		results := runner.DryRun()
-
-		if n := results.NChecks(); n != 3 {
-			t.Errorf("exp 3 checks, got %d", n)
-		}
-		if results.Failed() {
-			t.Error("exp to pass, failed")
-		}
-	})
-
-	t.Run("Case.Not checks", func(t *testing.T) {
-		results := testx.Table[int, int](func(n int) int { return n }).
-			Cases([]testx.Case[int, int]{
-				{In: 0, Not: []int{-1, 1}}, // pass
-				{In: 0, Not: []int{0}},     // fail
-			}).
-			DryRun()
-
-		if nc := results.NChecks(); nc != 2 {
-			t.Errorf("exp 2 checks, got %d", nc)
-		}
-		if results.FailedAt(0) {
-			t.Error("exp Case 0 to pass, got fail")
-		}
-		if results.PassedAt(1) {
-			t.Error("exp Case 1 to fail, got pass")
-		}
-	})
-
-	t.Run("test case labels", func(t *testing.T) {
-		results := testx.Table[float64, error](divide).Config(testx.TableConfig{
-			InPos:     1,
-			OutPos:    1,
-			FixedArgs: testx.Args{42.0},
-		}).Cases([]testx.Case[float64, error]{
-			{In: 0.0, Exp: nil, Lab: "zeroth case"}, // fail
-			{In: 0.0, Exp: nil, Lab: "first case"},  // fail
-		}).DryRun()
-
-		expLabelPrefixes := []string{
-			`Table.Cases[0] "zeroth case" testx_test.divide(42, 0)`,
-			`Table.Cases[1] "first case" testx_test.divide(42, 0)`,
-		}
-
-		for i, c := range results.Checks() {
-			got := c.Reason
-			exp := expLabelPrefixes[i]
-			if !strings.HasPrefix(got, exp) {
-				t.Errorf("bad label output\nexp %s\ngot %s", got, exp)
-			}
-		}
+		}).Cases(cases).Run(t)
 	})
 }
 
-func TestExpNil(t *testing.T) {
+func TestTableRunner_Cases(t *testing.T) {
 	f := func(int) int { return 42 }
 
 	t.Run("Case.Not overrides Case.Exp", func(t *testing.T) {
@@ -195,6 +113,50 @@ func TestExpNil(t *testing.T) {
 			t.Error("got unexpected explain:\n" + expl)
 		}
 	})
+
+	t.Run("Case.Exp == nil", func(t *testing.T) {
+		res := testx.Table[bool, any](func(expnil bool) any {
+			if expnil {
+				return nil
+			}
+			return 0
+		}).Cases([]testx.Case[bool, any]{
+			{In: false, Exp: 0},
+			{In: true, Exp: nil}, // expect nil
+			{In: true},           // expect nil
+		}).DryRun()
+
+		if n := res.NChecks(); n != 3 {
+			t.Errorf("exp 3 checks, got %d", n)
+		}
+		if res.Failed() {
+			t.Error("exp to pass, failed")
+		}
+	})
+
+	t.Run("Case.Lab", func(t *testing.T) {
+		results := testx.Table[float64, error](divide).Config(testx.TableConfig{
+			InPos:     1,
+			OutPos:    1,
+			FixedArgs: testx.Args{42.0},
+		}).Cases([]testx.Case[float64, error]{
+			{In: 0.0, Exp: nil, Lab: "zeroth case"}, // fail
+			{In: 0.0, Exp: nil, Lab: "first case"},  // fail
+		}).DryRun()
+
+		expLabelPrefixes := []string{
+			`Table.Cases[0] "zeroth case" testx_test.divide(42, 0)`,
+			`Table.Cases[1] "first case" testx_test.divide(42, 0)`,
+		}
+
+		for i, c := range results.Checks() {
+			got := c.Reason
+			exp := expLabelPrefixes[i]
+			if !strings.HasPrefix(got, exp) {
+				t.Errorf("bad label output\nexp %s\ngot %s", got, exp)
+			}
+		}
+	})
 }
 
 func TestTableRunnerResults(t *testing.T) {
@@ -203,8 +165,7 @@ func TestTableRunnerResults(t *testing.T) {
 			Cases([]testx.Case[int, bool]{
 				{In: 10, Exp: true, Lab: "even number"},
 				{In: 11, Exp: false, Lab: "odd number"},
-			}).
-			DryRun()
+			}).DryRun()
 
 		exp := tableResults{
 			baseResults: baseResults{
@@ -233,8 +194,7 @@ func TestTableRunnerResults(t *testing.T) {
 				{In: 10, Exp: true, Lab: "even number"}, // pass
 				{In: -1, Exp: true, Lab: "odd number"},  // fail
 				{In: -1, Exp: true},                     // fail
-			}).
-			DryRun()
+			}).DryRun()
 
 		exp := tableResults{
 			baseResults: baseResults{
