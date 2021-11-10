@@ -15,12 +15,10 @@ type config struct {
 	tplFuncs       template.FuncMap
 }
 
-// Interfaces generates the public interfaces for checker providers
-// implementations in package check (provider_*.go files). It should be run
-// every time their API is modified (method signature change, doc comment,
-// new method, method removal, ...)
-func Interfaces(tpl, out string) error {
-	src, err := computeInterfaces()
+// ProvidersVars generates the public instances of checker providers
+// implementations in package check (providers_*.go files).
+func ProvidersVars(tpl, out string) error {
+	src, err := computeProvidersMetaData()
 	if err != nil {
 		return err
 	}

@@ -26,11 +26,11 @@ const (
 
 var (
 	name = flag.String("name", "", "template name in internal/gen (without extension)")
-	kind = flag.String("kind", "", "data to be generated (types or interfaces)")
+	kind = flag.String("kind", "", "data to be generated (only 'types' currently")
 )
 
 var kindsFuncs = map[string]func(tpl, out string) error{
-	"interfaces": gen.Interfaces,
+	"interfaces": gen.ProvidersVars,
 }
 
 func main() {

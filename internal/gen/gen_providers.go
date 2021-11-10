@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/drykit-go/slicex"
+	"github.com/drykit-go/strcase"
 
 	"github.com/drykit-go/testx/internal/gen/docparser"
 	"github.com/drykit-go/testx/internal/gen/metatype"
@@ -21,7 +22,7 @@ type ProvidersMetaData struct {
 	Vars []metatype.Var
 }
 
-func computeInterfaces() (ProvidersMetaData, error) {
+func computeProvidersMetaData() (ProvidersMetaData, error) {
 	docp, err := newDocPackage("check", isProviderFile) // TODO: package-agnostic
 	if err != nil {
 		return ProvidersMetaData{}, err
@@ -40,7 +41,7 @@ func computeMetaVar(t *doc.Type) metatype.Var {
 	varname := structToVarName(t.Name)
 	return metatype.Var{
 		Name:  varname,
-		Value: t.Name + "{}",
+		Value: structInstanceString(t.Name),
 		DocLines: docparser.ParseDocLines(t.Doc, map[string]string{
 			t.Name: varname,
 		}),
@@ -92,6 +93,8 @@ func numericMetaVars() []metatype.Var {
 	})
 }
 
+// File filters
+
 func isProviderFile(file fs.FileInfo) bool {
 	return strings.HasPrefix(file.Name(), "providers_") &&
 		!isTestFile(file) &&
@@ -104,4 +107,38 @@ func isTestFile(file fs.FileInfo) bool {
 
 func isBaseFile(file fs.FileInfo) bool {
 	return strings.HasSuffix(file.Name(), "_base.go")
+}
+
+// String helpers
+
+const (
+	providerStructSuffix    = "CheckerProvider"
+	providerInterfaceSuffix = "CheckerProvider"
+)
+
+func structToInterfaceName(structName string) string {
+	baseName := trimProviderStructSuffix(structName)
+	interfaceName := appendProviderInterfaceSuffix(baseName)
+	return exportName(interfaceName)
+}
+
+func structToVarName(structName string) string {
+	baseName := trimProviderStructSuffix(structName)
+	return exportName(baseName)
+}
+
+func trimProviderStructSuffix(structName string) string {
+	return strings.TrimSuffix(structName, providerStructSuffix)
+}
+
+func appendProviderInterfaceSuffix(baseName string) string {
+	return baseName + providerInterfaceSuffix
+}
+
+func exportName(unexported string) string {
+	return strcase.Pascal(unexported)
+}
+
+func structInstanceString(name string) string {
+	return name + "{}"
 }
