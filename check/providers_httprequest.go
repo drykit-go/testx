@@ -7,12 +7,12 @@ import (
 	"github.com/drykit-go/testx/internal/ioutil"
 )
 
-// httpRequestCheckerProvider provides checks on type *http.Request.
-type httpRequestCheckerProvider struct{ baseHTTPCheckerProvider }
+// HTTPRequestCheckerProvider provides checks on type *http.Request.
+type HTTPRequestCheckerProvider struct{ baseHTTPCheckerProvider }
 
 // ContentLength checks the gotten *http.Request ContentLength passes
 // the input Checker[int].
-func (p httpRequestCheckerProvider) ContentLength(c Checker[int]) Checker[*http.Request] {
+func (p HTTPRequestCheckerProvider) ContentLength(c Checker[int]) Checker[*http.Request] {
 	var clen int
 	pass := func(got *http.Request) bool {
 		clen = int(got.ContentLength)
@@ -26,7 +26,7 @@ func (p httpRequestCheckerProvider) ContentLength(c Checker[int]) Checker[*http.
 
 // Header checks the gotten *http.Request Header passes
 // the input Checker[http.Header].
-func (p httpRequestCheckerProvider) Header(c Checker[http.Header]) Checker[*http.Request] {
+func (p HTTPRequestCheckerProvider) Header(c Checker[http.Header]) Checker[*http.Request] {
 	var header http.Header
 	pass := func(got *http.Request) bool {
 		header = got.Header
@@ -41,7 +41,7 @@ func (p httpRequestCheckerProvider) Header(c Checker[http.Header]) Checker[*http
 // Body checks the gotten *http.Request Body passes the input Checker[[]byte].
 // It should be used only once on a same *http.Request as it closes its body
 // after reading it.
-func (p httpRequestCheckerProvider) Body(c Checker[[]byte]) Checker[*http.Request] {
+func (p HTTPRequestCheckerProvider) Body(c Checker[[]byte]) Checker[*http.Request] {
 	var body []byte
 	pass := func(got *http.Request) bool {
 		body = ioutil.NopRead(&got.Body)
@@ -55,7 +55,7 @@ func (p httpRequestCheckerProvider) Body(c Checker[[]byte]) Checker[*http.Reques
 
 // Context checks the gotten *http.Request Context passes
 // the input Checker[context.Context].
-func (p httpRequestCheckerProvider) Context(c Checker[context.Context]) Checker[*http.Request] {
+func (p HTTPRequestCheckerProvider) Context(c Checker[context.Context]) Checker[*http.Request] {
 	var ctx context.Context
 	pass := func(got *http.Request) bool {
 		ctx = got.Context()

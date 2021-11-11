@@ -7,11 +7,11 @@ import (
 	"github.com/drykit-go/cond"
 )
 
-// contextCheckerProvider provides checks on type context.Context.
-type contextCheckerProvider struct{ baseCheckerProvider }
+// ContextCheckerProvider provides checks on type context.Context.
+type ContextCheckerProvider struct{ baseCheckerProvider }
 
 // Done checks the gotten context is done.
-func (p contextCheckerProvider) Done(expectDone bool) Checker[context.Context] {
+func (p ContextCheckerProvider) Done(expectDone bool) Checker[context.Context] {
 	var err error
 	done := func() bool { return err != nil }
 	pass := func(got context.Context) bool {
@@ -28,7 +28,7 @@ func (p contextCheckerProvider) Done(expectDone bool) Checker[context.Context] {
 }
 
 // HasKeys checks the gotten context has the given keys set.
-func (p contextCheckerProvider) HasKeys(keys ...any) Checker[context.Context] {
+func (p ContextCheckerProvider) HasKeys(keys ...any) Checker[context.Context] {
 	var missing []string
 	pass := func(got context.Context) bool {
 		for _, expk := range keys {
@@ -54,7 +54,7 @@ func (p contextCheckerProvider) HasKeys(keys ...any) Checker[context.Context] {
 // Examples:
 // 	Context.Value("userID", Value.Is("abcde"))
 // 	Context.Value("userID", Wrap(String.Contains("abc")))
-func (p contextCheckerProvider) Value(key any, c Checker[any]) Checker[context.Context] {
+func (p ContextCheckerProvider) Value(key any, c Checker[any]) Checker[context.Context] {
 	var v any
 	pass := func(got context.Context) bool {
 		v = got.Value(key)

@@ -5,11 +5,11 @@ import (
 	"time"
 )
 
-// durationCheckerProvider provides checks on type time.Duration.
-type durationCheckerProvider struct{ baseCheckerProvider }
+// DurationCheckerProvider provides checks on type time.Duration.
+type DurationCheckerProvider struct{ baseCheckerProvider }
 
 // Over checks the gotten time.Duration is over the target duration.
-func (p durationCheckerProvider) Over(tar time.Duration) Checker[time.Duration] {
+func (p DurationCheckerProvider) Over(tar time.Duration) Checker[time.Duration] {
 	pass := func(got time.Duration) bool { return p.ns(got) > p.ns(tar) }
 	expl := func(label string, got any) string {
 		return p.explain(label,
@@ -21,7 +21,7 @@ func (p durationCheckerProvider) Over(tar time.Duration) Checker[time.Duration] 
 }
 
 // Under checks the gotten time.Duration is under the target duration.
-func (p durationCheckerProvider) Under(tar time.Duration) Checker[time.Duration] {
+func (p DurationCheckerProvider) Under(tar time.Duration) Checker[time.Duration] {
 	pass := func(got time.Duration) bool { return p.ns(got) < p.ns(tar) }
 	expl := func(label string, got any) string {
 		return p.explain(label,
@@ -33,7 +33,7 @@ func (p durationCheckerProvider) Under(tar time.Duration) Checker[time.Duration]
 }
 
 // InRange checks the gotten time.Duration is in range [lo:hi]
-func (p durationCheckerProvider) InRange(lo, hi time.Duration) Checker[time.Duration] {
+func (p DurationCheckerProvider) InRange(lo, hi time.Duration) Checker[time.Duration] {
 	pass := func(got time.Duration) bool { return p.inrange(got, lo, hi) }
 	expl := func(label string, got any) string {
 		return p.explain(label,
@@ -45,7 +45,7 @@ func (p durationCheckerProvider) InRange(lo, hi time.Duration) Checker[time.Dura
 }
 
 // OutRange checks the gotten time.Duration is not in range [lo:hi]
-func (p durationCheckerProvider) OutRange(lo, hi time.Duration) Checker[time.Duration] {
+func (p DurationCheckerProvider) OutRange(lo, hi time.Duration) Checker[time.Duration] {
 	pass := func(got time.Duration) bool { return !p.inrange(got, lo, hi) }
 	expl := func(label string, got any) string {
 		return p.explain(label,
@@ -58,15 +58,15 @@ func (p durationCheckerProvider) OutRange(lo, hi time.Duration) Checker[time.Dur
 
 // Helpers
 
-func (p durationCheckerProvider) inrange(d, lo, hi time.Duration) bool {
+func (p DurationCheckerProvider) inrange(d, lo, hi time.Duration) bool {
 	nsd, nslo, nshi := p.ns(d), p.ns(lo), p.ns(hi)
 	return nslo <= nsd && nsd <= nshi
 }
 
-func (durationCheckerProvider) ms(d time.Duration) int64 {
+func (DurationCheckerProvider) ms(d time.Duration) int64 {
 	return d.Milliseconds()
 }
 
-func (durationCheckerProvider) ns(d time.Duration) int64 {
+func (DurationCheckerProvider) ns(d time.Duration) int64 {
 	return d.Nanoseconds()
 }
