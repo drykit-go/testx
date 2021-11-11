@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/drykit-go/slicex"
-	"github.com/drykit-go/strcase"
 
 	"github.com/drykit-go/testx/internal/gen/docparser"
 	"github.com/drykit-go/testx/internal/gen/metatype"
@@ -85,7 +84,7 @@ func numericMetaVars() []metatype.Var {
 	return slicex.Map(numerics, func(nt namedType) metatype.Var {
 		return metatype.Var{
 			Name:  nt.N,
-			Value: "numberCheckerProvider[" + nt.T + "]{}",
+			Value: "NumberCheckerProvider[" + nt.T + "]{}",
 			DocLines: []string{
 				fmt.Sprintf("%s provides checks on type %s.", nt.N, nt.T),
 			},
@@ -111,32 +110,10 @@ func isBaseFile(file fs.FileInfo) bool {
 
 // String helpers
 
-const (
-	providerStructSuffix    = "CheckerProvider"
-	providerInterfaceSuffix = "CheckerProvider"
-)
-
-func structToInterfaceName(structName string) string {
-	baseName := trimProviderStructSuffix(structName)
-	interfaceName := appendProviderInterfaceSuffix(baseName)
-	return exportName(interfaceName)
-}
+const providerStructSuffix = "CheckerProvider"
 
 func structToVarName(structName string) string {
-	baseName := trimProviderStructSuffix(structName)
-	return exportName(baseName)
-}
-
-func trimProviderStructSuffix(structName string) string {
 	return strings.TrimSuffix(structName, providerStructSuffix)
-}
-
-func appendProviderInterfaceSuffix(baseName string) string {
-	return baseName + providerInterfaceSuffix
-}
-
-func exportName(unexported string) string {
-	return strcase.Pascal(unexported)
 }
 
 func structInstanceString(name string) string {
