@@ -8,13 +8,13 @@ import (
 	"github.com/drykit-go/testx/internal/reflectutil"
 )
 
-// structCheckerProvider provides checks on kind struct.
-type structCheckerProvider struct{ valueCheckerProvider }
+// StructCheckerProvider provides checks on kind struct.
+type StructCheckerProvider struct{ ValueCheckerProvider }
 
 // FieldsEqual checks all given fields equal the exp value.
 // It panics if the fields do not exist or are not exported,
 // or if the tested value is not a struct.
-func (p structCheckerProvider) FieldsEqual(exp any, fields []string) Checker[any] {
+func (p StructCheckerProvider) FieldsEqual(exp any, fields []string) Checker[any] {
 	var bads []string
 	pass := func(got any) bool {
 		reflectutil.MustBeOfKind(got, reflect.Struct)
@@ -35,7 +35,7 @@ func (p structCheckerProvider) FieldsEqual(exp any, fields []string) Checker[any
 // CheckFields checks all given fields pass the Checker[any].
 // It panics if the fields do not exist or are not exported,
 // or if the tested value is not a struct.
-func (p structCheckerProvider) CheckFields(c Checker[any], fields []string) Checker[any] {
+func (p StructCheckerProvider) CheckFields(c Checker[any], fields []string) Checker[any] {
 	var bads []string
 	pass := func(got any) bool {
 		reflectutil.MustBeOfKind(got, reflect.Struct)
@@ -53,7 +53,7 @@ func (p structCheckerProvider) CheckFields(c Checker[any], fields []string) Chec
 	return NewChecker(pass, expl)
 }
 
-func (p structCheckerProvider) badFields(
+func (p StructCheckerProvider) badFields(
 	gotstruct any,
 	fields []string,
 	pass func(k string, v any) bool,
@@ -69,7 +69,7 @@ func (p structCheckerProvider) badFields(
 	return
 }
 
-func (structCheckerProvider) formatFields(fields []string) string {
+func (StructCheckerProvider) formatFields(fields []string) string {
 	n := len(fields)
 	var b strings.Builder
 	for i, f := range fields {

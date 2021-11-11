@@ -10,11 +10,11 @@ import (
 	"github.com/drykit-go/testx/internal/reflectutil"
 )
 
-// mapCheckerProvider provides checks on kind map.
-type mapCheckerProvider struct{ valueCheckerProvider }
+// MapCheckerProvider provides checks on kind map.
+type MapCheckerProvider struct{ ValueCheckerProvider }
 
 // Len checks the gotten map passes the given Checker[int].
-func (p mapCheckerProvider) Len(c Checker[int]) Checker[any] {
+func (p MapCheckerProvider) Len(c Checker[int]) Checker[any] {
 	var gotlen int
 	pass := func(got any) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
@@ -31,7 +31,7 @@ func (p mapCheckerProvider) Len(c Checker[int]) Checker[any] {
 }
 
 // HasKeys checks the gotten map has the given keys set.
-func (p mapCheckerProvider) HasKeys(keys ...any) Checker[any] {
+func (p MapCheckerProvider) HasKeys(keys ...any) Checker[any] {
 	var missing []string
 	pass := func(got any) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
@@ -49,7 +49,7 @@ func (p mapCheckerProvider) HasKeys(keys ...any) Checker[any] {
 }
 
 // HasNotKeys checks the gotten map has the given keys set.
-func (p mapCheckerProvider) HasNotKeys(keys ...any) Checker[any] {
+func (p MapCheckerProvider) HasNotKeys(keys ...any) Checker[any] {
 	var badkeys []string
 	pass := func(got any) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
@@ -67,7 +67,7 @@ func (p mapCheckerProvider) HasNotKeys(keys ...any) Checker[any] {
 }
 
 // HasValues checks the gotten map has the given values set.
-func (p mapCheckerProvider) HasValues(values ...any) Checker[any] {
+func (p MapCheckerProvider) HasValues(values ...any) Checker[any] {
 	var missing []string
 	pass := func(got any) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
@@ -85,7 +85,7 @@ func (p mapCheckerProvider) HasValues(values ...any) Checker[any] {
 }
 
 // HasNotValues checks the gotten map has not the given values set.
-func (p mapCheckerProvider) HasNotValues(values ...any) Checker[any] {
+func (p MapCheckerProvider) HasNotValues(values ...any) Checker[any] {
 	var badvalues []string
 	pass := func(got any) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
@@ -105,7 +105,7 @@ func (p mapCheckerProvider) HasNotValues(values ...any) Checker[any] {
 // CheckValues checks the gotten map's values corresponding to the given keys
 // pass the given checker. A key not found is considered a fail.
 // If len(keys) == 0, the check is made on all map values.
-func (p mapCheckerProvider) CheckValues(c Checker[any], keys ...any) Checker[any] { //nolint: gocognit // TODO: refactor
+func (p MapCheckerProvider) CheckValues(c Checker[any], keys ...any) Checker[any] { //nolint: gocognit // TODO: refactor
 	var badentries []string
 	allKeys := len(keys) == 0
 	pass := func(got any) bool {
@@ -138,7 +138,7 @@ func (p mapCheckerProvider) CheckValues(c Checker[any], keys ...any) Checker[any
 }
 
 // get returns gotmap[key] and a bool representing whether a match is found.
-func (p mapCheckerProvider) get(gotmap, key any) (any, bool) {
+func (p MapCheckerProvider) get(gotmap, key any) (any, bool) {
 	iter := reflect.ValueOf(gotmap).MapRange()
 	for iter.Next() {
 		if k := iter.Key().Interface(); p.deq(k, key) {
@@ -149,7 +149,7 @@ func (p mapCheckerProvider) get(gotmap, key any) (any, bool) {
 }
 
 // hasValue returns true if gotmap matches the specified value.
-func (p mapCheckerProvider) hasValue(gotmap, value any) bool {
+func (p MapCheckerProvider) hasValue(gotmap, value any) bool {
 	iter := reflect.ValueOf(gotmap).MapRange()
 	for iter.Next() {
 		if gotv := iter.Value().Interface(); p.deq(gotv, value) {
@@ -159,7 +159,7 @@ func (p mapCheckerProvider) hasValue(gotmap, value any) bool {
 	return false
 }
 
-func (mapCheckerProvider) walk(gotmap any, f func(k, v any)) {
+func (MapCheckerProvider) walk(gotmap any, f func(k, v any)) {
 	vmap := reflect.ValueOf(gotmap)
 	iter := vmap.MapRange()
 	for iter.Next() {
