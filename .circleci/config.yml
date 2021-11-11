@@ -46,7 +46,7 @@ commands:
     parameters:
       version:
         type: string
-        default: v1.40.1
+        default: v1.43.0
     steps:
       - restore_cache:
           keys:
