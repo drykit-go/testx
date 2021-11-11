@@ -62,21 +62,21 @@ commands:
           paths:
             - /go/bin/golangci-lint
 
-  # setup-coverage:
-  #   description: Set up coverage
-  #   steps:
-  #     - restore_cache:
-  #         keys:
-  #           - go-acc-{{ .Environment.CACHE_VERSION }}
-  #     - run:
-  #         name: Install go-acc
-  #         command: |
-  #           command -v /go/bin/go-acc && echo "Skipping go-acc installation" && exit
-  #           go get -v github.com/ory/go-acc
-  #     - save_cache:
-  #         key: go-acc-{{ .Environment.CACHE_VERSION }}
-  #         paths:
-  #           - /go/bin/go-acc
+  setup-coverage:
+    description: Set up coverage
+    steps:
+      - restore_cache:
+          keys:
+            - go-acc-{{ .Environment.CACHE_VERSION }}
+      - run:
+          name: Install go-acc
+          command: |
+            command -v /go/bin/go-acc && echo "Skipping go-acc installation" && exit
+            go get -v github.com/ory/go-acc
+      - save_cache:
+          key: go-acc-{{ .Environment.CACHE_VERSION }}
+          paths:
+            - /go/bin/go-acc
 
   # setup-gen:
   #   description: Set up gen
@@ -110,15 +110,15 @@ jobs:
     <<: *defaults
     steps:
       - setup
-      # - setup-coverage
+      - setup-coverage
       - run:
           name: Run unit tests
-          command: | # TODO: set back to 'make test-cov'
-            make tests
-      # - run:
-      #     name: Send test coverage results
-      #     command: |
-      #       bash <(curl -s https://codecov.io/bash)
+          command: |
+            make test-cov
+      - run:
+          name: Send test coverage results
+          command: |
+            bash <(curl -s https://codecov.io/bash)
 
   # gen:
   #   <<: *defaults
