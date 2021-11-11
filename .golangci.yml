@@ -147,6 +147,7 @@ linters:
     - thelper # enforce t.Helper()
     - varcheck # unused global var and const
     - wastedassign
+  disable:
   fast: false
 
 issues:
@@ -156,3 +157,11 @@ issues:
         - dupl
         - gocognit
         - gocyclo
+
+  # temporary fixes for unsupported type parameters syntax
+  exclude:
+    - "expected .*, found .*"
+    - "expected expression"
+    - "undeclared name: `any`"
+    - "missing ',' in parameter list"
+    - "mixed named and unnamed parameters"
