@@ -78,22 +78,22 @@ commands:
           paths:
             - /go/bin/go-acc
 
-  # setup-gen:
-  #   description: Set up gen
-  #   steps:
-  #     - restore_cache:
-  #         keys:
-  #           - goimports-{{ .Environment.CACHE_VERSION }}
-  #     - run:
-  #         name: Install goimports
-  #         command: |
-  #           command -v /go/bin/goimports && echo "Skipping go-acc installation" && exit
-  #           go get -v golang.org/x/tools/cmd/goimports
+  setup-gen:
+    description: Set up gen
+    steps:
+      - restore_cache:
+          keys:
+            - goimports-{{ .Environment.CACHE_VERSION }}
+      - run:
+          name: Install goimports
+          command: |
+            command -v /go/bin/goimports && echo "Skipping goimports installation" && exit
+            go get -v golang.org/x/tools/cmd/goimports
 
-  #     - save_cache:
-  #         key: goimports-{{ .Environment.CACHE_VERSION }}
-  #         paths:
-  #           - /go/bin/goimports 
+      - save_cache:
+          key: goimports-{{ .Environment.CACHE_VERSION }}
+          paths:
+            - /go/bin/goimports 
 
 jobs:
   lint:
@@ -120,20 +120,20 @@ jobs:
           command: |
             bash <(curl -s https://codecov.io/bash)
 
-  # gen:
-  #   <<: *defaults
-  #   steps:
-  #     - setup
-  #     - setup-gen
-  #     - setup-lint
-  #     - run:
-  #         name: Run code gen
-  #         command: |
-  #           make gen
-  #     - run:
-  #         name: Check generated code
-  #         command: |
-  #           make lint tests
+  gen:
+    <<: *defaults
+    steps:
+      - setup
+      - setup-gen
+      - setup-lint
+      - run:
+          name: Run code gen
+          command: |
+            make gen
+      - run:
+          name: Check generated code
+          command: |
+            make lint tests
 
 workflows:
   version: 2
@@ -141,5 +141,4 @@ workflows:
     jobs:
       - lint
       - test
-      # - gen
-
+      - gen
