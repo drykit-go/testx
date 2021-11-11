@@ -30,7 +30,7 @@ tests:
 
 .PHONY: test-cov
 test-cov: # Unit tests with coverage, excluding gen-related files
-	@go-acc --ignore cmd/gen,internal/gen ./...
+	@GO_TEST_BINARY="gotip test" go-acc --ignore cmd/gen,internal/gen ./...
 
 TEST_FUNC=^.*$$
 ifdef t
