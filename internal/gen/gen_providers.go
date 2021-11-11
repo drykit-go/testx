@@ -84,7 +84,7 @@ func numericMetaVars() []metatype.Var {
 	return slicex.Map(numerics, func(nt namedType) metatype.Var {
 		return metatype.Var{
 			Name:  nt.N,
-			Value: "NumberCheckerProvider[" + nt.T + "]{}",
+			Value: structInstanceString(addProviderSuffix("Number"), nt.T),
 			DocLines: []string{
 				fmt.Sprintf("%s provides checks on type %s.", nt.N, nt.T),
 			},
@@ -110,12 +110,20 @@ func isBaseFile(file fs.FileInfo) bool {
 
 // String helpers
 
-const providerStructSuffix = "CheckerProvider"
+const providerSuffix = "CheckerProvider"
 
-func structToVarName(structName string) string {
-	return strings.TrimSuffix(structName, providerStructSuffix)
+func addProviderSuffix(name string) string {
+	return name + providerSuffix
 }
 
-func structInstanceString(name string) string {
-	return name + "{}"
+func structToVarName(structName string) string {
+	return strings.TrimSuffix(structName, providerSuffix)
+}
+
+func structInstanceString(name string, typeparams ...string) string {
+	tpstr := ""
+	if len(typeparams) != 0 {
+		tpstr = "[" + strings.Join(typeparams, ", ") + "]"
+	}
+	return name + tpstr + "{}"
 }
