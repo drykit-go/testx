@@ -20,3 +20,8 @@ func Map[Key comparable, Val any]() MapCheckerProvider[Key, Val] {
 func Slice[Elem any]() SliceCheckerProvider[Elem] {
 	return SliceCheckerProvider[Elem]{}
 }
+
+// ValueCheckerProvider provides generic checks on any type.
+func Value[T any]() ValueCheckerProvider[T] {
+	return ValueCheckerProvider[T]{}
+}

@@ -114,6 +114,7 @@ func isBlacklisted(file fs.FileInfo) bool {
 		"providers_number.go": {},
 		"providers_map.go":    {},
 		"providers_slice.go":  {},
+		"providers_value.go":  {},
 	}
 	_, inBlacklist := blacklist[file.Name()]
 	return inBlacklist
