@@ -169,7 +169,7 @@ func (r *tableRunner[In, Exp]) Cases(cases []Case[In, Exp]) TableRunner[In, Exp]
 
 		// add Case.Not checks
 		if hasNotChecks {
-			addCaseCheck(check.Value.Not(slices.AsAny(tc.Not)...))
+			addCaseCheck(check.Value[any]().Not(slices.AsAny(tc.Not)...))
 		}
 
 		// add Case.Pass checks
@@ -179,7 +179,7 @@ func (r *tableRunner[In, Exp]) Cases(cases []Case[In, Exp]) TableRunner[In, Exp]
 
 		// add Case.Exp checks
 		if hasExpCheck {
-			addCaseCheck(check.Value.Is(tc.Exp))
+			addCaseCheck(check.Value[any]().Is(tc.Exp))
 		}
 	}
 	return r

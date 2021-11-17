@@ -9,7 +9,7 @@ import (
 )
 
 // StructCheckerProvider provides checks on kind struct.
-type StructCheckerProvider struct{ ValueCheckerProvider }
+type StructCheckerProvider struct{ ValueCheckerProvider[any] }
 
 // FieldsEqual checks all given fields equal the exp value.
 // It panics if the fields do not exist or are not exported,

@@ -11,7 +11,7 @@ import (
 )
 
 // MapCheckerProvider provides checks on kind map.
-type MapCheckerProvider[K comparable, V any] struct{ ValueCheckerProvider }
+type MapCheckerProvider[K comparable, V any] struct{ ValueCheckerProvider[map[K]V] }
 
 // Len checks the gotten map passes the given Checker[int].
 func (p MapCheckerProvider[K, V]) Len(c Checker[int]) Checker[map[K]V] {

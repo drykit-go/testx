@@ -23,7 +23,7 @@ func (r *valueRunner[T]) DryRun() Resulter {
 }
 
 func (r *valueRunner[T]) Exp(value T) ValueRunner[T] {
-	r.addValueCheck(check.Value.Is(value))
+	r.addValueCheck(check.Value[any]().Is(value))
 	return r
 }
 
@@ -33,7 +33,7 @@ func (r *valueRunner[T]) Not(values ...T) ValueRunner[T] {
 	for _, v := range values {
 		valuesitf = append(valuesitf, v)
 	}
-	r.addValueCheck(check.Value.Not(valuesitf...))
+	r.addValueCheck(check.Value[any]().Not(valuesitf...))
 	return r
 }
 
