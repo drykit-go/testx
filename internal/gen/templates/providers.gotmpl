@@ -15,3 +15,8 @@ var (
 func Map[Key comparable, Val any]() MapCheckerProvider[Key, Val] {
 	return MapCheckerProvider[Key, Val]{}
 }
+
+// Slice provides checks on type []Elem.
+func Slice[Elem any]() SliceCheckerProvider[Elem] {
+	return SliceCheckerProvider[Elem]{}
+}

@@ -99,7 +99,7 @@ func TestMapCheckerProvider(t *testing.T) {
 			"age", "badkey",
 		)
 		assertFailChecker(t, "Map.CheckValues", c, m, makeExpl(
-			"values for keys [age badkey] to pass Checker[map[K]V]",
+			"values for keys [age badkey] to pass Checker[V]",
 			"explanation: values:\n"+makeExpl(
 				"not in range [41:43]",
 				"[age:42, badkey:<nil>]",
@@ -109,7 +109,7 @@ func TestMapCheckerProvider(t *testing.T) {
 		// all keys
 		c = check.Map[string, any]().CheckValues(check.Value.Is("Marcel Patulacci"))
 		assertFailChecker(t, "Map.CheckValues", c, m, makeExpl(
-			"values for all keys to pass Checker[map[K]V]",
+			"values for all keys to pass Checker[V]",
 			"explanation: values:\n"+makeExpl(
 				"Marcel Patulacci",
 				"[age:42, friends:[Robert Robichet Jean-Pierre Avidol]]",
