@@ -38,8 +38,8 @@ commands:
             - /go/bin/gotip
       - run:
           name: Run gotip download
-          command: |
-            gotip download
+          command: | # Nov 12 (https://go-review.googlesource.com/c/go/+/359478)
+            gotip download 359478
 
   setup-lint:
     description: Set up lint
