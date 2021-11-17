@@ -31,7 +31,6 @@ commands:
           command: |
             command -v /go/bin/gotip && echo "Skipping gotip installation" && exit
             go install golang.org/dl/gotip@latest
-            gotip download
       - save_cache:
           key: gotip-{{ .Environment.CACHE_VERSION }}
           paths:
