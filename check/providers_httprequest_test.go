@@ -80,12 +80,12 @@ func TestHTTPRequestCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("Context pass", func(t *testing.T) {
-		c := check.HTTPRequest.Context(check.Context.Value(expCtxKey, check.Value.Is(expCtxVal)))
+		c := check.HTTPRequest.Context(check.Context.Value(expCtxKey, check.Value[any]().Is(expCtxVal)))
 		assertPassChecker(t, "HTTPRequest.Context", c, newReq())
 	})
 
 	t.Run("Context fail", func(t *testing.T) {
-		c := check.HTTPRequest.Context(check.Context.Value(expCtxKey, check.Value.Not(expCtxVal)))
+		c := check.HTTPRequest.Context(check.Context.Value(expCtxKey, check.Value[any]().Not(expCtxVal)))
 		assertFailChecker(t, "HTTPRequest.Context", c, newReq(), makeExpl(
 			"context to pass Checker[context.Context]",
 			"explanation: context:\n"+makeExpl(

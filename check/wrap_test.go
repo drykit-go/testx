@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/drykit-go/slicex"
+
 	"github.com/drykit-go/testx/check"
 )
 
@@ -30,7 +31,7 @@ func TestWrap(t *testing.T) {
 				expexpl: "value:\nexp in range [41:43]\ngot -1",
 			},
 			{
-				checker: check.Wrap(check.Value.Custom("", func(got any) bool { return true })),
+				checker: check.Value[any]().Custom("", func(got any) bool { return true }),
 				in:      "",
 				exppass: true,
 				expexpl: "",

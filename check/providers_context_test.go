@@ -70,7 +70,7 @@ func TestContextCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("Value fail", func(t *testing.T) {
-		c := check.Context.Value("userID", check.Value.Is(0))
+		c := check.Context.Value("userID", check.Value[any]().Is(0))
 
 		ctxMissingKey := context.Background()
 		assertFailChecker(t, "Context.Value", c, ctxMissingKey, makeExpl(

@@ -31,34 +31,34 @@ func TestValueCheckerProvider(t *testing.T) {
 	}
 
 	t.Run("Is pass", func(t *testing.T) {
-		c := check.Value.Is(vsame)
+		c := check.Value[any]().Is(vsame)
 		assertPassChecker(t, "Value.Is", c, itf(vorig))
 	})
 
 	t.Run("Is fail", func(t *testing.T) {
-		c := check.Value.Is(badval)
+		c := check.Value[any]().Is(badval)
 		assertFailChecker(t, "Value.Is", c, itf(vorig), makeExpl("{hello}", "{hi}"))
 	})
 
 	t.Run("Not pass", func(t *testing.T) {
-		c := check.Value.Not(badval, badtyp)
+		c := check.Value[any]().Not(badval, badtyp)
 		assertPassChecker(t, "Value.Not", c, itf(vorig))
 	})
 
 	t.Run("Not fail", func(t *testing.T) {
-		c := check.Value.Not(badval, vsame, badtyp)
+		c := check.Value[any]().Not(badval, vsame, badtyp)
 		assertFailChecker(t, "Value.Not", c, itf(vorig), makeExpl("not {hi}", "{hi}"))
 	})
 
 	t.Run("IsZero pass", func(t *testing.T) {
-		c := check.Value.IsZero()
+		c := check.Value[any]().IsZero()
 		for _, z := range zeros {
 			assertPassChecker(t, "Value.IsZero", c, z)
 		}
 	})
 
 	t.Run("IsZero fail", func(t *testing.T) {
-		c := check.Value.IsZero()
+		c := check.Value[any]().IsZero()
 		for _, nz := range nozeros {
 			assertFailChecker(t, "Value.IsZero", c, nz, makeExpl(
 				"to be a zero value",
@@ -68,14 +68,14 @@ func TestValueCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("NotZero pass", func(t *testing.T) {
-		c := check.Value.NotZero()
+		c := check.Value[any]().NotZero()
 		for _, nz := range nozeros {
 			assertPassChecker(t, "Value.NotZero", c, nz)
 		}
 	})
 
 	t.Run("NotZero fail", func(t *testing.T) {
-		c := check.Value.NotZero()
+		c := check.Value[any]().NotZero()
 		for _, z := range zeros {
 			assertFailChecker(t, "Value.NotZero", c, z, makeExpl(
 				"not to be a zero value",
@@ -90,12 +90,12 @@ func TestValueCheckerProvider(t *testing.T) {
 	}
 
 	t.Run("Custom pass", func(t *testing.T) {
-		c := check.Value.Custom("", isEvenInt)
+		c := check.Value[any]().Custom("", isEvenInt)
 		assertPassChecker(t, "Value.Custom", c, 42)
 	})
 
 	t.Run("Custom fail", func(t *testing.T) {
-		c := check.Value.Custom("even int", isEvenInt)
+		c := check.Value[any]().Custom("even int", isEvenInt)
 		assertFailChecker(t, "Value.Custom", c, -1, makeExpl("even int", "-1"))
 	})
 
@@ -103,7 +103,7 @@ func TestValueCheckerProvider(t *testing.T) {
 		mapequiv := map[string]any{
 			"Name": "hi",
 		}
-		c := check.Value.SameJSON(mapequiv)
+		c := check.Value[any]().SameJSON(mapequiv)
 		assertPassChecker(t, "Value.SameJSON", c, itf(vorig))
 	})
 
@@ -111,7 +111,7 @@ func TestValueCheckerProvider(t *testing.T) {
 		mapdiff := map[string]any{
 			"Name": "bad",
 		}
-		c := check.Value.SameJSON(mapdiff)
+		c := check.Value[any]().SameJSON(mapdiff)
 		assertFailChecker(t, "Value.SameJSON", c, itf(vorig), makeExpl(
 			"json data: map[Name:bad]",
 			"json data: map[Name:hi]",
