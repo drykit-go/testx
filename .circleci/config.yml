@@ -38,7 +38,7 @@ commands:
       - run:
           name: Run gotip download
           command: | # Nov 12 (https://go-review.googlesource.com/c/go/+/359478)
-            yes | gotip download 359478
+            yes | gotip download 359478 || true
 
   setup-lint:
     description: Set up lint
