@@ -130,7 +130,7 @@ func (p MapCheckerProvider[K, V]) CheckValues(c Checker[V], keys ...K) Checker[m
 	expl := func(label string, _ any) string {
 		checkedKeys := cond.String("all keys", fmt.Sprintf("keys %v", keys), allKeys)
 		return p.explainCheck(label,
-			fmt.Sprintf("values for %s to pass Checker[map[K]V]", checkedKeys),
+			fmt.Sprintf("values for %s to pass Checker[V]", checkedKeys),
 			c.Explain("values", p.formatList(badentries)),
 		)
 	}
