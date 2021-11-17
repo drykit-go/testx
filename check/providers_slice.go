@@ -8,12 +8,12 @@ import (
 )
 
 // SliceCheckerProvider provides checks on kind slice.
-type SliceCheckerProvider struct{ ValueCheckerProvider }
+type SliceCheckerProvider[Elem any] struct{ ValueCheckerProvider }
 
 // Len checks the length of the gotten slice passes the given Checker[int].
-func (p SliceCheckerProvider) Len(c Checker[int]) Checker[any] {
+func (p SliceCheckerProvider[Elem]) Len(c Checker[int]) Checker[[]Elem] {
 	var gotlen int
-	pass := func(got any) bool {
+	pass := func(got []Elem) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
 		gotlen = reflect.ValueOf(got).Len()
 		return c.Pass(gotlen)
@@ -28,9 +28,9 @@ func (p SliceCheckerProvider) Len(c Checker[int]) Checker[any] {
 }
 
 // Cap checks the capacity of the gotten slice passes the given Checker[int].
-func (p SliceCheckerProvider) Cap(c Checker[int]) Checker[any] {
+func (p SliceCheckerProvider[Elem]) Cap(c Checker[int]) Checker[[]Elem] {
 	var gotcap int
-	pass := func(got any) bool {
+	pass := func(got []Elem) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
 		gotcap = reflect.ValueOf(got).Cap()
 		return c.Pass(gotcap)
@@ -45,9 +45,9 @@ func (p SliceCheckerProvider) Cap(c Checker[int]) Checker[any] {
 }
 
 // HasValues checks the gotten slice has the given values set.
-func (p SliceCheckerProvider) HasValues(values ...any) Checker[any] {
+func (p SliceCheckerProvider[Elem]) HasValues(values ...Elem) Checker[[]Elem] {
 	var missing []string
-	pass := func(got any) bool {
+	pass := func(got []Elem) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
 		for _, expv := range values {
 			if !p.hasValue(got, expv) {
@@ -66,9 +66,9 @@ func (p SliceCheckerProvider) HasValues(values ...any) Checker[any] {
 }
 
 // HasNotValues checks the gotten slice has not the given values set.
-func (p SliceCheckerProvider) HasNotValues(values ...any) Checker[any] {
+func (p SliceCheckerProvider[Elem]) HasNotValues(values ...Elem) Checker[[]Elem] {
 	var badvalues []string
-	pass := func(got any) bool {
+	pass := func(got []Elem) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
 		for _, badv := range values {
 			if p.hasValue(got, badv) {
@@ -87,16 +87,16 @@ func (p SliceCheckerProvider) HasNotValues(values ...any) Checker[any] {
 }
 
 // CheckValues checks the values of the gotten slice passes
-// the given Checker[any].
+// the given Checker[Elem].
 // If a filterFunc is provided, the values not passing it are ignored.
-func (p SliceCheckerProvider) CheckValues(
-	c Checker[any],
-	filters ...func(i int, v any) bool,
-) Checker[any] {
+func (p SliceCheckerProvider[Elem]) CheckValues(
+	c Checker[Elem],
+	filters ...func(i int, v Elem) bool,
+) Checker[[]Elem] {
 	var badvalues []string
-	pass := func(got any) bool {
+	pass := func(got []Elem) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
-		p.walk(got, filters, func(i int, v any) {
+		p.walk(got, filters, func(i int, v Elem) {
 			if !c.Pass(v) {
 				badvalues = append(badvalues, fmt.Sprintf("%d:%v", i, v))
 			}
@@ -105,7 +105,7 @@ func (p SliceCheckerProvider) CheckValues(
 	}
 	expl := func(label string, _ any) string {
 		return p.explainCheck(label,
-			"values to pass Checker[any]",
+			"values to pass Checker[Elem]",
 			c.Explain("values", p.formatList(badvalues)),
 		)
 	}
@@ -115,20 +115,20 @@ func (p SliceCheckerProvider) CheckValues(
 // Helpers
 
 // hasValue returns true if slice has a value equal to expv.
-func (p SliceCheckerProvider) hasValue(slice, expv any) bool {
-	return p.walkUntil(slice, nil, func(_ int, v any) bool {
+func (p SliceCheckerProvider[Elem]) hasValue(slice []Elem, expv Elem) bool {
+	return p.walkUntil(slice, nil, func(_ int, v Elem) bool {
 		return p.deq(v, expv)
 	})
 }
 
 // walk iterates over a slice until the end is reached.
 // It calls f(i, v) each iteration if (i, v) pass the given filters.
-func (p SliceCheckerProvider) walk(
-	slice any,
-	filters []func(int, any) bool,
-	f func(i int, v any),
+func (p SliceCheckerProvider[Elem]) walk(
+	slice []Elem,
+	filters []func(int, Elem) bool,
+	f func(i int, v Elem),
 ) {
-	p.walkUntil(slice, filters, func(i int, v any) bool {
+	p.walkUntil(slice, filters, func(i int, v Elem) bool {
 		f(i, v)
 		return false
 	})
@@ -137,15 +137,15 @@ func (p SliceCheckerProvider) walk(
 // walksUntil behaves like walk excepts it returns early if the stop func
 // returns true for the current iteration. In returns true if it was stopped
 // early, false otherwise.
-func (p SliceCheckerProvider) walkUntil(
-	slice any,
-	filters []func(int, any) bool,
-	stop func(int, any) bool,
+func (p SliceCheckerProvider[Elem]) walkUntil(
+	slice []Elem,
+	filters []func(int, Elem) bool,
+	stop func(int, Elem) bool,
 ) bool {
 	vslice := reflect.ValueOf(slice)
 	l := vslice.Len()
 	for i := 0; i < l; i++ {
-		v := vslice.Index(i).Interface()
+		v := vslice.Index(i).Interface().(Elem)
 		filter := p.mergeFilters(filters...)
 		passed := filter(i, v)
 		if passed && stop(i, v) {
@@ -156,13 +156,13 @@ func (p SliceCheckerProvider) walkUntil(
 }
 
 // mergeFilters combinates several filtering funcs into one.
-func (p SliceCheckerProvider) mergeFilters(
-	filters ...func(int, any) bool,
-) func(int, any) bool {
+func (p SliceCheckerProvider[Elem]) mergeFilters(
+	filters ...func(int, Elem) bool,
+) func(int, Elem) bool {
 	if len(filters) == 0 {
-		return func(int, any) bool { return true }
+		return func(int, Elem) bool { return true }
 	}
-	return func(i int, v any) bool {
+	return func(i int, v Elem) bool {
 		curr := filters[0]
 		next := p.mergeFilters(filters[1:]...)
 		return curr(i, v) && next(i, v)
