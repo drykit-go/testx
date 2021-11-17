@@ -8,7 +8,7 @@ import (
 )
 
 // SliceCheckerProvider provides checks on kind slice.
-type SliceCheckerProvider[Elem any] struct{ ValueCheckerProvider }
+type SliceCheckerProvider[Elem any] struct{ ValueCheckerProvider[[]Elem] }
 
 // Len checks the length of the gotten slice passes the given Checker[int].
 func (p SliceCheckerProvider[Elem]) Len(c Checker[int]) Checker[[]Elem] {

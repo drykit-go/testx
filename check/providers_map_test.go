@@ -88,7 +88,7 @@ func TestMapCheckerProvider(t *testing.T) {
 		assertPassChecker(t, "Map.CheckValues", c, m)
 
 		// all keys
-		c = check.Map[string, any]().CheckValues(check.Value.Not(0))
+		c = check.Map[string, any]().CheckValues(check.Value[any]().Not(0))
 		assertPassChecker(t, "Map.CheckValues", c, m)
 	})
 
@@ -107,7 +107,7 @@ func TestMapCheckerProvider(t *testing.T) {
 		))
 
 		// all keys
-		c = check.Map[string, any]().CheckValues(check.Value.Is("Marcel Patulacci"))
+		c = check.Map[string, any]().CheckValues(check.Value[any]().Is("Marcel Patulacci"))
 		assertFailChecker(t, "Map.CheckValues", c, m, makeExpl(
 			"values for all keys to pass Checker[V]",
 			"explanation: values:\n"+makeExpl(
