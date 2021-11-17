@@ -164,4 +164,5 @@ issues:
     - "expected expression"
     - "undeclared name: `any`"
     - "missing ',' in parameter list"
+    - "missing element type in array type expression"
     - "mixed named and unnamed parameters"
