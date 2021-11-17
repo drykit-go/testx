@@ -10,3 +10,8 @@ var (
 	{{- end}}
 	{{- end}}
 )
+
+// Map provides checks on type map[Key]Val.
+func Map[Key comparable, Val any]() MapCheckerProvider[Key, Val] {
+	return MapCheckerProvider[Key, Val]{}
+}

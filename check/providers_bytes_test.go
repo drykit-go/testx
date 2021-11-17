@@ -127,13 +127,13 @@ func TestBytesCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("AsMap pass", func(t *testing.T) {
-		c := check.Bytes.AsMap(check.Map.HasKeys("id"))
+		c := check.Bytes.AsMap(check.Map[string, any]().HasKeys("id"))
 		assertPassChecker(t, "Bytes.AsMap", c, b)
 		assertPassChecker(t, "Bytes.AsMap", c, eqJSON)
 	})
 
 	t.Run("AsMap fail", func(t *testing.T) {
-		c := check.Bytes.AsMap(check.Map.HasKeys("id", "nomatch"))
+		c := check.Bytes.AsMap(check.Map[string, any]().HasKeys("id", "nomatch"))
 		assertFailChecker(t, "Bytes.AsMap", c, b, makeExpl(
 			"to pass MapChecker",
 			"explanation: json map:\n"+makeExpl(
@@ -142,7 +142,7 @@ func TestBytesCheckerProvider(t *testing.T) {
 			),
 		))
 
-		c = check.Bytes.AsMap(check.Map.HasKeys("id"))
+		c = check.Bytes.AsMap(check.Map[string, any]().HasKeys("id"))
 		assertFailChecker(t, "Bytes.AsMap", c, sub, makeExpl(
 			"to pass MapChecker",
 			"error: json: cannot unmarshal string into Go value of type map[string]interface {}",

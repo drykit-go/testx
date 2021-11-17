@@ -92,7 +92,7 @@ func (p BytesCheckerProvider) NotContains(subslice []byte) Checker[[]byte] {
 // AsMap checks the gotten []byte passes the given mapChecker
 // once json-unmarshaled to a map[string]any.
 // It fails if it is not a valid JSON.
-func (p BytesCheckerProvider) AsMap(mapChecker Checker[any]) Checker[[]byte] {
+func (p BytesCheckerProvider) AsMap(mapChecker Checker[map[string]any]) Checker[[]byte] {
 	var m map[string]any
 	var goterr error
 	pass := func(got []byte) bool {
