@@ -1,4 +1,4 @@
-package check_test
+package providers_test
 
 import (
 	"bytes"
@@ -9,9 +9,12 @@ import (
 	"testing"
 
 	"github.com/drykit-go/testx/check"
+	"github.com/drykit-go/testx/internal/providers"
 )
 
 func TestHTTPRequestCheckerProvider(t *testing.T) {
+	checkHTTPRequest := providers.HTTPRequestCheckerProvider{}
+
 	newCtx := func(key, val any) context.Context {
 		return context.WithValue(context.Background(), key, val)
 	}
@@ -31,12 +34,12 @@ func TestHTTPRequestCheckerProvider(t *testing.T) {
 	)
 
 	t.Run("ContentLength pass", func(t *testing.T) {
-		c := check.HTTPRequest.ContentLength(check.Int.Is(expContentLength))
+		c := checkHTTPRequest.ContentLength(check.Int.Is(expContentLength))
 		assertPassChecker(t, "HTTPRequest.ContentLength", c, newReq())
 	})
 
 	t.Run("ContentLength fail", func(t *testing.T) {
-		c := check.HTTPRequest.ContentLength(check.Int.Not(expContentLength))
+		c := checkHTTPRequest.ContentLength(check.Int.Not(expContentLength))
 		assertFailChecker(t, "HTTPRequest.ContentLength", c, newReq(), makeExpl(
 			"content length to pass Checker[int]",
 			fmt.Sprintf(
@@ -47,12 +50,12 @@ func TestHTTPRequestCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("Header pass", func(t *testing.T) {
-		c := check.HTTPRequest.Header(check.HTTPHeader.HasKey("Content-Type"))
+		c := checkHTTPRequest.Header(check.HTTPHeader.HasKey("Content-Type"))
 		assertPassChecker(t, "HTTPRequest.Header", c, newReq())
 	})
 
 	t.Run("Header fail", func(t *testing.T) {
-		c := check.HTTPRequest.Header(check.HTTPHeader.HasNotKey("Content-Type"))
+		c := checkHTTPRequest.Header(check.HTTPHeader.HasNotKey("Content-Type"))
 		r := newReq()
 		assertFailChecker(t, "HTTPRequest.Header", c, r, makeExpl(
 			"header to pass Checker[http.Header]",
@@ -64,12 +67,12 @@ func TestHTTPRequestCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("Body pass", func(t *testing.T) {
-		c := check.HTTPRequest.Body(check.Bytes.Is(expBody))
+		c := checkHTTPRequest.Body(check.Bytes.Is(expBody))
 		assertPassChecker(t, "HTTPRequest.Body", c, newReq())
 	})
 
 	t.Run("Body fail", func(t *testing.T) {
-		c := check.HTTPRequest.Body(check.Bytes.Not(expBody))
+		c := checkHTTPRequest.Body(check.Bytes.Not(expBody))
 		assertFailChecker(t, "HTTPRequest.Body", c, newReq(), makeExpl(
 			"body to pass Checker[[]byte]",
 			"explanation: bytes:\n"+makeExpl(
@@ -80,12 +83,12 @@ func TestHTTPRequestCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("Context pass", func(t *testing.T) {
-		c := check.HTTPRequest.Context(check.Context.Value(expCtxKey, check.Value[any]().Is(expCtxVal)))
+		c := checkHTTPRequest.Context(check.Context.Value(expCtxKey, check.Value[any]().Is(expCtxVal)))
 		assertPassChecker(t, "HTTPRequest.Context", c, newReq())
 	})
 
 	t.Run("Context fail", func(t *testing.T) {
-		c := check.HTTPRequest.Context(check.Context.Value(expCtxKey, check.Value[any]().Not(expCtxVal)))
+		c := checkHTTPRequest.Context(check.Context.Value(expCtxKey, check.Value[any]().Not(expCtxVal)))
 		assertFailChecker(t, "HTTPRequest.Context", c, newReq(), makeExpl(
 			"context to pass Checker[context.Context]",
 			"explanation: context:\n"+makeExpl(

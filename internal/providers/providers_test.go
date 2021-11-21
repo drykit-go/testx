@@ -1,10 +1,10 @@
-package check_test
+package providers_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/drykit-go/testx/check"
+	check "github.com/drykit-go/testx/internal/checktypes"
 )
 
 func assertPassChecker[T any](

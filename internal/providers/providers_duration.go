@@ -1,15 +1,17 @@
-package check
+package providers
 
 import (
 	"fmt"
 	"time"
+
+	check "github.com/drykit-go/testx/internal/checktypes"
 )
 
 // DurationCheckerProvider provides checks on type time.Duration.
 type DurationCheckerProvider struct{ baseCheckerProvider }
 
 // Over checks the gotten time.Duration is over the target duration.
-func (p DurationCheckerProvider) Over(tar time.Duration) Checker[time.Duration] {
+func (p DurationCheckerProvider) Over(tar time.Duration) check.Checker[time.Duration] {
 	pass := func(got time.Duration) bool { return p.ns(got) > p.ns(tar) }
 	expl := func(label string, got any) string {
 		return p.explain(label,
@@ -17,11 +19,11 @@ func (p DurationCheckerProvider) Over(tar time.Duration) Checker[time.Duration] 
 			fmt.Sprintf("%vms", p.ms(got.(time.Duration))),
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // Under checks the gotten time.Duration is under the target duration.
-func (p DurationCheckerProvider) Under(tar time.Duration) Checker[time.Duration] {
+func (p DurationCheckerProvider) Under(tar time.Duration) check.Checker[time.Duration] {
 	pass := func(got time.Duration) bool { return p.ns(got) < p.ns(tar) }
 	expl := func(label string, got any) string {
 		return p.explain(label,
@@ -29,11 +31,11 @@ func (p DurationCheckerProvider) Under(tar time.Duration) Checker[time.Duration]
 			fmt.Sprintf("%vms", p.ms(got.(time.Duration))),
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // InRange checks the gotten time.Duration is in range [lo:hi]
-func (p DurationCheckerProvider) InRange(lo, hi time.Duration) Checker[time.Duration] {
+func (p DurationCheckerProvider) InRange(lo, hi time.Duration) check.Checker[time.Duration] {
 	pass := func(got time.Duration) bool { return p.inrange(got, lo, hi) }
 	expl := func(label string, got any) string {
 		return p.explain(label,
@@ -41,11 +43,11 @@ func (p DurationCheckerProvider) InRange(lo, hi time.Duration) Checker[time.Dura
 			fmt.Sprintf("%vms", p.ms(got.(time.Duration))),
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // OutRange checks the gotten time.Duration is not in range [lo:hi]
-func (p DurationCheckerProvider) OutRange(lo, hi time.Duration) Checker[time.Duration] {
+func (p DurationCheckerProvider) OutRange(lo, hi time.Duration) check.Checker[time.Duration] {
 	pass := func(got time.Duration) bool { return !p.inrange(got, lo, hi) }
 	expl := func(label string, got any) string {
 		return p.explain(label,
@@ -53,7 +55,7 @@ func (p DurationCheckerProvider) OutRange(lo, hi time.Duration) Checker[time.Dur
 			fmt.Sprintf("%vms", p.ms(got.(time.Duration))),
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // Helpers

@@ -15,14 +15,14 @@ import (
 )
 
 // ProvidersMetaData is a representation of the parsed doc for providers files
-// in package check.
+// in package internal/providers.
 // It is meant to be used as a data source for template providers.gotmpl.
 type ProvidersMetaData struct {
 	Vars []metatype.Var
 }
 
 func computeProvidersMetaData() (ProvidersMetaData, error) {
-	docp, err := newDocPackage("check", isProviderFile) // TODO: package-agnostic
+	docp, err := newDocPackage("providers", isProviderFile) // TODO: package-agnostic
 	if err != nil {
 		return ProvidersMetaData{}, err
 	}
@@ -51,7 +51,7 @@ func computeMetaVar(t *doc.Type) metatype.Var {
 // the given filter, or the first non-nil error occurring in the process.
 func newDocPackage(packageName string, filter func(fs.FileInfo) bool) (*doc.Package, error) {
 	fset := token.NewFileSet()
-	pkgs, err := parser.ParseDir(fset, "./", filter, parser.ParseComments)
+	pkgs, err := parser.ParseDir(fset, ".", filter, parser.ParseComments)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +122,10 @@ func isBlacklisted(file fs.FileInfo) bool {
 
 // String helpers
 
-const providerSuffix = "CheckerProvider"
+const (
+	providerSuffix = "CheckerProvider"
+	packagePrefix  = "providers."
+)
 
 func addProviderSuffix(name string) string {
 	return name + providerSuffix
@@ -137,5 +140,5 @@ func structInstanceString(name string, typeparams ...string) string {
 	if len(typeparams) != 0 {
 		tpstr = "[" + strings.Join(typeparams, ", ") + "]"
 	}
-	return name + tpstr + "{}"
+	return packagePrefix + name + tpstr + "{}"
 }

@@ -1,10 +1,11 @@
-package check
+package providers
 
 import (
 	"fmt"
 	"reflect"
 	"strings"
 
+	check "github.com/drykit-go/testx/internal/checktypes"
 	"github.com/drykit-go/testx/internal/reflectutil"
 )
 
@@ -14,7 +15,7 @@ type StructCheckerProvider struct{ ValueCheckerProvider[any] }
 // FieldsEqual checks all given fields equal the exp value.
 // It panics if the fields do not exist or are not exported,
 // or if the tested value is not a struct.
-func (p StructCheckerProvider) FieldsEqual(exp any, fields []string) Checker[any] {
+func (p StructCheckerProvider) FieldsEqual(exp any, fields []string) check.Checker[any] {
 	var bads []string
 	pass := func(got any) bool {
 		reflectutil.MustBeOfKind(got, reflect.Struct)
@@ -29,13 +30,13 @@ func (p StructCheckerProvider) FieldsEqual(exp any, fields []string) Checker[any
 			strings.Join(bads, ", "),
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // CheckFields checks all given fields pass the Checker[any].
 // It panics if the fields do not exist or are not exported,
 // or if the tested value is not a struct.
-func (p StructCheckerProvider) CheckFields(c Checker[any], fields []string) Checker[any] {
+func (p StructCheckerProvider) CheckFields(c check.Checker[any], fields []string) check.Checker[any] {
 	var bads []string
 	pass := func(got any) bool {
 		reflectutil.MustBeOfKind(got, reflect.Struct)
@@ -50,7 +51,7 @@ func (p StructCheckerProvider) CheckFields(c Checker[any], fields []string) Chec
 			c.Explain("fields", strings.Join(bads, ", ")),
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 func (p StructCheckerProvider) badFields(

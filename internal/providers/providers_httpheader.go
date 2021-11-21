@@ -1,8 +1,10 @@
-package check
+package providers
 
 import (
 	"fmt"
 	"net/http"
+
+	check "github.com/drykit-go/testx/internal/checktypes"
 )
 
 // HTTPHeaderCheckerProvider provides checks on type http.Header.
@@ -11,48 +13,48 @@ type HTTPHeaderCheckerProvider struct{ baseCheckerProvider }
 // HasKey checks the gotten http.Header has a specific key set.
 // The corresponding value is ignored, meaning an empty value
 // for that key passes the check.
-func (p HTTPHeaderCheckerProvider) HasKey(key string) Checker[http.Header] {
+func (p HTTPHeaderCheckerProvider) HasKey(key string) check.Checker[http.Header] {
 	pass := func(got http.Header) bool { return p.hasKey(got, key) }
 	expl := func(label string, got any) string {
 		return p.explain(label, `to have key "`+key+`"`, got)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // HasNotKey checks the gotten http.Header does not have
 // a specific key set.
-func (p HTTPHeaderCheckerProvider) HasNotKey(key string) Checker[http.Header] {
+func (p HTTPHeaderCheckerProvider) HasNotKey(key string) check.Checker[http.Header] {
 	pass := func(got http.Header) bool { return !p.hasKey(got, key) }
 	expl := func(label string, got any) string {
 		return p.explainNot(label, `to have key "`+key+`"`, got)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // HasValue checks the gotten http.Header has any value equal to val.
 // It only compares the first result for each key.
-func (p HTTPHeaderCheckerProvider) HasValue(val string) Checker[http.Header] {
+func (p HTTPHeaderCheckerProvider) HasValue(val string) check.Checker[http.Header] {
 	pass := func(got http.Header) bool { return p.hasValue(got, val) }
 	expl := func(label string, got any) string {
 		return p.explain(label, "to have value "+val, got)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // HasNotValue checks the gotten http.Header does not have a value equal to val.
 // It only compares the first result for each key.
-func (p HTTPHeaderCheckerProvider) HasNotValue(val string) Checker[http.Header] {
+func (p HTTPHeaderCheckerProvider) HasNotValue(val string) check.Checker[http.Header] {
 	pass := func(got http.Header) bool { return !p.hasValue(got, val) }
 	expl := func(label string, got any) string {
 		return p.explainNot(label, "to have value "+val, got)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // CheckValue checks the gotten http.Header has a value for the matching key
 // that passes the given Checker[string].
 // It only checks the first result for the given key.
-func (p HTTPHeaderCheckerProvider) CheckValue(key string, c Checker[string]) Checker[http.Header] {
+func (p HTTPHeaderCheckerProvider) CheckValue(key string, c check.Checker[string]) check.Checker[http.Header] {
 	var val string
 	pass := func(got http.Header) bool {
 		v, ok := p.get(got, key)
@@ -68,7 +70,7 @@ func (p HTTPHeaderCheckerProvider) CheckValue(key string, c Checker[string]) Che
 			c.Explain(`http.Header["`+key+`"]`, val),
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // Helpers

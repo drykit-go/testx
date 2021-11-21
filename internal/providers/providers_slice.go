@@ -1,9 +1,10 @@
-package check
+package providers
 
 import (
 	"fmt"
 	"reflect"
 
+	check "github.com/drykit-go/testx/internal/checktypes"
 	"github.com/drykit-go/testx/internal/reflectutil"
 )
 
@@ -11,7 +12,7 @@ import (
 type SliceCheckerProvider[Elem any] struct{ ValueCheckerProvider[[]Elem] }
 
 // Len checks the length of the gotten slice passes the given Checker[int].
-func (p SliceCheckerProvider[Elem]) Len(c Checker[int]) Checker[[]Elem] {
+func (p SliceCheckerProvider[Elem]) Len(c check.Checker[int]) check.Checker[[]Elem] {
 	var gotlen int
 	pass := func(got []Elem) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
@@ -24,11 +25,11 @@ func (p SliceCheckerProvider[Elem]) Len(c Checker[int]) Checker[[]Elem] {
 			c.Explain("length", gotlen),
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // Cap checks the capacity of the gotten slice passes the given Checker[int].
-func (p SliceCheckerProvider[Elem]) Cap(c Checker[int]) Checker[[]Elem] {
+func (p SliceCheckerProvider[Elem]) Cap(c check.Checker[int]) check.Checker[[]Elem] {
 	var gotcap int
 	pass := func(got []Elem) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
@@ -41,11 +42,11 @@ func (p SliceCheckerProvider[Elem]) Cap(c Checker[int]) Checker[[]Elem] {
 			c.Explain("capacity", gotcap),
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // HasValues checks the gotten slice has the given values set.
-func (p SliceCheckerProvider[Elem]) HasValues(values ...Elem) Checker[[]Elem] {
+func (p SliceCheckerProvider[Elem]) HasValues(values ...Elem) check.Checker[[]Elem] {
 	var missing []string
 	pass := func(got []Elem) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
@@ -62,11 +63,11 @@ func (p SliceCheckerProvider[Elem]) HasValues(values ...Elem) Checker[[]Elem] {
 			got,
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // HasNotValues checks the gotten slice has not the given values set.
-func (p SliceCheckerProvider[Elem]) HasNotValues(values ...Elem) Checker[[]Elem] {
+func (p SliceCheckerProvider[Elem]) HasNotValues(values ...Elem) check.Checker[[]Elem] {
 	var badvalues []string
 	pass := func(got []Elem) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
@@ -83,16 +84,16 @@ func (p SliceCheckerProvider[Elem]) HasNotValues(values ...Elem) Checker[[]Elem]
 			got,
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // CheckValues checks the values of the gotten slice passes
 // the given Checker[Elem].
 // If a filterFunc is provided, the values not passing it are ignored.
 func (p SliceCheckerProvider[Elem]) CheckValues(
-	c Checker[Elem],
+	c check.Checker[Elem],
 	filters ...func(i int, v Elem) bool,
-) Checker[[]Elem] {
+) check.Checker[[]Elem] {
 	var badvalues []string
 	pass := func(got []Elem) bool {
 		reflectutil.MustBeOfKind(got, reflect.Slice)
@@ -109,7 +110,7 @@ func (p SliceCheckerProvider[Elem]) CheckValues(
 			c.Explain("values", p.formatList(badvalues)),
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // Helpers

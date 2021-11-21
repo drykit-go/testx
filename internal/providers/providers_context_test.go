@@ -1,13 +1,16 @@
-package check_test
+package providers_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/drykit-go/testx/check"
+	"github.com/drykit-go/testx/internal/providers"
 )
 
 func TestContextCheckerProvider(t *testing.T) {
+	checkContext := providers.ContextCheckerProvider{}
+
 	ctxNotDone := func() (context.Context, context.CancelFunc) {
 		return context.WithCancel(context.Background())
 	}
@@ -21,18 +24,18 @@ func TestContextCheckerProvider(t *testing.T) {
 	}
 
 	t.Run("Done pass", func(t *testing.T) {
-		checkDone := check.Context.Done(true)
+		checkDone := checkContext.Done(true)
 		ctxDone := ctxDone()
 		assertPassChecker(t, "Context.Done", checkDone, ctxDone)
 
-		checkNotDone := check.Context.Done(false)
+		checkNotDone := checkContext.Done(false)
 		ctxNotDone, cancel := ctxNotDone()
 		assertPassChecker(t, "Context.Done", checkNotDone, ctxNotDone)
 		cancel()
 	})
 
 	t.Run("Done fail", func(t *testing.T) {
-		checkDone := check.Context.Done(true)
+		checkDone := checkContext.Done(true)
 		ctxNotDone, cancel := ctxNotDone()
 		assertFailChecker(t, "Context.Done", checkDone, ctxNotDone, makeExpl(
 			"context to be done",
@@ -40,7 +43,7 @@ func TestContextCheckerProvider(t *testing.T) {
 		))
 		cancel()
 
-		checkNotDone := check.Context.Done(false)
+		checkNotDone := checkContext.Done(false)
 		ctxDone := ctxDone()
 		assertFailChecker(t, "Context.Done", checkNotDone, ctxDone, makeExpl(
 			"context not to be done",
@@ -49,13 +52,13 @@ func TestContextCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("HasKeys pass", func(t *testing.T) {
-		c := check.Context.HasKeys("user")
+		c := checkContext.HasKeys("user")
 		ctx := ctxVal("user", struct{}{})
 		assertPassChecker(t, "Context.HasKeys", c, ctx)
 	})
 
 	t.Run("HasKeys fail", func(t *testing.T) {
-		c := check.Context.HasKeys("secret", "user", "token")
+		c := checkContext.HasKeys("secret", "user", "token")
 		ctx := ctxVal("user", struct{}{})
 		assertFailChecker(t, "Context.HasKeys", c, ctx, makeExpl(
 			"to have keys [secret, token]",
@@ -64,13 +67,13 @@ func TestContextCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("Value pass", func(t *testing.T) {
-		c := check.Context.Value("userID", check.Wrap(check.Int.GT(0)))
+		c := checkContext.Value("userID", check.Wrap[int](check.Int.GT(0)))
 		ctx := ctxVal("userID", 42)
 		assertPassChecker(t, "Context.Value", c, ctx)
 	})
 
 	t.Run("Value fail", func(t *testing.T) {
-		c := check.Context.Value("userID", check.Value[any]().Is(0))
+		c := checkContext.Value("userID", check.Value[any]().Is(0))
 
 		ctxMissingKey := context.Background()
 		assertFailChecker(t, "Context.Value", c, ctxMissingKey, makeExpl(

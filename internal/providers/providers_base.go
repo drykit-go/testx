@@ -1,4 +1,4 @@
-package check
+package providers
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 
+	check "github.com/drykit-go/testx/internal/checktypes"
 	"github.com/drykit-go/testx/internal/fmtexpl"
 )
 
@@ -75,9 +76,9 @@ func (p baseCheckerProvider) explainCheck(label, expStr, gotExpl string) string 
 type baseHTTPCheckerProvider struct{ baseCheckerProvider }
 
 func (p baseHTTPCheckerProvider) explainContentLengthFunc(
-	c Checker[int],
+	c check.Checker[int],
 	got func() int,
-) ExplainFunc {
+) check.ExplainFunc {
 	return func(label string, _ any) string {
 		return p.explainCheck(label,
 			"content length to pass Checker[int]",
@@ -87,9 +88,9 @@ func (p baseHTTPCheckerProvider) explainContentLengthFunc(
 }
 
 func (p baseHTTPCheckerProvider) explainHeaderFunc(
-	c Checker[http.Header],
+	c check.Checker[http.Header],
 	got func() http.Header,
-) ExplainFunc {
+) check.ExplainFunc {
 	return func(label string, _ any) string {
 		return p.explainCheck(label,
 			"header to pass Checker[http.Header]",
@@ -99,9 +100,9 @@ func (p baseHTTPCheckerProvider) explainHeaderFunc(
 }
 
 func (p baseHTTPCheckerProvider) explainBodyFunc(
-	c Checker[[]byte],
+	c check.Checker[[]byte],
 	got func() []byte,
-) ExplainFunc {
+) check.ExplainFunc {
 	return func(label string, _ any) string {
 		return p.explainCheck(label,
 			"body to pass Checker[[]byte]",

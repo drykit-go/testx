@@ -1,27 +1,28 @@
-package check_test
+package providers_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/drykit-go/testx/check"
+	"github.com/drykit-go/testx/internal/providers"
 )
 
 func TestBoolCheckerProvider(t *testing.T) {
+	checkBool := providers.BoolCheckerProvider{}
 	const b = true
 
 	t.Run("Is pass", func(t *testing.T) {
-		c := check.Bool.Is(b)
+		c := checkBool.Is(b)
 		fmt.Print(c)
 		assertPassChecker(t, "Bool.Is", c, b)
-		c = check.Bool.Is(!b)
+		c = checkBool.Is(!b)
 		assertPassChecker(t, "Bool.Is", c, !b)
 	})
 
 	t.Run("Is fail", func(t *testing.T) {
-		c := check.Bool.Is(!b)
+		c := checkBool.Is(!b)
 		assertFailChecker(t, "Bool.Is", c, b, makeExpl("false", "true"))
-		c = check.Bool.Is(b)
+		c = checkBool.Is(b)
 		assertFailChecker(t, "Bool.Is", c, !b, makeExpl("true", "false"))
 	})
 }

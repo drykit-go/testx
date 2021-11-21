@@ -1,34 +1,39 @@
-package check
+package checktypes
 
-import (
-	"github.com/drykit-go/testx/internal/checktypes"
-)
+import "constraints"
 
-type Numeric interface{ checktypes.Numeric }
+type Numeric interface {
+	constraints.Integer | constraints.Float
+}
 
 type (
 	// PassFunc is the required method to implement Passer.
 	// It returns a boolean that indicates whether the got value
 	// passes the current check.
-	PassFunc[T any] checktypes.PassFunc[T]
+	PassFunc[T any] func(got T) bool
 
 	// ExplainFunc is the required method to implement Explainer.
 	// It returns a string explaining why the gotten value failed the check.
 	// The label provides some context, such as "response code".
-	ExplainFunc = checktypes.ExplainFunc
+	ExplainFunc func(label string, got any) string
 )
 
 type (
 	// Passer provides a method Pass that returns a bool that indicates
 	// whether the got value passes the current check.
-	Passer[T any] interface{ checktypes.Passer[T] }
+	Passer[T any] interface{ Pass(got T) bool }
 
 	// Explainer provides a method Explain describing the reason of a failed check.
-	Explainer interface{ checktypes.Explainer }
-
-	// Checker satisfies both Passer and Explainer interfaces.
-	Checker[T any] interface{ checktypes.Checker[T] }
+	Explainer interface {
+		Explain(label string, got any) string
+	}
 )
+
+// Checker satisfies both Passer and Explainer interfaces.
+type Checker[T any] interface {
+	Passer[T]
+	Explainer
+}
 
 type checker[T any] struct {
 	pass PassFunc[T]

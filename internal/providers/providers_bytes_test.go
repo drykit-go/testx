@@ -1,4 +1,4 @@
-package check_test
+package providers_test
 
 import (
 	"encoding/json"
@@ -6,9 +6,12 @@ import (
 	"testing"
 
 	"github.com/drykit-go/testx/check"
+	"github.com/drykit-go/testx/internal/providers"
 )
 
 func TestBytesCheckerProvider(t *testing.T) {
+	checkBytes := providers.BytesCheckerProvider{}
+
 	var (
 		b      = []byte(`{"id":42,"name":"Marcel Patulacci"}`)
 		sub    = []byte(`"id":42`)
@@ -22,12 +25,12 @@ func TestBytesCheckerProvider(t *testing.T) {
 	}
 
 	t.Run("Is pass", func(t *testing.T) {
-		c := check.Bytes.Is(b)
+		c := checkBytes.Is(b)
 		assertPassChecker(t, "Bytes.Is", c, b)
 	})
 
 	t.Run("Is fail", func(t *testing.T) {
-		c := check.Bytes.Is(diff)
+		c := checkBytes.Is(diff)
 		assertFailChecker(t, "Bytes.Is", c, b, makeExpl(
 			fmt.Sprint(diff),
 			fmt.Sprint(b),
@@ -35,12 +38,12 @@ func TestBytesCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("Not pass", func(t *testing.T) {
-		c := check.Bytes.Not(diff, eqJSON)
+		c := checkBytes.Not(diff, eqJSON)
 		assertPassChecker(t, "Bytes.Not", c, b)
 	})
 
 	t.Run("Not fail", func(t *testing.T) {
-		c := check.Bytes.Not(diff, eqJSON, b)
+		c := checkBytes.Not(diff, eqJSON, b)
 		assertFailChecker(t, "Bytes.Not", c, b, makeExpl(
 			fmt.Sprintf("not %v", b),
 			fmt.Sprint(b),
@@ -48,14 +51,14 @@ func TestBytesCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("Len pass", func(t *testing.T) {
-		c := check.Bytes.Len(check.Int.Is(len(b)))
+		c := checkBytes.Len(check.Int.Is(len(b)))
 		assertPassChecker(t, "Bytes.Len", c, b)
 	})
 
 	t.Run("Len fail", func(t *testing.T) {
 		gotlen := len(b)
 		explen := gotlen + 1
-		c := check.Bytes.Len(check.Int.Is(explen))
+		c := checkBytes.Len(check.Int.Is(explen))
 		assertFailChecker(t, "Bytes.Len", c, b, makeExpl(
 			"length to pass Checker[int]",
 			"explanation: length:\n"+makeExpl(
@@ -66,14 +69,14 @@ func TestBytesCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("SameJSON pass", func(t *testing.T) {
-		c := check.Bytes.SameJSON(eqJSON)
+		c := checkBytes.SameJSON(eqJSON)
 		assertPassChecker(t, "Bytes.SameJSON", c, b)
-		c = check.Bytes.SameJSON(b)
+		c = checkBytes.SameJSON(b)
 		assertPassChecker(t, "Bytes.SameJSON", c, b)
 	})
 
 	t.Run("SameJSON fail", func(t *testing.T) {
-		c := check.Bytes.SameJSON(diff)
+		c := checkBytes.SameJSON(diff)
 		assertFailChecker(t, "Bytes.SameJSON", c, b, makeExpl(
 			fmt.Sprintf("json data: %v", mapof(diff)),
 			fmt.Sprintf("json data: %v", mapof(b)),
@@ -81,14 +84,14 @@ func TestBytesCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("Contains pass", func(t *testing.T) {
-		c := check.Bytes.Contains(sub)
+		c := checkBytes.Contains(sub)
 		assertPassChecker(t, "Bytes.Contains", c, b)
-		c = check.Bytes.Contains(b)
+		c = checkBytes.Contains(b)
 		assertPassChecker(t, "Bytes.Contains", c, b)
 	})
 
 	t.Run("Contains fail", func(t *testing.T) {
-		c := check.Bytes.Contains(diff)
+		c := checkBytes.Contains(diff)
 		assertFailChecker(t, "Bytes.Contains", c, b,
 			makeExpl(
 				fmt.Sprintf("to contain subslice %v", diff),
@@ -96,7 +99,7 @@ func TestBytesCheckerProvider(t *testing.T) {
 			),
 		)
 
-		c = check.Bytes.Contains(eqJSON)
+		c = checkBytes.Contains(eqJSON)
 		assertFailChecker(t, "Bytes.Contains", c, b,
 			makeExpl(
 				fmt.Sprintf("to contain subslice %v", eqJSON),
@@ -106,20 +109,20 @@ func TestBytesCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("NotContains pass", func(t *testing.T) {
-		c := check.Bytes.NotContains(diff)
+		c := checkBytes.NotContains(diff)
 		assertPassChecker(t, "Bytes.NotContains", c, b)
-		c = check.Bytes.NotContains(eqJSON)
+		c = checkBytes.NotContains(eqJSON)
 		assertPassChecker(t, "Bytes.NotContains", c, b)
 	})
 
 	t.Run("NotContains fail", func(t *testing.T) {
-		c := check.Bytes.NotContains(sub)
+		c := checkBytes.NotContains(sub)
 		assertFailChecker(t, "Bytes.NotContains", c, b, makeExpl(
 			fmt.Sprintf("not to contain subslice %v", sub),
 			fmt.Sprint(b),
 		))
 
-		c = check.Bytes.NotContains(b)
+		c = checkBytes.NotContains(b)
 		assertFailChecker(t, "Bytes.NotContains", c, b, makeExpl(
 			fmt.Sprintf("not to contain subslice %v", b),
 			fmt.Sprint(b),
@@ -127,13 +130,13 @@ func TestBytesCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("AsMap pass", func(t *testing.T) {
-		c := check.Bytes.AsMap(check.Map[string, any]().HasKeys("id"))
+		c := checkBytes.AsMap(check.Map[string, any]().HasKeys("id"))
 		assertPassChecker(t, "Bytes.AsMap", c, b)
 		assertPassChecker(t, "Bytes.AsMap", c, eqJSON)
 	})
 
 	t.Run("AsMap fail", func(t *testing.T) {
-		c := check.Bytes.AsMap(check.Map[string, any]().HasKeys("id", "nomatch"))
+		c := checkBytes.AsMap(check.Map[string, any]().HasKeys("id", "nomatch"))
 		assertFailChecker(t, "Bytes.AsMap", c, b, makeExpl(
 			"to pass MapChecker",
 			"explanation: json map:\n"+makeExpl(
@@ -142,7 +145,7 @@ func TestBytesCheckerProvider(t *testing.T) {
 			),
 		))
 
-		c = check.Bytes.AsMap(check.Map[string, any]().HasKeys("id"))
+		c = checkBytes.AsMap(check.Map[string, any]().HasKeys("id"))
 		assertFailChecker(t, "Bytes.AsMap", c, sub, makeExpl(
 			"to pass MapChecker",
 			"error: json: cannot unmarshal string into Go value of type map[string]interface {}",
@@ -150,12 +153,12 @@ func TestBytesCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("AsString pass", func(t *testing.T) {
-		c := check.Bytes.AsString(check.String.Is(string(b)))
+		c := checkBytes.AsString(check.String.Is(string(b)))
 		assertPassChecker(t, "Bytes.AsString", c, b)
 	})
 
 	t.Run("AsString fail", func(t *testing.T) {
-		c := check.Bytes.AsString(check.String.Is(string(diff)))
+		c := checkBytes.AsString(check.String.Is(string(diff)))
 		assertFailChecker(t, "Bytes.AsString", c, b, makeExpl(
 			"to pass Checker[string]",
 			"explanation: converted bytes:\n"+makeExpl(

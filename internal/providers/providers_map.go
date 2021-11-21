@@ -1,4 +1,4 @@
-package check
+package providers
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/drykit-go/cond"
 
+	check "github.com/drykit-go/testx/internal/checktypes"
 	"github.com/drykit-go/testx/internal/reflectutil"
 )
 
@@ -14,7 +15,7 @@ import (
 type MapCheckerProvider[K comparable, V any] struct{ ValueCheckerProvider[map[K]V] }
 
 // Len checks the gotten map passes the given Checker[int].
-func (p MapCheckerProvider[K, V]) Len(c Checker[int]) Checker[map[K]V] {
+func (p MapCheckerProvider[K, V]) Len(c check.Checker[int]) check.Checker[map[K]V] {
 	var gotlen int
 	pass := func(got map[K]V) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
@@ -27,11 +28,11 @@ func (p MapCheckerProvider[K, V]) Len(c Checker[int]) Checker[map[K]V] {
 			c.Explain("length", gotlen),
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // HasKeys checks the gotten map has the given keys set.
-func (p MapCheckerProvider[K, V]) HasKeys(keys ...K) Checker[map[K]V] {
+func (p MapCheckerProvider[K, V]) HasKeys(keys ...K) check.Checker[map[K]V] {
 	var missing []string
 	pass := func(got map[K]V) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
@@ -45,11 +46,11 @@ func (p MapCheckerProvider[K, V]) HasKeys(keys ...K) Checker[map[K]V] {
 	expl := func(label string, got any) string {
 		return p.explain(label, "to have keys "+p.formatList(missing), got)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // HasNotKeys checks the gotten map has the given keys set.
-func (p MapCheckerProvider[K, V]) HasNotKeys(keys ...K) Checker[map[K]V] {
+func (p MapCheckerProvider[K, V]) HasNotKeys(keys ...K) check.Checker[map[K]V] {
 	var badkeys []string
 	pass := func(got map[K]V) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
@@ -63,11 +64,11 @@ func (p MapCheckerProvider[K, V]) HasNotKeys(keys ...K) Checker[map[K]V] {
 	expl := func(label string, got any) string {
 		return p.explainNot(label, "to have keys "+p.formatList(badkeys), got)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // HasValues checks the gotten map has the given values set.
-func (p MapCheckerProvider[K, V]) HasValues(values ...V) Checker[map[K]V] {
+func (p MapCheckerProvider[K, V]) HasValues(values ...V) check.Checker[map[K]V] {
 	var missing []string
 	pass := func(got map[K]V) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
@@ -81,11 +82,11 @@ func (p MapCheckerProvider[K, V]) HasValues(values ...V) Checker[map[K]V] {
 	expl := func(label string, got any) string {
 		return p.explain(label, "to have values "+p.formatList(missing), got)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // HasNotValues checks the gotten map has not the given values set.
-func (p MapCheckerProvider[K, V]) HasNotValues(values ...V) Checker[map[K]V] {
+func (p MapCheckerProvider[K, V]) HasNotValues(values ...V) check.Checker[map[K]V] {
 	var badvalues []string
 	pass := func(got map[K]V) bool {
 		reflectutil.MustBeOfKind(got, reflect.Map)
@@ -99,13 +100,13 @@ func (p MapCheckerProvider[K, V]) HasNotValues(values ...V) Checker[map[K]V] {
 	expl := func(label string, got any) string {
 		return p.explainNot(label, "to have values "+p.formatList(badvalues), got)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // CheckValues checks the gotten map's values corresponding to the given keys
 // pass the given checker. A key not found is considered a fail.
 // If len(keys) == 0, the check is made on all map values.
-func (p MapCheckerProvider[K, V]) CheckValues(c Checker[V], keys ...K) Checker[map[K]V] { //nolint: gocognit // TODO: refactor
+func (p MapCheckerProvider[K, V]) CheckValues(c check.Checker[V], keys ...K) check.Checker[map[K]V] { //nolint: gocognit // TODO: refactor
 	var badentries []string
 	allKeys := len(keys) == 0
 	pass := func(got map[K]V) bool {
@@ -134,7 +135,7 @@ func (p MapCheckerProvider[K, V]) CheckValues(c Checker[V], keys ...K) Checker[m
 			c.Explain("values", p.formatList(badentries)),
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // get returns gotmap[key] and a bool representing whether a match is found.

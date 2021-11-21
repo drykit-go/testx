@@ -1,17 +1,19 @@
-package check
+package providers
 
 import (
 	"context"
 	"fmt"
 
 	"github.com/drykit-go/cond"
+
+	check "github.com/drykit-go/testx/internal/checktypes"
 )
 
 // ContextCheckerProvider provides checks on type context.Context.
 type ContextCheckerProvider struct{ baseCheckerProvider }
 
 // Done checks the gotten context is done.
-func (p ContextCheckerProvider) Done(expectDone bool) Checker[context.Context] {
+func (p ContextCheckerProvider) Done(expectDone bool) check.Checker[context.Context] {
 	var err error
 	done := func() bool { return err != nil }
 	pass := func(got context.Context) bool {
@@ -24,11 +26,11 @@ func (p ContextCheckerProvider) Done(expectDone bool) Checker[context.Context] {
 		gotString := cond.String(fmt.Sprint(err), "context not done", done())
 		return p.explain(label, expString, gotString)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // HasKeys checks the gotten context has the given keys set.
-func (p ContextCheckerProvider) HasKeys(keys ...any) Checker[context.Context] {
+func (p ContextCheckerProvider) HasKeys(keys ...any) check.Checker[context.Context] {
 	var missing []string
 	pass := func(got context.Context) bool {
 		for _, expk := range keys {
@@ -45,7 +47,7 @@ func (p ContextCheckerProvider) HasKeys(keys ...any) Checker[context.Context] {
 			"keys not set",
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // Value checks the gotten context's value for the given key passes
@@ -54,7 +56,7 @@ func (p ContextCheckerProvider) HasKeys(keys ...any) Checker[context.Context] {
 // Examples:
 // 	Context.Value("userID", Value.Is("abcde"))
 // 	Context.Value("userID", Wrap(String.Contains("abc")))
-func (p ContextCheckerProvider) Value(key any, c Checker[any]) Checker[context.Context] {
+func (p ContextCheckerProvider) Value(key any, c check.Checker[any]) check.Checker[context.Context] {
 	var v any
 	pass := func(got context.Context) bool {
 		v = got.Value(key)
@@ -66,5 +68,5 @@ func (p ContextCheckerProvider) Value(key any, c Checker[any]) Checker[context.C
 			c.Explain("value", v),
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }

@@ -1,9 +1,10 @@
-package check
+package providers
 
 import (
 	"context"
 	"net/http"
 
+	check "github.com/drykit-go/testx/internal/checktypes"
 	"github.com/drykit-go/testx/internal/ioutil"
 )
 
@@ -12,7 +13,7 @@ type HTTPRequestCheckerProvider struct{ baseHTTPCheckerProvider }
 
 // ContentLength checks the gotten *http.Request ContentLength passes
 // the input Checker[int].
-func (p HTTPRequestCheckerProvider) ContentLength(c Checker[int]) Checker[*http.Request] {
+func (p HTTPRequestCheckerProvider) ContentLength(c check.Checker[int]) check.Checker[*http.Request] {
 	var clen int
 	pass := func(got *http.Request) bool {
 		clen = int(got.ContentLength)
@@ -21,12 +22,12 @@ func (p HTTPRequestCheckerProvider) ContentLength(c Checker[int]) Checker[*http.
 	expl := func(label string, got any) string {
 		return p.explainContentLengthFunc(c, func() int { return clen })(label, got)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // Header checks the gotten *http.Request Header passes
 // the input Checker[http.Header].
-func (p HTTPRequestCheckerProvider) Header(c Checker[http.Header]) Checker[*http.Request] {
+func (p HTTPRequestCheckerProvider) Header(c check.Checker[http.Header]) check.Checker[*http.Request] {
 	var header http.Header
 	pass := func(got *http.Request) bool {
 		header = got.Header
@@ -35,13 +36,13 @@ func (p HTTPRequestCheckerProvider) Header(c Checker[http.Header]) Checker[*http
 	expl := func(label string, got any) string {
 		return p.explainHeaderFunc(c, func() http.Header { return header })(label, got)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // Body checks the gotten *http.Request Body passes the input Checker[[]byte].
 // It should be used only once on a same *http.Request as it closes its body
 // after reading it.
-func (p HTTPRequestCheckerProvider) Body(c Checker[[]byte]) Checker[*http.Request] {
+func (p HTTPRequestCheckerProvider) Body(c check.Checker[[]byte]) check.Checker[*http.Request] {
 	var body []byte
 	pass := func(got *http.Request) bool {
 		body = ioutil.NopRead(&got.Body)
@@ -50,12 +51,12 @@ func (p HTTPRequestCheckerProvider) Body(c Checker[[]byte]) Checker[*http.Reques
 	expl := func(label string, got any) string {
 		return p.explainBodyFunc(c, func() []byte { return body })(label, got)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
 
 // Context checks the gotten *http.Request Context passes
 // the input Checker[context.Context].
-func (p HTTPRequestCheckerProvider) Context(c Checker[context.Context]) Checker[*http.Request] {
+func (p HTTPRequestCheckerProvider) Context(c check.Checker[context.Context]) check.Checker[*http.Request] {
 	var ctx context.Context
 	pass := func(got *http.Request) bool {
 		ctx = got.Context()
@@ -67,5 +68,5 @@ func (p HTTPRequestCheckerProvider) Context(c Checker[context.Context]) Checker[
 			c.Explain("context", ctx),
 		)
 	}
-	return NewChecker(pass, expl)
+	return check.NewChecker(pass, expl)
 }
