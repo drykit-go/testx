@@ -85,7 +85,7 @@ func TestMapCheckerProvider(t *testing.T) {
 	t.Run("CheckValues pass", func(t *testing.T) {
 		// keys subset
 		c := checkMap.CheckValues(
-			check.Wrap(check.Int.InRange(41, 43)),
+			check.Wrap[int](check.Int.InRange(41, 43)),
 			"age",
 		)
 		assertPassChecker(t, "Map.CheckValues", c, m)
@@ -98,7 +98,7 @@ func TestMapCheckerProvider(t *testing.T) {
 	t.Run("CheckValues fail", func(t *testing.T) {
 		// keys subset
 		c := checkMap.CheckValues(
-			check.Wrap(check.Int.OutRange(41, 43)),
+			check.Wrap[int](check.Int.OutRange(41, 43)),
 			"age", "badkey",
 		)
 		assertFailChecker(t, "Map.CheckValues", c, m, makeExpl(

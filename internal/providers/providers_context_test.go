@@ -67,7 +67,7 @@ func TestContextCheckerProvider(t *testing.T) {
 	})
 
 	t.Run("Value pass", func(t *testing.T) {
-		c := checkContext.Value("userID", check.Wrap(check.Int.GT(0)))
+		c := checkContext.Value("userID", check.Wrap[int](check.Int.GT(0)))
 		ctx := ctxVal("userID", 42)
 		assertPassChecker(t, "Context.Value", c, ctx)
 	})

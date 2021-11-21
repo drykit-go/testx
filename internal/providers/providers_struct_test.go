@@ -40,7 +40,7 @@ func TestStructCheckerProvider(t *testing.T) {
 
 	t.Run("CheckFields pass", func(t *testing.T) {
 		c := checkStruct.CheckFields(
-			check.Wrap(check.Int.LT(vAB+1)),
+			check.Wrap[int](check.Int.LT(vAB+1)),
 			[]string{"A", "B"},
 		)
 		assertPassChecker(t, "Struct.CheckFields", c, itf(s))
@@ -48,7 +48,7 @@ func TestStructCheckerProvider(t *testing.T) {
 
 	t.Run("CheckFields fail", func(t *testing.T) {
 		c := checkStruct.CheckFields(
-			check.Wrap(check.Int.LT(vAB+1)),
+			check.Wrap[int](check.Int.LT(vAB+1)),
 			[]string{"A", "B", "X", "Y"},
 		)
 		assertFailChecker(t, "Struct.CheckFields", c, itf(s), makeExpl(

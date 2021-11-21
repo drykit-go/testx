@@ -67,7 +67,7 @@ func TestSliceCheckerProvider(t *testing.T) {
 
 	t.Run("CheckValues pass", func(t *testing.T) {
 		c := checkSlice.CheckValues(
-			check.Wrap(check.Int.InRange(41, 43)),
+			check.Wrap[int](check.Int.InRange(41, 43)),
 			func(_ int, v any) bool { _, ok := v.(int); return ok },
 		)
 		assertPassChecker(t, "Slice.CheckValues", c, s)
@@ -75,7 +75,7 @@ func TestSliceCheckerProvider(t *testing.T) {
 
 	t.Run("CheckValues fail", func(t *testing.T) {
 		c := checkSlice.CheckValues(
-			check.Wrap(check.Int.OutRange(41, 43)),
+			check.Wrap[int](check.Int.OutRange(41, 43)),
 			func(_ int, v any) bool { _, ok := v.(int); return ok },
 		)
 		assertFailChecker(t, "Slice.CheckValues", c, s, makeExpl(

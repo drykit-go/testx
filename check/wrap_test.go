@@ -19,13 +19,13 @@ func TestWrap(t *testing.T) {
 	t.Run("native checkers", func(t *testing.T) {
 		testcases := []checkerTestcase[any]{
 			{
-				checker: check.Wrap(check.Bytes.Is([]byte{42})),
+				checker: check.Wrap[[]byte](check.Bytes.Is([]byte{42})),
 				in:      []byte{42},
 				exppass: true,
 				expexpl: "",
 			},
 			{
-				checker: check.Wrap(check.Int.InRange(41, 43)),
+				checker: check.Wrap[int](check.Int.InRange(41, 43)),
 				in:      -1,
 				exppass: false,
 				expexpl: "value:\nexp in range [41:43]\ngot -1",
