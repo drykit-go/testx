@@ -27,6 +27,7 @@ const (
 var (
 	name = flag.String("name", "", "template name in internal/gen (without extension)")
 	kind = flag.String("kind", "", "data to be generated (only 'types' currently")
+	out  = flag.String("o", "", "output file path")
 )
 
 var kindsFuncs = map[string]func(tpl, out string) error{
@@ -68,6 +69,9 @@ func parseFlags() error {
 	if *name == "" {
 		return errors.New("missing template name (-name)")
 	}
+	if *out == "" {
+		return errors.New("missing output path (-o)")
+	}
 	return nil
 }
 
@@ -89,7 +93,7 @@ func getFilesPaths() (tplPath, outPath string, err error) {
 	}
 
 	tplPath = filepath.Join(currDir, tplDirPath, filename(*name, tplExt))
-	outPath = filepath.Join(workDir, filename(*name, outExt))
+	outPath = filepath.Join(workDir, *out)
 	return
 }
 

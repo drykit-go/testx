@@ -1,5 +1,9 @@
 package check
 
+import (
+	"github.com/drykit-go/testx/internal/providers"
+)
+
 var (
 	{{- range .Vars -}}
 	{{if ne .Name "Number" -}}
@@ -12,16 +16,16 @@ var (
 )
 
 // Map provides checks on type map[Key]Val.
-func Map[Key comparable, Val any]() MapCheckerProvider[Key, Val] {
-	return MapCheckerProvider[Key, Val]{}
+func Map[Key comparable, Val any]() providers.MapCheckerProvider[Key, Val] {
+	return providers.MapCheckerProvider[Key, Val]{}
 }
 
 // Slice provides checks on type []Elem.
-func Slice[Elem any]() SliceCheckerProvider[Elem] {
-	return SliceCheckerProvider[Elem]{}
+func Slice[Elem any]() providers.SliceCheckerProvider[Elem] {
+	return providers.SliceCheckerProvider[Elem]{}
 }
 
 // ValueCheckerProvider provides generic checks on any type.
-func Value[T any]() ValueCheckerProvider[T] {
-	return ValueCheckerProvider[T]{}
+func Value[T any]() providers.ValueCheckerProvider[T] {
+	return providers.ValueCheckerProvider[T]{}
 }
